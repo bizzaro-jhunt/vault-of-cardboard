@@ -77,6 +77,24 @@ get '' => sub {
 	redirect => '/index.html';
 };
 
+get '/config.js' => sub {
+	send_as
+		plain => 'var $CONFIG = '.encode_json({
+			imgroot => config->{vcb}{imgroot} || '/img'
+		}).';',
+		{ content_type => 'application/javascript' };
+};
+
+get '/css/login.css' => sub {
+	my @css;
+	my $root = config->{vcb}{imgroot} || '/img';
+	for my $i (250..274) {
+		push @css, "body.login.i$i { background-image: url($root/login/$i.jpg); }\n";
+	}
+	send_as plain => join("", @css),
+		{ content_type => 'text/css' };
+};
+
 get '/my/:type' => sub {
 	my $user = authn or return {
 		"error" => "You are not logged in.",
