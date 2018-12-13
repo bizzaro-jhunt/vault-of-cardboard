@@ -1,0 +1,7 @@
+#!/bin/bash
+set -eu
+
+export VOC_FAILSAFE_USERNAME=urza
+export VOC_FAILSAFE_PASSWORD=$(./bin/voc bcrypt 'admin')
+
+exec perl -Ilib -MVOC::API -e VOC::API::dance;

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Vault of Cardboard</title>
+<link rel="stylesheet" type="text/css" href="/css/keyrune.min.css" />
+<link rel="stylesheet" type="text/css" href="/css/mana.min.css" />
+<link rel="stylesheet" type="text/css" href="/css/vcb.css" />
+</head>
+<body>
+<header>
+  <h1>Vault of Cardboard</h1>
+  <input name="q" placeholder="i.e.: Ral color:RU +draw" autocomplete="off">
+  <nav>
+    <li><a href="" rel="mycol">My Collection</a></li>
+    <li>Sets
+        <nav>
+          <li><a href="q:set:DOM">Dominaria (DOM)</a></li>
+          <li><a href="q:set:XLN">Explorers of Ixalan (XLN)</a></li>
+          <li><a href="q:set:RIX">Rivals of Ixalan (RIX)</a></li>
+        </nav></li>
+  </nav>
+</header>
+
+<div id="main">
+  <div class="login">
+    <div><form>
+      <h2>Welcome to the Vault</h2>
+      <p><label for="username">Account</label>
+      <input type="text" name="username"></p>
+      <p><label for="password">Password</label>
+      <input type="password" name="password"></p>
+      <button type="submit">Enter</button></form>
+    </div>
+  </div>
+  <div class="edit-collection">
+    <h2>My Collection</h2><form>
+    <textarea name="collection"></textarea>
+    <button type="submit">Save</button></form>
+  </div>
+  <div class="search">
+    <div class="meta-results">found <span class="count">0</span> matching card(s).</div>
+    <div class="grid results"></div>
+  </div>
+</div>
+
+
+<div class="modal-bg"></div>
+<div class="modal-fg"></div>
+
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/lang.js"></script>
+<script type="text/javascript">
+
+function colorize(s) {
+  var c = s.split("");
+  for (var i = 0; i < c.length; i++) {
+    c[i] = '<span class="ms ms-'+c[i].toLowerCase()+' ms-cost"></span>';
+  }
+  return c.join('');
+}
+
+$(function () {
+  var $BASE  = undefined,
+      $CARDS = undefined,
+      $INDEX = {};
+
+  function search(q) {
+    if (q) {
+      $('input[name=q]').val(q).trigger('change');
+    } else {
+      $('input[name=q]').trigger('change');
+    }
+  }
+
+  function refreshCollection(then) {
+    var finalize = function (base, cards) {
+      $BASE  = base;
+      $CARDS = base;
+      $INDEX = {};
+
+      for (var set in $CARDS) {
+        for (var i = 0; i < $CARDS[set].length; i++) {
+          $CARDS[set][i].owned = 0;
+          if (set in cards && $CARDS[set][i].name in cards[set]) {
+            $CARDS[set][i].owned = cards[set][$CARDS[set][i].name];
+          }
+          $INDEX[$CARDS[set][i].id] = $CARDS[set][i];
+        }
+      }
+
+      if (then) {
+        then.call();
+      }
+    };
+
+    $.ajax({
+      type: 'GET',
+      url:  '/my/collection.json',
+      success: function (cards) {
+        if (cards.error) { return; }
+        if (!$BASE) {
+          $.ajax({
+            type: 'GET',
+            url:  '/cards.json',
+            success: function (base) {
+              finalize(base, cards);
+            }
+          });
+        } else {
+          finalize($BASE, cards);
+        }
+      }
+    });
+  }
+  refreshCollection();
+
+  function switchTo(page) {
+    $(document.body).attr('class', '').addClass(page).addClass('i'+parseInt(Math.random() * (275 - 250) + 250).toString());
+  }
+  switchTo('login');
+
+  $(document.body)
+  .on('click', '.login button', function (event) {
+    event.preventDefault();
+    var $f = $(event.target).closest('.login');
+    $.ajax({
+      type: 'POST',
+      url:  '/v/login',
+      data: JSON.stringify({
+        username: $f.find('[name=username]').val(),
+        password: $f.find('[name=password]').val()
+      }),
+      success: function (data) {
+        document.cookie = 'vcb_sesh='+data.user.session+';max-age=7776000;samesite=strict';
+        refreshCollection();
+        switchTo('search');
+      }
+    });
+  })
+  .on('click', 'a[rel="mycol"]', function (event) {
+    event.preventDefault();
+    switchTo('loading');
+    $.ajax({
+      type: 'GET',
+      url:  '/my/collection.voc',
+      success: function (data) {
+        $('.edit-collection textarea').val(data);
+        switchTo('edit');
+      }
+    });
+  })
+  .on('submit', '.edit-collection form', function (event) {
+    event.preventDefault();
+    console.log($(event.target).find('textarea').val());
+    $.ajax({
+      type: 'PUT',
+      url:  '/my/collection',
+      data: JSON.stringify({ voc: $(event.target).find('textarea').val() }),
+      success: function (data) {
+        refreshCollection(function () { search("owned") });
+      }
+    });
+  })
+  .on('change', 'input[name="q"]', function (event) {
+    event.preventDefault();
+    switchTo('search');
+
+    if (!$CARDS) { return; }
+
+    $('.results').empty();
+    var n = 50000;
+    var q = Query.parse($(event.target).val());
+    console.log("query: %s", q);
+
+    var found = [];
+    for (var set in $CARDS) {
+      for (var i = 0; i < $CARDS[set].length; i++) {
+        var card = $CARDS[set][i];
+        if (q.match(card)) {
+          found.push(card);
+          n--;
+          if (n == 0) { break; }
+        }
+      }
+      if (n == 0) { break; }
+    }
+    found = found.sort(function (a, b) {
+      if (a.name > b.name) { return 1; }
+      if (a.name < b.name) { return -1; }
+      return 0;
+    });
+    var max = 400;
+    for (var i = 0; i < found.length && i < max; i++) {
+      var alt = found[i].name + ' [' + found[i].set.code + ']';
+      $('.results').append($('<img data-own="'+found[i].owned.toString()+'" data-id="'+found[i].id+'" alt="'+alt+'" title="'+alt+'" src="img/cards/'+found[i].image+'">'));
+    }
+    $('.meta-results .count').html(found.length);
+  })
+  .on('click', '.results img', function (event) {
+    var id   = $(event.target).closest('[data-id]').attr('data-id'),
+        card = $INDEX[id];
+
+    $('.modal-fg').empty().append(
+      '<img src="'+$(event.target).closest('img').attr('src')+'">'+
+      '<div class="detail">'+
+        '<a class="close" href="#">X</a>'+
+            '<ul class="tags">'+
+              '<li>tag</li>'+
+              '<li>control</li>'+
+            '</ul>'+
+            '<ul class="info">'+
+              '<li>#'+card.number+'/'+card.set.total+'</li>'+
+              '<li>'+colorize(card.color)+'</li>'+
+              '<li><strong>CMC:</strong> '+card.cmc+'</li>'+
+              '<li>'+card.rarity+'</li>'+
+            '</ul>'+
+            '<ul class="owned">'+
+              '<li><strong>Owned:</strong> '+card.owned.toString()+'</li>'+
+              '<li><strong>Proxied:</strong> 1</li>'+
+            '</ul>'+
+            '<ul class="where">'+
+              '<li>1 in <a href="#">Niv-Mizzet →</a></li>'+
+              '<li>1 in <a href="#">ctl60 →</a></li>'+
+              '<li>1 in <a href="#">Collection →</a></li>'+
+            '</ul>'+
+            '<p class="price">$'+card.price+'</p>'+
+          '</div>'+
+      '</div>');
+    $('.modal-bg, .modal-fg').show();
+  })
+  .on('click', '.modal-fg a.close', function (event) {
+    event.preventDefault();
+    $('.modal-bg, .modal-fg').hide();
+  })
+  .on('click', '[href^="q:"]', function (event) {
+    event.preventDefault();
+    search($(event.target).closest('[href^="q:"]').attr('href').replace(/^q:/, ''));
+  });
+});
+</script>
+</body>
+</html>

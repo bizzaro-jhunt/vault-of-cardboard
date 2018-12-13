@@ -1,0 +1,6 @@
+---
+plugins:
+  DBIC:
+    default:
+      dsn: dbi:SQLite:dbname=x.db
+      schema_class: VOC::DB

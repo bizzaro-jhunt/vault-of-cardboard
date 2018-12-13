@@ -1,0 +1,181 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+use Digest;
+use Data::Entropy::Algorithms qw/rand_bits/;
+use LWP::UserAgent            qw//;
+use JSON::PP                  qw/decode_json
+                                 encode_json/;
+
+{
+	no warnings 'redefine';
+
+	sub LWP::UserAgent::get_basic_credentials {
+		#my ($self, $realm, $url) = @_;
+		return $ENV{VOC_USERNAME}, $ENV{VOC_PASSWORD};
+	}
+}
+
+my $ua = LWP::UserAgent->new(
+	agent => 'voc/0.1',
+);
+
+my $VOC_API = $ENV{VOC_API} || "http://127.0.0.1:3000";
+$VOC_API =~ s{/+$}{};
+
+sub find_user {
+	my ($id) = @_;
+	my $res = $ua->get("$VOC_API/v/admin/users");
+	$res->is_success
+		or die "oops: ".$res->decoded_content."\n";
+
+	my $users = decode_json($res->decoded_content)
+		or die "oops: $!\n";
+
+	for (@$users) {
+		next unless $_->{id} eq $id or $_->{account} eq $id;
+		return $_;
+	}
+
+	return undef;
+}
+
+if (!@ARGV) {
+	print STDERR "USAGE: voc COMMAND args...\n";
+	exit 0;
+}
+
+$| = 1;
+
+my $command = shift @ARGV;
+
+if ($command eq 'recache') {
+	my $res = $ua->post("$VOC_API/v/admin/recache");
+	if (!$res->is_success) {
+		print "FAILED!\n";
+		print $res->decoded_content;
+		exit 1;
+	}
+	exit 0;
+}
+
+if ($command eq 'ingest') {
+	my $rc = 0;
+
+	for my $set (@ARGV) {
+		print "ingesting set $set...";
+		my $res = $ua->post("$VOC_API/v/admin/sets/$set/ingest");
+		if (!$res->is_success) {
+			print "FAILED!\n";
+			print $res->decoded_content;
+			$rc = 1;
+		} else {
+			print "OK\n";
+		}
+	}
+	exit $rc;
+}
+
+if ($command eq 'users') {
+	my $res = $ua->get("$VOC_API/v/admin/users");
+	$res->is_success
+		or die "oops: ".$res->decoded_content."\n";
+
+	my $users = decode_json($res->decoded_content)
+		or die "oops: $!\n";
+
+	for my $user (@$users) {
+		printf "%s  %-20s  %s  %s\n",
+			$user->{id},
+			$user->{account},
+			$user->{joined_at},
+			$user->{active} ? 'active' : 'INACTIVE';
+	}
+	exit 0;
+}
+
+if ($command eq 'validate') {
+	my $voc = do { local $/; <>; };
+	my $res = $ua->put("$VOC_API/v/admin/collection/validate",
+		'Content-Type' => 'application/json',
+		Content => encode_json({
+				voc => $voc
+			}));
+	$res->is_success
+		or die "oops: ".$res->decoded_content."\n";
+	my $data = decode_json($res->decoded_content)
+		or die "oops: $!\n";
+
+	if ($data->{error}) {
+		print $data->{error};
+		for (@{$data->{errors}}) {
+			print "- $_\n";
+		}
+		print scalar(@{$data->{errors}})." error(s) found\n";
+		exit 1;
+	}
+	print $data->{ok};
+	exit 0;
+}
+
+if ($command eq 'collection') {
+	my $id = shift @ARGV
+		or die "USAGE: voc collection user\n";
+
+	my $user = find_user($id)
+		or die "Unable to find user '$id'...\n";
+
+	my $res = $ua->get("$VOC_API/v/col/$user->{id}/collection.voc");
+	print STDERR $res->as_string;
+	$res->is_success
+		or die "oops: ".$res->decoded_content."\n";
+
+	printf "%s\n", $res->decoded_content;
+	exit 0;
+}
+
+if ($command eq 'import') {
+	my $id = shift @ARGV
+		or die "USAGE: voc import user <collection.voc\n";
+
+	my $user = find_user($id)
+		or die "Unable to find user '$id'...\n";
+	$user = $user->{id};
+
+	my $voc = do { local $/; <>; };
+	my $res = $ua->put("$VOC_API/v/admin/users/$user/collection",
+		'Content-Type' => 'application/json',
+		Content => encode_json({
+				voc => $voc
+			}));
+	$res->is_success
+		or die "oops: ".$res->decoded_content."\n";
+	my $data = decode_json($res->decoded_content)
+		or die "oops: $!\n";
+
+	if ($data->{error}) {
+		print $data->{error};
+		exit 1;
+	}
+	print $data->{ok};
+	exit 0;
+}
+
+if ($command eq 'bcrypt') {
+	my $pw = shift @ARGV
+		or die "USAGE: voc bcrypt 'password'\n";
+
+	my $bc = Digest->new(
+		'Bcrypt',
+		cost => $ENV{VOC_DIGEST_BCRYPT_COST} || 12, # in range (0,31)
+		salt => rand_bits(16*8),                    # 16 octets
+	);
+
+	$bc->add($pw);
+	print $bc->settings.'$'.$bc->hexdigest."\n";
+	exit 0;
+}
+
+print STDERR "Unrecognized command: $command\n";
+exit 2;
