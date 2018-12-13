@@ -1,0 +1,27 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+use JSON::PP qw/decode_json/;
+
+my $ROOT = "public/img/cards";
+for my $file (@ARGV) {
+	(my $set = $file) =~ s|.*?/(.*)\.set$|$1|; $set = uc($set);
+	open my $fh, "<", $file or do {
+		print STDERR "!!!: $file: $!\n";
+		next;
+	};
+	my $raw = decode_json(do { local $/; <$fh> }) or do {
+		print STDERR "!!!: $file: $!\n";
+		next;
+	};
+	close $fh;
+
+	print "mkdir -p $ROOT/$set\n";
+	for my $card (@{$raw->{cards}}) {
+		my $name = $card->{name}; $name =~ s/'/\\'/g;
+		print "echo \"[$card->{collector_number}] downloading '$name' image...\"\n";
+		print "curl -C - -Lo $ROOT/$set/$set-$card->{id}.jpg $card->{image_uris}{large}\n";
+		print "sleep 1\n";
+	}
+}
