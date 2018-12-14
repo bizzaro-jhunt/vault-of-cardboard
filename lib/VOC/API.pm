@@ -21,6 +21,15 @@ config->{vcb}{imgroot}   ||= '/img';
 config->{vcb}{datroot}   ||= cwd.'/dat';
 config->{vcb}{cacheroot} ||= cwd.'/cache';
 
+for my $var (keys %ENV) {
+	print STDERR "ENV> $var = '$ENV{$var}'\n";
+}
+
+if (POSIX::getpid() == 1) {
+	print STDERR "installing signal handlers...\n";
+	$SIG{TERM} = $SIG{INT} = sub { exit 0 };
+}
+
 my %SESH;
 
 #########################################################################
