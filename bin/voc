@@ -162,6 +162,24 @@ if ($command eq 'import') {
 	exit 0;
 }
 
+if ($command eq 'curl') {
+	my ($method, $url) = @ARGV;
+	if (!$url) {
+		$url = $method;
+		$method = 'GET';
+	}
+	$method = uc($method);
+
+	if ($method eq 'GET') {
+		my $res = $ua->get("$VOC_API$url");
+		print $res->as_string;
+		print "\n";
+		exit $res->is_success ? 0 : 1;
+	}
+	print STDERR "unsupported method '$method'...\n";
+	exit 1;
+}
+
 if ($command eq 'bcrypt') {
 	my $pw = shift @ARGV
 		or die "USAGE: voc bcrypt 'password'\n";
