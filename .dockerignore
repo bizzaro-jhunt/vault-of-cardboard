@@ -1,0 +1,10 @@
+/dat
+/cache
+/public/img
+x.*
+*.voc
+
+
+
+/keyrune
+/mana

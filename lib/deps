@@ -1,7 +1,0 @@
-Dancer2
-Dancer2::Plugin::DBIC
-DBIx::Class::Schema::Loader
-Data::UUID
-Digest::Bcrypt
-Data::Entropy::Algorithms
-Dancer2::Session::DBIC
