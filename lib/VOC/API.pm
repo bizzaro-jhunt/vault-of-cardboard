@@ -16,10 +16,30 @@ use Dancer2;
 use Dancer2::Plugin::DBIC;
 
 set serializer => 'JSON';
+set static_handler => true;
+config->{vcb}{imgroot}   ||= '/img';
+config->{vcb}{datroot}   ||= cwd.'/dat';
+config->{vcb}{cacheroot} ||= cwd.'/cache';
 
 my %SESH;
 
 #########################################################################
+
+my $DATFILE;
+sub datpath {
+	return config->{vcb}{datroot} unless @_;
+
+	$DATFILE = join('/', config->{vcb}{datroot}, @_);
+	return $DATFILE;
+}
+
+my $CACHEFILE;
+sub cachepath {
+	return config->{vcb}{cacheroot} unless @_;
+
+	$CACHEFILE = join('/', config->{vcb}{cacheroot}, @_);
+	return $CACHEFILE;
+}
 
 sub authn {
 	my $c = cookies->{vcb_sesh};
@@ -80,14 +100,14 @@ get '' => sub {
 get '/config.js' => sub {
 	send_as
 		plain => 'var $CONFIG = '.encode_json({
-			imgroot => config->{vcb}{imgroot} || '/img'
+			imgroot => config->{vcb}{imgroot},
 		}).';',
 		{ content_type => 'application/javascript' };
 };
 
 get '/css/login.css' => sub {
 	my @css;
-	my $root = config->{vcb}{imgroot} || '/img';
+	my $root = config->{vcb}{imgroot};
 	for my $i (250..274) {
 		push @css, "body.login.i$i { background-image: url($root/login/$i.jpg); }\n";
 	}
@@ -157,14 +177,14 @@ sub recache {
 	my ($user, $col) = @_;
 	my (%HAVE, %ALL);
 
-	mkdir "dat";
-	mkdir "dat/".$user->id;
-	mkdir "dat/".$user->id."/col";
+	mkdir datpath();
+	mkdir datpath($user->id);
+	mkdir datpath($user->id, 'col');
 
 	printf STDERR "caching collection '%s' [%s] for user '%s' [%s] in VOC format...\n",
 		$col->name, $col->id, $user->account, $user->id;
-	open my $fh, ">", "dat/".$user->id."/col/.new.voc" or do {
-		warn "unable to open"."dat/".$user->id."/col/.new.voc: $!\n";
+	open my $fh, ">", datpath($user->id, "col/.new.voc") or do {
+		warn "unable to open $DATFILE: $!\n";
 		return undef;
 	};
 	for my $card ($col->cards) {
@@ -178,18 +198,18 @@ sub recache {
 		});
 	}
 	close $fh;
-	rename "dat/".$user->id."/col/.new.voc",
-	       "dat/".$user->id."/col/".$user->primary_collection->id.".voc";
+	rename datpath($user->id, "col/.new.voc"),
+	       datpath($user->id, "col", $user->primary_collection->id.".voc");
 
-	open $fh, ">", "dat/".$user->id."/col/.new.json" or do {
-		warn "unable to open"."dat/".$user->id."/col/.new.json: $!\n";
+	open $fh, ">", datpath($user->id, "col/.new.json") or do {
+		warn "unable to open $DATFILE: $!\n";
 		return undef;
 	};
 	print $fh encode_json(\%HAVE);
 	close $fh;
 
-	rename "dat/".$user->id."/col/.new.json",
-	       "dat/".$user->id."/col/".$user->primary_collection->id.".json";
+	rename datpath($user->id, "col/.new.json"),
+	       datpath($user->id, "col", $user->primary_collection->id.".json");
 
 	return 1;
 }
@@ -235,10 +255,16 @@ put '/my/collection' => sub {
 };
 
 get '/v/col/:user/:type' => sub {
-	my $user = M('User')->find(param('user'))
-		or return {};
-	redirect sprintf("/v/col/%s/%s/%s",
-		$user->id, $user->primary_collection->id, param('type'));
+	(my $ext = param('type')) =~ s/^.*?\.//;
+	my $user = M('User')->find(param('user'));
+	if ($user) {
+		redirect sprintf("/v/col/%s/%s/%s",
+			$user->id, $user->primary_collection->id, param('type'));
+	} elsif ($ext eq 'voc') {
+		send_as plain => "# you don't have any cards yet...\n";
+	} elsif ($ext eq 'json') {
+		return {};
+	}
 };
 
 get '/v/col/:user/:uuid/:type' => sub {
@@ -249,14 +275,15 @@ get '/v/col/:user/:uuid/:type' => sub {
 	# and then translate that to a filesystem send call.
 
 	(my $ext = param('type')) =~ s/^.*?\.//;
-	my $file = sprintf("dat/%s/col/%s.%s", param('user'), param('uuid'), $ext);
+	my $file = datpath(param('user'), 'col', param('uuid').'.'.$ext);
 
-	if (! -f $file) {
-		status 404;
-		return { error => "No such collection." };
+	if (-f $file) {
+		send_file $file, system_path => 1;
+	} elsif ($ext eq 'voc') {
+		send_as plain => "# you don't have any cards yet...\n";
+	} elsif ($ext eq 'json') {
+		return {};
 	}
-
-	send_file cwd."/$file", system_path => 1;
 };
 
 #########################################################################
@@ -519,24 +546,26 @@ post '/v/admin/sets/:code/ingest' => sub {
 	# }
 
 	my $code = lc(param('code'));
-	my $cache = lc("cache/$code.set");
+	my $cache = cachepath("$code.set");
 	if (! -f $cache) {
-		mkdir "cache";
-		print "pulling [$code] from scryfall...\n";
-		open my $fh, ">", $cache
-			or return { error => "failed to open cache file: $!" };
+		mkdir cachepath();
+		print "cache path '$cache' not found; pulling [$code] from scryfall...\n";
+		open my $fh, ">", $cache or do {
+			warn "failed to open cache file '$cache': $!\n";
+			return { error => "failed to open cache file '$cache': $!" };
+		};
 
-			print "talking to scry...\n";
 		my $scry = Scry->new;
-		my $set = $scry->get1("/sets/$code")
-			or return {
-				"error" => "Failed to query Scryfall API.",
-			};
+		my $set = $scry->get1("/sets/$code") or do {
+			warn "failed to query ScryFall API for set [$code] data\n";
+			return { "error" => "Failed to query Scryfall API." };
+		};
 
-		$set->{cards} = $scry->get($set->{search_uri})
-			or return {
-				"error" => "Failed to query Scryfall API.",
-			};
+		print "querying $set->{search_uri} ...\n";
+		$set->{cards} = $scry->get($set->{search_uri}) or do {
+			warn "failed to query ScryFall API for set [$code] card data\n";
+			return { "error" => "Failed to query Scryfall API." };
+		};
 
 		print $fh encode_json($set);
 		close $fh;
@@ -598,7 +627,7 @@ post '/v/admin/sets/:code/ingest' => sub {
 ### cache data admin-y things
 
 get '/cards.json' => sub {
-	send_file cwd."/dat/cards.json", system_path => 1;
+	send_file datpath("cards.json"), system_path => 1;
 };
 
 # recache global /cards.json file
@@ -633,15 +662,15 @@ post '/v/admin/recache' => sub {
 		};
 	}
 
-	open my $fh, ">", "dat/.new.json" or do {
-		warn "unable to open"."dat/.new.json: $!\n";
+	open my $fh, ">", datpath(".new.json") or do {
+		warn "unable to open $DATFILE: $!\n";
 		return undef;
 	};
 	print $fh encode_json(\%ALL);
 	close $fh;
 
-	rename "dat/.new.json",
-	       "dat/cards.json";
+	rename datpath(".new.json"),
+	       datpath("cards.json");
 
 	return { ok => "Global cache updated." };
 };
@@ -684,7 +713,7 @@ get '/v/admin/cache' => sub {
 	find(sub {
 		return unless -f;
 		my $file = $File::Find::name;
-		return unless $file =~ m{^dat/(.*?)/(.*?)/collection.dat$};
+		return unless $file =~ m{/(.*?)/(.*?)/collection.dat$};
 		my ($user, $collection) = ($1, $2);
 
 		my (undef, undef, undef, undef, undef, undef, undef,
@@ -693,9 +722,14 @@ get '/v/admin/cache' => sub {
 			'last-updated' => $last,
 			size           => $size,
 		}
-	}, "dat");
+	}, datpath());
 
 	return \%D;
+};
+
+get '/v/admin/config' => sub {
+	admin_authn or return admin_authn_failed;
+	return config->{vcb};
 };
 
 any '*' => sub {
