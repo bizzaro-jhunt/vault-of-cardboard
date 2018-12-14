@@ -102,8 +102,8 @@ if (M('User')->count == 0 && $ENV{VCB_FAILSAFE_USERNAME} && $ENV{VCB_FAILSAFE_PA
 
 #########################################################################
 
-get '' => sub {
-	redirect => '/index.html';
+get '/' => sub {
+	redirect '/index.html';
 };
 
 get '/config.js' => sub {
@@ -114,7 +114,7 @@ get '/config.js' => sub {
 		{ content_type => 'application/javascript' };
 };
 
-get '/css/login.css' => sub {
+get '/login.css' => sub {
 	my @css;
 	my $root = config->{vcb}{imgroot};
 	for my $i (250..274) {
