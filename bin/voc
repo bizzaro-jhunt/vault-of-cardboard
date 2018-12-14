@@ -13,7 +13,7 @@ use JSON::PP                  qw/decode_json
 
 	sub LWP::UserAgent::get_basic_credentials {
 		#my ($self, $realm, $url) = @_;
-		return $ENV{VOC_USERNAME}, $ENV{VOC_PASSWORD};
+		return $ENV{VCB_USERNAME}, $ENV{VCB_PASSWORD};
 	}
 }
 
@@ -21,12 +21,12 @@ my $ua = LWP::UserAgent->new(
 	agent => 'voc/0.1',
 );
 
-my $VOC_API = $ENV{VOC_API} || "http://127.0.0.1:3000";
-$VOC_API =~ s{/+$}{};
+my $VCB_API = $ENV{VCB_API} || "http://127.0.0.1:3000";
+$VCB_API =~ s{/+$}{};
 
 sub find_user {
 	my ($id) = @_;
-	my $res = $ua->get("$VOC_API/v/admin/users");
+	my $res = $ua->get("$VCB_API/v/admin/users");
 	$res->is_success
 		or die "oops: ".$res->decoded_content."\n";
 
@@ -51,7 +51,7 @@ $| = 1;
 my $command = shift @ARGV;
 
 if ($command eq 'recache') {
-	my $res = $ua->post("$VOC_API/v/admin/recache");
+	my $res = $ua->post("$VCB_API/v/admin/recache");
 	if (!$res->is_success) {
 		print "FAILED!\n";
 		print $res->decoded_content;
@@ -65,7 +65,7 @@ if ($command eq 'ingest') {
 
 	for my $set (@ARGV) {
 		print "ingesting set $set...";
-		my $res = $ua->post("$VOC_API/v/admin/sets/$set/ingest");
+		my $res = $ua->post("$VCB_API/v/admin/sets/$set/ingest");
 		if (!$res->is_success) {
 			print "FAILED!\n";
 			print $res->decoded_content;
@@ -78,7 +78,7 @@ if ($command eq 'ingest') {
 }
 
 if ($command eq 'users') {
-	my $res = $ua->get("$VOC_API/v/admin/users");
+	my $res = $ua->get("$VCB_API/v/admin/users");
 	$res->is_success
 		or die "oops: ".$res->decoded_content."\n";
 
@@ -97,7 +97,7 @@ if ($command eq 'users') {
 
 if ($command eq 'validate') {
 	my $voc = do { local $/; <>; };
-	my $res = $ua->put("$VOC_API/v/admin/collection/validate",
+	my $res = $ua->put("$VCB_API/v/admin/collection/validate",
 		'Content-Type' => 'application/json',
 		Content => encode_json({
 				voc => $voc
@@ -126,7 +126,7 @@ if ($command eq 'collection') {
 	my $user = find_user($id)
 		or die "Unable to find user '$id'...\n";
 
-	my $res = $ua->get("$VOC_API/v/col/$user->{id}/collection.voc");
+	my $res = $ua->get("$VCB_API/v/col/$user->{id}/collection.voc");
 	print STDERR $res->as_string;
 	$res->is_success
 		or die "oops: ".$res->decoded_content."\n";
@@ -144,7 +144,7 @@ if ($command eq 'import') {
 	$user = $user->{id};
 
 	my $voc = do { local $/; <>; };
-	my $res = $ua->put("$VOC_API/v/admin/users/$user/collection",
+	my $res = $ua->put("$VCB_API/v/admin/users/$user/collection",
 		'Content-Type' => 'application/json',
 		Content => encode_json({
 				voc => $voc
@@ -171,7 +171,7 @@ if ($command eq 'curl') {
 	$method = uc($method);
 
 	if ($method eq 'GET') {
-		my $res = $ua->get("$VOC_API$url");
+		my $res = $ua->get("$VCB_API$url");
 		print $res->as_string;
 		print "\n";
 		exit $res->is_success ? 0 : 1;
@@ -186,7 +186,7 @@ if ($command eq 'bcrypt') {
 
 	my $bc = Digest->new(
 		'Bcrypt',
-		cost => $ENV{VOC_DIGEST_BCRYPT_COST} || 12, # in range (0,31)
+		cost => $ENV{VCB_DIGEST_BCRYPT_COST} || 12, # in range (0,31)
 		salt => rand_bits(16*8),                    # 16 octets
 	);
 

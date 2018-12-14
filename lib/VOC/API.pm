@@ -83,12 +83,12 @@ sub rarity {
 
 #########################################################################
 
-if (M('User')->count == 0 && $ENV{VOC_FAILSAFE_USERNAME} && $ENV{VOC_FAILSAFE_PASSWORD}) {
+if (M('User')->count == 0 && $ENV{VCB_FAILSAFE_USERNAME} && $ENV{VCB_FAILSAFE_PASSWORD}) {
 	my $admin = M('User')->create({
 		id        => uuidgen(),
-		account   => $ENV{VOC_FAILSAFE_USERNAME},
-		pwhash    => $ENV{VOC_FAILSAFE_PASSWORD},
-		display   => $ENV{VOC_FAILSAFE_USERNAME},
+		account   => $ENV{VCB_FAILSAFE_USERNAME},
+		pwhash    => $ENV{VCB_FAILSAFE_PASSWORD},
+		display   => $ENV{VCB_FAILSAFE_USERNAME},
 		joined_at => POSIX::mktime(0, 0, 0, 5, 7, 93), # Limited Alpha release date...
 		admin     => 1,
 		active    => 1,

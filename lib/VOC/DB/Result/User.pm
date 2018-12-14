@@ -135,7 +135,7 @@ sub set_password {
 
 	my $bc = Digest->new(
 		'Bcrypt',
-		cost => $ENV{VOC_DIGEST_BCRYPT_COST} || 12, # in range (0,31)
+		cost => $ENV{VCB_DIGEST_BCRYPT_COST} || 12, # in range (0,31)
 		salt => rand_bits(16*8),                    # 16 octets
 	);
 
