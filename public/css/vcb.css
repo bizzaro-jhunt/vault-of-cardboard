@@ -92,8 +92,9 @@ header nav a {
   text-decoration: none;
   color: inherit;
 }
-header nav li nav li {
+header nav li nav li a {
   padding: 12px 24px;
+  display: block;
 }
 header nav li nav li:hover {
   background-color: #000;
