@@ -162,6 +162,31 @@ if ($command eq 'import') {
 	exit 0;
 }
 
+if ($command eq 'useradd') {
+	@ARGV == 1 or die "USAGE: vcb useradd username\n";
+	my ($user) = @ARGV;
+
+	my $res = $ua->post("$VCB_API/v/admin/users",
+		'Content-Type' => 'application/json',
+		Content => encode_json({
+			account => $user,
+			display => $user,
+		}));
+	$res->is_success
+		or die "oops: ".$res->decoded_content."\n";
+	my $data = decode_json($res->decoded_content)
+		or die "oops: $!\n";
+
+	if ($data->{error}) {
+		print $data->{error};
+		exit 1;
+	}
+	print $data->{ok}."\n\n";
+	print "account:  $data->{created}{account}\n";
+	print "password: $data->{created}{password}\n";
+	exit 0;
+}
+
 if ($command eq 'curl') {
 	my ($method, $url) = @ARGV;
 	if (!$url) {

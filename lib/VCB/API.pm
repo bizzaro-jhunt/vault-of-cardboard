@@ -408,6 +408,15 @@ post '/v/admin/users' => sub {
 		return { error => "Unable to create account; check server logs for details." };
 	}
 
+	$u->collections->create({
+		id   => uuidgen(),
+		main => 1,
+		type => 'collection',
+	}) or do {
+		warn "failed to create primary collection for user account".$u->account."\n";
+		return { error => "Unable to create primary collection; check server logs for details." };
+	};
+
 	return {
 		ok => "Created user account",
 		created => {
