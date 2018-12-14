@@ -6,6 +6,7 @@
 <link rel="stylesheet" type="text/css" href="/css/keyrune.min.css" />
 <link rel="stylesheet" type="text/css" href="/css/mana.min.css" />
 <link rel="stylesheet" type="text/css" href="/css/vcb.css" />
+<link rel="stylesheet" type="text/css" href="/login.css" />
 </head>
 <body>
 <header>
@@ -34,6 +35,7 @@
   <div class="login">
     <div><form>
       <h2>Welcome to the Vault</h2>
+      <div class="oops"></div>
       <p><label for="username">Account</label>
       <input type="text" name="username"></p>
       <p><label for="password">Password</label>
@@ -43,10 +45,12 @@
   </div>
   <div class="edit-collection">
     <h2>My Collection</h2><form>
+    <div class="oops"></div>
     <textarea name="collection"></textarea>
     <button type="submit">Save</button></form>
   </div>
   <div class="search">
+    <div class="oops"></div>
     <div class="meta-results">found <span class="count">0</span> matching card(s).</div>
     <div class="grid results"></div>
   </div>
@@ -133,6 +137,8 @@ $(function () {
   .on('click', '.login button', function (event) {
     event.preventDefault();
     var $f = $(event.target).closest('.login');
+    $('.oops').hide();
+
     $.ajax({
       type: 'POST',
       url:  '/v/login',
@@ -141,9 +147,17 @@ $(function () {
         password: $f.find('[name=password]').val()
       }),
       success: function (data) {
-        document.cookie = 'vcb_sesh='+data.user.session+';max-age=7776000;samesite=strict';
-        refreshCollection();
-        switchTo('search');
+        if (data.ok) {
+          document.cookie = 'vcb_sesh='+data.user.session+';max-age=7776000;samesite=strict';
+          refreshCollection();
+          switchTo('search');
+
+        } else if (data.error) {
+          $('.login .oops').html(data.error).fadeIn();
+
+        } else {
+          $('.login .oops').html("Uh-oh, something broke pretty bad.  Tap "+colorize("2UUU")+" and summon James, Fixer of Codes!").fadeIn();
+        }
       }
     });
   })
@@ -161,13 +175,39 @@ $(function () {
   })
   .on('submit', '.edit-collection form', function (event) {
     event.preventDefault();
-    console.log($(event.target).find('textarea').val());
+    $('.oops').hide();
+
     $.ajax({
       type: 'PUT',
       url:  '/my/collection',
       data: JSON.stringify({ voc: $(event.target).find('textarea').val() }),
       success: function (data) {
-        refreshCollection(function () { search("owned") });
+        if (data.ok) {
+          refreshCollection(function () { search("owned") });
+        } else if (data.error) {
+          var $oops = $('.edit-collection .oops');
+          if (data.errors) {
+            var ul = $('<ul>');
+            if (data.errors.length > 10) {
+              for (var i = 0; i < 5; i++) {
+                ul.append($('<li>'+data.errors[i]+'</li>'));
+              }
+              ul.append($('<li><a href="#more">see remaining '+(data.errors.length - 5).toString()+' issues...</a></li>'));
+              for (var i = 5; i < data.errors.length; i++) {
+                ul.append($('<li class="suppress">'+data.errors[i]+'</li>'));
+              }
+            } else {
+              for (var i = 0; i < data.errors.length; i++) {
+                ul.append($('<li>'+data.errors[i]+'</li>'));
+              }
+            }
+            $oops.empty().append(data.error);
+            $oops.append(ul).fadeIn();
+          } else {
+            $oops.html(data.error).fadeIn();
+          }
+        } else {
+          $('.edit-collection .oops').html("Uh-oh, something broke pretty bad.  Tap "+colorize("4BR")+" to cast James Legendary Bug Fix").fadeIn(); }
       }
     });
   })
@@ -178,9 +218,16 @@ $(function () {
     if (!$CARDS) { return; }
 
     $('.results').empty();
-    var n = 50000;
-    var q = Query.parse($(event.target).val());
-    console.log("query: %s", q);
+    $('.meta-results').css({ visibility: 'hidden' });
+    $('.oops').hide();
+
+    var q, n = 50000;
+    try {
+      q = Query.parse($(event.target).val());
+    } catch (e) {
+      $('.search .oops').html($(event.target).val()+': '+e.toString()).fadeIn();
+      return;
+    }
 
     var found = [];
     for (var set in $CARDS) {
@@ -205,6 +252,7 @@ $(function () {
       $('.results').append($('<img data-own="'+found[i].owned.toString()+'" data-id="'+found[i].id+'" alt="'+alt+'" title="'+alt+'" src="'+$CONFIG.imgroot+'/cards/'+found[i].image+'">'));
     }
     $('.meta-results .count').html(found.length);
+    $('.meta-results').css({ visibility: 'visible' });
   })
   .on('click', '.results img', function (event) {
     var id   = $(event.target).closest('[data-id]').attr('data-id'),
@@ -226,17 +274,22 @@ $(function () {
             '</ul>'+
             '<ul class="owned">'+
               '<li><strong>Owned:</strong> '+card.owned.toString()+'</li>'+
-              '<li><strong>Proxied:</strong> 1</li>'+
+              /*'<li><strong>Proxied:</strong> 1</li>'+*/
             '</ul>'+
-            '<ul class="where">'+
+            /*'<ul class="where">'+
               '<li>1 in <a href="#">Niv-Mizzet →</a></li>'+
               '<li>1 in <a href="#">ctl60 →</a></li>'+
               '<li>1 in <a href="#">Collection →</a></li>'+
-            '</ul>'+
+            '</ul>'+*/
             '<p class="price">$'+card.price+'</p>'+
           '</div>'+
       '</div>');
     $('.modal-bg, .modal-fg').show();
+  })
+  .on('click', '.oops ul a[href="#more"]', function (event) {
+    event.preventDefault();
+    $(event.target).closest('ul').find('li.suppress').show();
+    $(event.target).closest('li').hide();
   })
   .on('click', '.modal-fg a.close', function (event) {
     event.preventDefault();
