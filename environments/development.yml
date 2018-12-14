@@ -1,6 +1,8 @@
 ---
+vcb:
+  imgroot: //vault-of-cardboard.s3.amazonaws.com
 plugins:
   DBIC:
     default:
       dsn: dbi:SQLite:dbname=x.db
-      schema_class: VOC::DB
+      schema_class: VCB::DB
