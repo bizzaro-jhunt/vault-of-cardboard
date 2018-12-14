@@ -12,6 +12,7 @@ vcb:
   datroot: /app/dat
   cacheroot: /app/cache
 
+behind_proxy: yes
 plugins:
   DBIC:
     default:
