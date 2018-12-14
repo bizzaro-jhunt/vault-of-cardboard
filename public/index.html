@@ -166,7 +166,7 @@ $(function () {
     switchTo('loading');
     $.ajax({
       type: 'GET',
-      url:  '/my/collection.voc',
+      url:  '/my/collection.vcb',
       success: function (data) {
         $('.edit-collection textarea').val(data);
         switchTo('edit');
@@ -180,7 +180,7 @@ $(function () {
     $.ajax({
       type: 'PUT',
       url:  '/my/collection',
-      data: JSON.stringify({ voc: $(event.target).find('textarea').val() }),
+      data: JSON.stringify({ vcb: $(event.target).find('textarea').val() }),
       success: function (data) {
         if (data.ok) {
           refreshCollection(function () { search("owned") });

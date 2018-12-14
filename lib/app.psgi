@@ -1,11 +1,11 @@
 use strict;
 use warnings;
 use Plack::Builder;
-use VOC::API;
+use VCB::API;
 
 builder {
 	enable "Plack::Middleware::Static",
-		path => qr{^/(fonts|img|js|css|index\.html|voc\.png)\b},
+		path => qr{^/(fonts|img|js|css|index\.html|vcb\.png)\b},
 		root => '/app/public';
-	VOC::API->to_app;
+	VCB::API->to_app;
 };

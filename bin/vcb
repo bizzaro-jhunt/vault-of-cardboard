@@ -18,7 +18,7 @@ use JSON::PP                  qw/decode_json
 }
 
 my $ua = LWP::UserAgent->new(
-	agent => 'voc/0.1',
+	agent => 'vcb/0.1',
 );
 
 my $VCB_API = $ENV{VCB_API} || "http://127.0.0.1:3000";
@@ -42,7 +42,7 @@ sub find_user {
 }
 
 if (!@ARGV) {
-	print STDERR "USAGE: voc COMMAND args...\n";
+	print STDERR "USAGE: vcb COMMAND args...\n";
 	exit 0;
 }
 
@@ -96,11 +96,11 @@ if ($command eq 'users') {
 }
 
 if ($command eq 'validate') {
-	my $voc = do { local $/; <>; };
+	my $vcb = do { local $/; <>; };
 	my $res = $ua->put("$VCB_API/v/admin/collection/validate",
 		'Content-Type' => 'application/json',
 		Content => encode_json({
-				voc => $voc
+				vcb => $vcb
 			}));
 	$res->is_success
 		or die "oops: ".$res->decoded_content."\n";
@@ -121,12 +121,12 @@ if ($command eq 'validate') {
 
 if ($command eq 'collection') {
 	my $id = shift @ARGV
-		or die "USAGE: voc collection user\n";
+		or die "USAGE: vcb collection user\n";
 
 	my $user = find_user($id)
 		or die "Unable to find user '$id'...\n";
 
-	my $res = $ua->get("$VCB_API/v/col/$user->{id}/collection.voc");
+	my $res = $ua->get("$VCB_API/v/col/$user->{id}/collection.vcb");
 	print STDERR $res->as_string;
 	$res->is_success
 		or die "oops: ".$res->decoded_content."\n";
@@ -137,17 +137,17 @@ if ($command eq 'collection') {
 
 if ($command eq 'import') {
 	my $id = shift @ARGV
-		or die "USAGE: voc import user <collection.voc\n";
+		or die "USAGE: vcb import user <collection.vcb\n";
 
 	my $user = find_user($id)
 		or die "Unable to find user '$id'...\n";
 	$user = $user->{id};
 
-	my $voc = do { local $/; <>; };
+	my $vcb = do { local $/; <>; };
 	my $res = $ua->put("$VCB_API/v/admin/users/$user/collection",
 		'Content-Type' => 'application/json',
 		Content => encode_json({
-				voc => $voc
+				vcb => $vcb
 			}));
 	$res->is_success
 		or die "oops: ".$res->decoded_content."\n";
@@ -182,7 +182,7 @@ if ($command eq 'curl') {
 
 if ($command eq 'bcrypt') {
 	my $pw = shift @ARGV
-		or die "USAGE: voc bcrypt 'password'\n";
+		or die "USAGE: vcb bcrypt 'password'\n";
 
 	my $bc = Digest->new(
 		'Bcrypt',

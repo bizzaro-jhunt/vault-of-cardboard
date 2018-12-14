@@ -1,4 +1,4 @@
-package VOC::API;
+package VCB::API;
 use strict;
 use warnings;
 
@@ -9,7 +9,7 @@ use File::Find;
 use Cwd qw/cwd/;
 use MIME::Base64 qw/decode_base64/;
 
-use VOC::Format::Standard;
+use VCB::Format::Standard;
 use Scry;
 
 use Dancer2;
@@ -159,7 +159,7 @@ sub validate_cards {
 post '/v/my/collection/validate' => sub {
 	# input:
 	# {
-	#   "voc" : "... (a VOC-formatted string) ..."
+	#   "vcb" : "... (a VCB-formatted string) ..."
 	# }
 
 	# output:
@@ -168,10 +168,10 @@ post '/v/my/collection/validate' => sub {
 	# }
 
 	local $@;
-	my @errors = eval { validate_cards(VOC::Format::Standard->parse(request->data->{voc})); };
+	my @errors = eval { validate_cards(VCB::Format::Standard->parse(request->data->{vcb})); };
 	if ($@) {
 		warn "unable to parse input: $@\n";
-		return { error => "Invalid VOC request payload." };
+		return { error => "Invalid VCB request payload." };
 	}
 	if (@errors) {
 		return {
@@ -190,15 +190,15 @@ sub recache {
 	mkdir datpath($user->id);
 	mkdir datpath($user->id, 'col');
 
-	printf STDERR "caching collection '%s' [%s] for user '%s' [%s] in VOC format...\n",
+	printf STDERR "caching collection '%s' [%s] for user '%s' [%s] in VCB format...\n",
 		$col->name, $col->id, $user->account, $user->id;
-	open my $fh, ">", datpath($user->id, "col/.new.voc") or do {
+	open my $fh, ">", datpath($user->id, "col/.new.vcb") or do {
 		warn "unable to open $DATFILE: $!\n";
 		return undef;
 	};
 	for my $card ($col->cards) {
 		$HAVE{$card->print->set_id}{$card->print->name} = $card->quantity;
-		VOC::Format::Standard->print1($fh, {
+		VCB::Format::Standard->print1($fh, {
 			name      => $card->print->name,
 			set       => $card->print->set_id,
 			condition => $card->quality,
@@ -207,8 +207,8 @@ sub recache {
 		});
 	}
 	close $fh;
-	rename datpath($user->id, "col/.new.voc"),
-	       datpath($user->id, "col", $user->primary_collection->id.".voc");
+	rename datpath($user->id, "col/.new.vcb"),
+	       datpath($user->id, "col", $user->primary_collection->id.".vcb");
 
 	open $fh, ">", datpath($user->id, "col/.new.json") or do {
 		warn "unable to open $DATFILE: $!\n";
@@ -229,7 +229,7 @@ put '/my/collection' => sub {
 		"authn" => "required"
 	};
 
-	# input: (a VOC-formatted string)
+	# input: (a VCB-formatted string)
 
 	# output:
 	# {
@@ -237,10 +237,10 @@ put '/my/collection' => sub {
 	# }
 
 	local $@;
-	my $cards = eval { VOC::Format::Standard->parse(request->data->{voc}); };
+	my $cards = eval { VCB::Format::Standard->parse(request->data->{vcb}); };
 	if ($@) {
 		warn "unable to parse input: $@\n";
-		return { error => "Invalid VOC request payload." };
+		return { error => "Invalid VCB request payload." };
 	}
 
 	my @errors = validate_cards($cards);
@@ -269,7 +269,7 @@ get '/v/col/:user/:type' => sub {
 	if ($user) {
 		redirect sprintf("/v/col/%s/%s/%s",
 			$user->id, $user->primary_collection->id, param('type'));
-	} elsif ($ext eq 'voc') {
+	} elsif ($ext eq 'vcb') {
 		send_as plain => "# you don't have any cards yet...\n";
 	} elsif ($ext eq 'json') {
 		return {};
@@ -288,7 +288,7 @@ get '/v/col/:user/:uuid/:type' => sub {
 
 	if (-f $file) {
 		send_file $file, system_path => 1;
-	} elsif ($ext eq 'voc') {
+	} elsif ($ext eq 'vcb') {
 		send_as plain => "# you don't have any cards yet...\n";
 	} elsif ($ext eq 'json') {
 		return {};
@@ -496,7 +496,7 @@ put '/v/admin/users/:uuid' => sub {
 put '/v/admin/users/:uuid/collection' => sub {
 	admin_authn or return admin_authn_failed;
 
-	# input: (a VOC-formatted string)
+	# input: (a VCB-formatted string)
 
 	# output:
 	# {
@@ -510,10 +510,10 @@ put '/v/admin/users/:uuid/collection' => sub {
 	}
 
 	local $@;
-	my $cards = eval { VOC::Format::Standard->parse(request->data->{voc}); };
+	my $cards = eval { VCB::Format::Standard->parse(request->data->{vcb}); };
 	if ($@) {
 		warn "unable to parse input: $@\n";
-		return { error => "Invalid VOC request payload." };
+		return { error => "Invalid VCB request payload." };
 	}
 
 	eval { $user->primary_collection->replace($cards); };
@@ -532,7 +532,7 @@ put '/v/admin/users/:uuid/collection' => sub {
 patch '/v/admin/users/:uuid/collection' => sub {
 	admin_authn or return admin_authn_failed;
 
-	# input: (a VOC-formatted string)
+	# input: (a VCB-formatted string)
 
 	# output:
 	# {

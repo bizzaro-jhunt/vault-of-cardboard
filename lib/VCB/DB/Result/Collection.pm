@@ -1,12 +1,12 @@
 use utf8;
-package VOC::DB::Result::Collection;
+package VCB::DB::Result::Collection;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-VOC::DB::Result::Collection
+VCB::DB::Result::Collection
 
 =cut
 
@@ -113,13 +113,13 @@ __PACKAGE__->add_unique_constraint("user_id_name_unique", ["user_id", "name"]);
 
 Type: has_many
 
-Related object: L<VOC::DB::Result::Card>
+Related object: L<VCB::DB::Result::Card>
 
 =cut
 
 __PACKAGE__->has_many(
   "cards",
-  "VOC::DB::Result::Card",
+  "VCB::DB::Result::Card",
   { "foreign.collection_id" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
@@ -128,20 +128,20 @@ __PACKAGE__->has_many(
 
 Type: belongs_to
 
-Related object: L<VOC::DB::Result::User>
+Related object: L<VCB::DB::Result::User>
 
 =cut
 
 __PACKAGE__->belongs_to(
   "user",
-  "VOC::DB::Result::User",
+  "VCB::DB::Result::User",
   { id => "user_id" },
   { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07049 @ 2018-12-10 20:51:23
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ZEos6aJAzLFNrNM5LFyD+g
+# Created by DBIx::Class::Schema::Loader v0.07049 @ 2018-12-13 22:16:42
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:dmMlLZxJDD2ChYjktnKYVg
 
 use Data::UUID ();
 

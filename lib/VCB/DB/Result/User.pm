@@ -1,12 +1,12 @@
 use utf8;
-package VOC::DB::Result::User;
+package VCB::DB::Result::User;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-VOC::DB::Result::User
+VCB::DB::Result::User
 
 =cut
 
@@ -112,20 +112,20 @@ __PACKAGE__->add_unique_constraint("account_unique", ["account"]);
 
 Type: has_many
 
-Related object: L<VOC::DB::Result::Collection>
+Related object: L<VCB::DB::Result::Collection>
 
 =cut
 
 __PACKAGE__->has_many(
   "collections",
-  "VOC::DB::Result::Collection",
+  "VCB::DB::Result::Collection",
   { "foreign.user_id" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07049 @ 2018-12-12 09:50:25
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ain5qsuQw8Ux6wcyDKcoyw
+# Created by DBIx::Class::Schema::Loader v0.07049 @ 2018-12-13 22:16:42
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:5Mpkvny2qysi1EyzOaKm+Q
 
 use Data::Entropy::Algorithms qw/rand_bits/;
 use Digest                    qw//;

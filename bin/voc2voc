@@ -1,6 +1,0 @@
-#!/usr/bin/perl
-use strict;
-use warnings;
-use lib 'lib';
-use VOC::Format::Standard;
-print VOC::Format::Standard->format(VOC::Format::Standard->parse(do { local $/; <STDIN> }));

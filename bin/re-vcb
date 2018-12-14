@@ -1,0 +1,6 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use lib 'lib';
+use VCB::Format::Standard;
+print VCB::Format::Standard->format(VCB::Format::Standard->parse(do { local $/; <STDIN> }));

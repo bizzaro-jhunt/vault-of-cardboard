@@ -1,4 +1,4 @@
-package VOC::DB::ResultSet::User;
+package VCB::DB::ResultSet::User;
 use strict;
 use warnings;
 

@@ -1,4 +1,4 @@
 #!/bin/bash
 set -eu
 
-exec dbicdump -o dump_directory=lib VOC::DB dbi:SQLite:x.db
+exec dbicdump -o dump_directory=lib VCB::DB dbi:SQLite:x.db

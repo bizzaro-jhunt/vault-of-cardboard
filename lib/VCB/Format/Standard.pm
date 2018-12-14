@@ -1,8 +1,8 @@
-package VOC::Format::Standard;
+package VCB::Format::Standard;
 
 =cut
 
-The Standard VOC format is line-based, where:
+The Standard VCB format is line-based, where:
 
   1) Lines are separated by bare line feeds (\n, ASCII 0x10)
   2) Blank lines are ignored

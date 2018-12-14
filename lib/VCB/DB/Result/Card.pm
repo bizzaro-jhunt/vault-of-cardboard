@@ -1,12 +1,12 @@
 use utf8;
-package VOC::DB::Result::Card;
+package VCB::DB::Result::Card;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-VOC::DB::Result::Card
+VCB::DB::Result::Card
 
 =cut
 
@@ -109,13 +109,13 @@ __PACKAGE__->set_primary_key("id");
 
 Type: belongs_to
 
-Related object: L<VOC::DB::Result::Collection>
+Related object: L<VCB::DB::Result::Collection>
 
 =cut
 
 __PACKAGE__->belongs_to(
   "collection",
-  "VOC::DB::Result::Collection",
+  "VCB::DB::Result::Collection",
   { id => "collection_id" },
   { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
 );
@@ -124,13 +124,13 @@ __PACKAGE__->belongs_to(
 
 Type: belongs_to
 
-Related object: L<VOC::DB::Result::Print>
+Related object: L<VCB::DB::Result::Print>
 
 =cut
 
 __PACKAGE__->belongs_to(
   "print",
-  "VOC::DB::Result::Print",
+  "VCB::DB::Result::Print",
   { id => "print_id" },
   {
     is_deferrable => 0,
@@ -141,7 +141,7 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07049 @ 2018-12-12 16:36:04
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:RFRZNhukmDXOmjRaGu/v0g
+# Created by DBIx::Class::Schema::Loader v0.07049 @ 2018-12-13 22:16:42
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:6Yhipdo5eMFp5+flGrNFjw
 
 1;

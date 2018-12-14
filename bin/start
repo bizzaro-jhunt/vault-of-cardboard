@@ -16,7 +16,7 @@ plugins:
   DBIC:
     default:
       dsn: dbi:SQLite:dbname=/data/vcb.db
-      schema_class: VOC::DB
+      schema_class: VCB::DB
 EOF
 
 mkdir -p /data

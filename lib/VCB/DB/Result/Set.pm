@@ -1,12 +1,12 @@
 use utf8;
-package VOC::DB::Result::Set;
+package VCB::DB::Result::Set;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-VOC::DB::Result::Set
+VCB::DB::Result::Set
 
 =cut
 
@@ -82,20 +82,20 @@ __PACKAGE__->add_unique_constraint("name_unique", ["name"]);
 
 Type: has_many
 
-Related object: L<VOC::DB::Result::Print>
+Related object: L<VCB::DB::Result::Print>
 
 =cut
 
 __PACKAGE__->has_many(
   "prints",
-  "VOC::DB::Result::Print",
+  "VCB::DB::Result::Print",
   { "foreign.set_id" => "self.code" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07049 @ 2018-12-12 12:05:16
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:v9vSSS7k1n5N214ErMhRWA
+# Created by DBIx::Class::Schema::Loader v0.07049 @ 2018-12-13 22:16:42
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:RUuk+BZggBEcbGai3QulUA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

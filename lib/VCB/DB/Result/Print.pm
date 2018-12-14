@@ -1,12 +1,12 @@
 use utf8;
-package VOC::DB::Result::Print;
+package VCB::DB::Result::Print;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-VOC::DB::Result::Print
+VCB::DB::Result::Print
 
 =cut
 
@@ -162,13 +162,13 @@ __PACKAGE__->set_primary_key("id");
 
 Type: has_many
 
-Related object: L<VOC::DB::Result::Card>
+Related object: L<VCB::DB::Result::Card>
 
 =cut
 
 __PACKAGE__->has_many(
   "cards",
-  "VOC::DB::Result::Card",
+  "VCB::DB::Result::Card",
   { "foreign.print_id" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
@@ -177,20 +177,20 @@ __PACKAGE__->has_many(
 
 Type: belongs_to
 
-Related object: L<VOC::DB::Result::Set>
+Related object: L<VCB::DB::Result::Set>
 
 =cut
 
 __PACKAGE__->belongs_to(
   "set",
-  "VOC::DB::Result::Set",
+  "VCB::DB::Result::Set",
   { code => "set_id" },
   { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07049 @ 2018-12-12 12:05:16
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:zUpuPHlVEsV+EypRql3nkA
+# Created by DBIx::Class::Schema::Loader v0.07049 @ 2018-12-13 22:16:42
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:l669iFKWHMzgLvGeQZMOEw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
