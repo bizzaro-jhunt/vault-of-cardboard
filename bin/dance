@@ -2,6 +2,6 @@
 set -eu
 
 export VCB_FAILSAFE_USERNAME=urza
-export VCB_FAILSAFE_PASSWORD=$(./bin/voc bcrypt 'admin')
+export VCB_FAILSAFE_PASSWORD=$(./bin/vcb bcrypt 'admin')
 
 exec perl -Ilib -MVCB::API -e VCB::API::dance;
