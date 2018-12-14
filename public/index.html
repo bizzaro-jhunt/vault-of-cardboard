@@ -5,7 +5,7 @@
 <title>Vault of Cardboard</title>
 <link rel="stylesheet" type="text/css" href="/css/keyrune.min.css" />
 <link rel="stylesheet" type="text/css" href="/css/mana.min.css" />
-<link rel="stylesheet" type="text/css" href="/css/vcb.css" />
+<link rel="stylesheet" type="text/css" href="/css/vcb.css?v=1" />
 <link rel="stylesheet" type="text/css" href="/login.css" />
 </head>
 <body>
@@ -249,7 +249,7 @@ $(function () {
     var max = 400;
     for (var i = 0; i < found.length && i < max; i++) {
       var alt = found[i].name + ' [' + found[i].set.code + ']';
-      $('.results').append($('<img data-own="'+found[i].owned.toString()+'" data-id="'+found[i].id+'" alt="'+alt+'" title="'+alt+'" src="'+$CONFIG.imgroot+'/cards/'+found[i].image+'">'));
+      $('.results').append($('<span class="img"><img data-own="'+found[i].owned.toString()+'" data-id="'+found[i].id+'" alt="'+alt+'" title="'+alt+'" src="'+$CONFIG.imgroot+'/cards/'+found[i].image+'"></span>'));
     }
     $('.meta-results .count').html(found.length);
     $('.meta-results').css({ visibility: 'visible' });
