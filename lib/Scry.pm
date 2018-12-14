@@ -54,11 +54,15 @@ sub get1 {
 
 	my $res = $self->{ua}->get(url($uri));
 	if (!$res->is_success) {
+		warn "[scry] singular GET of '$uri' failed: ".$res->status_line."\n"
+			if $ENV{SCRY_DEBUG};
 		return wantarray? (undef, $res->status_line) : undef;
 	}
 
 	my $data = decode_json($res->decoded_content);
 	if (!$data) {
+		warn "[scry] singular GET of '$uri' decode_json($data) failed: $!\n"
+			if $ENV{SCRY_DEBUG};
 		return wantarray? (undef, $!) : undef;
 	}
 
