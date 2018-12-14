@@ -133,7 +133,7 @@ and then query for all things so tagged, i.e. `tag:tapland`.
 The design question that still has to be answered is whether or
 not we make these global or private / per-user.  The former
 requires an ACL system, and partitions the users into "mods" and
-"non-mods".  The latter breaks search referential integriy; the
+"non-mods".  The latter breaks search referential integrity; the
 same query may return wildly different results depending on who is
 logged in.  Admittedly, we already do this for `own:...`, but that
 is more clearly a per-user query filter.
