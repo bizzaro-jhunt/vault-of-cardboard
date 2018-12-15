@@ -13,7 +13,7 @@ function tokenize(s) {
 
   var kw = [];
   for (var k in keywords) { kw.push(k); }
-  var kre = new RegExp("^("+kw.join('|')+")", 'i');
+  var kre = new RegExp("^("+kw.join('|')+")\\b", 'i');
 
   var tok = [];
 parsing:
