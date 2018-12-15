@@ -124,21 +124,30 @@ header input {
   width: 97vw;
   margin: 8px auto;
 }
-.grid > .img {
-  width: 19vw;
-  height: 26.25vw;
-  margin: 0.2vw;
+.grid.results > span {
+  position: relative;
+}
+.grid.results > span .card {
+  width: 18vw;
+  height: 25.14vw;
+  margin: 0.7vw;
   border-radius: 0.9vw; /* chop off some of the terrible backgrounds */
   overflow: hidden;
-  transform: rotate(5deg);
+  display: inline-block;
 }
-.grid > .img img {
+.grid.results > span .card.face {
+  transform: rotate(5deg);
+  cursor: pointer;
+}
+.grid.results > span .back {
+  position: absolute;
+}
+.grid.results > span[data-own="0"] .card.back img {
+  visibility: hidden;
+}
+.grid.results .card img {
   width: 100%;
 }
-.grid > .img img[data-own="0"] {
-  opacity: 0.7;
-}
-.grid > img[data-own="0"]:hover { opacity: 1; }
 .modal-bg,
 .modal-fg {
   position: fixed;

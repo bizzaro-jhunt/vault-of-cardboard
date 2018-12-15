@@ -65,6 +65,17 @@
 <script type="text/javascript" src="config.js"></script>
 <script type="text/javascript">
 
+function cardface(card) {
+  var alt = card.name + ' [' + card.set.code + ']';
+  return '<span class="card face">'+
+    '<img data-id="'+card.id+'" src="'+$CONFIG.imgroot+'/cards/'+card.image+'" alt="'+alt+'" title="'+alt+'">'+
+  '</span>';
+}
+
+function cardback() {
+  return '<span class="card back"><img src="/mtgback.jpg"></span>';
+}
+
 function colorize(s) {
   var c = s.split("");
   for (var i = 0; i < c.length; i++) {
@@ -248,13 +259,14 @@ $(function () {
     });
     var max = 400;
     for (var i = 0; i < found.length && i < max; i++) {
-      var alt = found[i].name + ' [' + found[i].set.code + ']';
-      $('.results').append($('<span class="img"><img data-own="'+found[i].owned.toString()+'" data-id="'+found[i].id+'" alt="'+alt+'" title="'+alt+'" src="'+$CONFIG.imgroot+'/cards/'+found[i].image+'"></span>'));
+      $('.results').append('<span data-own="'+found[i].owned.toString()+'">'+
+                              cardback()+cardface(found[i])+
+                           '</span>');
     }
     $('.meta-results .count').html(found.length);
     $('.meta-results').css({ visibility: 'visible' });
   })
-  .on('click', '.results img', function (event) {
+  .on('click', '.results .face img', function (event) {
     var id   = $(event.target).closest('[data-id]').attr('data-id'),
         card = $INDEX[id];
 
