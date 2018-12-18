@@ -32,6 +32,12 @@
 </header>
 
 <div id="main">
+  <div class="landing">
+  </div>
+  <div class="loading">
+    <h1>Loading...</h1>
+    <p class="marquee"></p>
+  </div>
   <div class="login">
     <div><form>
       <h2>Welcome to the Vault</h2>
@@ -89,7 +95,24 @@ $(function () {
       $CARDS = undefined,
       $INDEX = {};
 
+  var $ONCARD = undefined;
+  console.log('retrieving full card set data (/cards.json)...');
+  $.ajax({
+    type: 'GET',
+    url:  '/cards.json',
+    success: function (data) {
+      console.log('card set data retrieved successfully!');
+      $BASE = data;
+      if ($ONCARD) {
+        var fn = $ONCARD;
+        $ONCARD = undefined;
+        fn.call();
+      }
+    }
+  });
+
   function search(q) {
+    console.log('triggering search handler...');
     if (q) {
       $('input[name=q]').val(q).trigger('change');
     } else {
@@ -98,49 +121,142 @@ $(function () {
   }
 
   function refreshCollection(then) {
-    var finalize = function (base, cards) {
-      $BASE  = base;
-      $CARDS = base;
-      $INDEX = {};
-
-      for (var set in $CARDS) {
-        for (var i = 0; i < $CARDS[set].length; i++) {
-          $CARDS[set][i].owned = 0;
-          if (set in cards && $CARDS[set][i].name in cards[set]) {
-            $CARDS[set][i].owned = cards[set][$CARDS[set][i].name];
-          }
-          $INDEX[$CARDS[set][i].id] = $CARDS[set][i];
-        }
-      }
-
-      if (then) {
-        then.call();
-      }
-    };
+    console.log('attempting to refresh collection...');
 
     $.ajax({
       type: 'GET',
       url:  '/my/collection.json',
       success: function (cards) {
-        if (cards.error) { return; }
-        if (!$BASE) {
-          $.ajax({
-            type: 'GET',
-            url:  '/cards.json',
-            success: function (base) {
-              finalize(base, cards);
+        if (cards.error) {
+          console.log('/my/collection.json failed: %s', cards.error);
+          return;
+        }
+
+        $CARDS = $BASE;
+        $INDEX = {};
+
+        for (var set in $CARDS) {
+          for (var i = 0; i < $CARDS[set].length; i++) {
+            $CARDS[set][i].owned = 0;
+            if (set in cards && $CARDS[set][i].name in cards[set]) {
+              $CARDS[set][i].owned = cards[set][$CARDS[set][i].name];
             }
-          });
-        } else {
-          finalize($BASE, cards);
+            $INDEX[$CARDS[set][i].id] = $CARDS[set][i];
+          }
+        }
+
+        if (then) {
+          console.log('chain-executing post-search callback function...');
+          then.call();
         }
       }
     });
   }
-  refreshCollection();
+
+  function loadertain() {
+    var msg = [
+      /* flavor:canto or flavor:"Song" */
+      /* Arbor Armament (DOM) */
+      "<blockquote>&ldquo;Llanowar's boughs are ever ready<br>To unleash an autumn of steel leaves.&rdquo;<cite>&mdash;&ldquo;Song of Freyalise&rdquo;</cite></blockquote>",
+
+      /* Blinding Light (MIR) */
+      "<blockquote>&ldquo;My shield will bear a shining sun so you will always be with me. / Inlaid with gold, it will shine like glowing embers.&rdquo;<cite>&mdash;&ldquo;Love Song of Night and Day&rdquo;</cite></blockquote>",
+
+      /* Chariot of the Sun (MIR) */
+      "<blockquote>&ldquo;Sun follows Moon until she tires, then carries her until she's strong / and runs ahead of him again.&rdquo;<cite>&mdash;&ldquo;Love Song of Night and Day&rdquo;</cite></blockquote>",
+
+      /* Congregate (A25) */
+      "<blockquote>&ldquo;In the gathering there is strength for all who founder, renewal for all who languish, love for all who sing.&rdquo;<cite>&mdash;Song of All, canto 642</cite></blockquote>",
+
+      /* Defensive Formation (USG) */
+      "<blockquote>&ldquo;Your enemies will pound upon the door of your defenses, but only you shall have the key, and it is the key of life.&rdquo;<cite>&mdash;Song of All, canto 873</cite></blockquote>",
+
+      /* Disenchant (A25) */
+      "<blockquote>&ldquo;The tools of evil are mere things. And like all things, they cannot last forever.&rdquo;<cite>&mdash;Song of All, canto 881</cite></blockquote>",
+
+      /* Early Harvest (MIR) */
+      "<blockquote>&ldquo;Tonight we'll eat a farewell feast. Cold corn porridge is not enough. / Let's peel papayas, pineapples, and mangoes, drink coconut milk, / and bake bananas.&rdquo;<cite>&mdash;&ldquo;Love Song of Night and Day&rdquo;</cite></blockquote>",
+
+      /* Femeref Knight (MIR) */
+      "<blockquote>&ldquo;I will return / with lizard skins for your sandals. Paint your eyes black and wait for me.&rdquo;<cite>&mdash;&ldquo;Love Song of Night and Day&rdquo;</cite></blockquote>",
+
+      /* Flare (MIR) */
+      "<blockquote>&ldquo;In the forest, fires light the sky as black clouds unfold their weight.&rdquo;<cite>&mdash;&ldquo;Love Song of Night and Day&rdquo;</cite></blockquote>",
+
+      /* Invoke the Divine (DOM) */
+      "<blockquote>&ldquo;Let go of all that harms you. Cast your burdens into the darkness, and build for the faithful a house of light.&rdquo;<cite>&mdash;Song of All, canto 1008</cite></blockquote>",
+
+      /* Kukemssa Pirates (MIR) */
+      "<blockquote>&ldquo;. . . pirates gambled with a djinn and lost the thing more dear than gold.&rdquo;<cite>&mdash;&ldquo;Love Song of Night and Day&rdquo;</cite></blockquote>",
+
+      /* On Serra's Wings (DOM) */
+      "<blockquote>&ldquo;The spirit of Serra raised Brindri high and commanded her to keep the balance.&rdquo;<cite>&mdash;Song of All, canto 524</cite></blockquote>",
+
+      /* Pegasus Charger (USG) */
+      "<blockquote>&ldquo;The clouds came alive and dove to the earth! Hooves flashed among the dark army, who fled before the spectacle of fury.&rdquo;<cite>&mdash;Song of All, canto 211</cite></blockquote>",
+
+      /* Planar Birth (USG) */
+      "<blockquote>&ldquo;From womb of nothingness sprang this place of beauty, purity, and hope realized.&rdquo;<cite>&mdash;Song of All, canto 3</cite></blockquote>",
+
+      /* Sacred Mesa (MIR) */
+      "<blockquote>&ldquo;Do not go there, do not go / unless you rise on wings, unless you walk on hooves.&rdquo;<cite>&mdash;&ldquo;Song to the Sun,&rdquo; Femeref song</cite></blockquote>",
+
+      /* Serra Avenger (TSP) */
+      "<blockquote>&ldquo;Those who endure in the face of suffering, those whose faith shines long in evil days, they shall see salvation.&rdquo;<cite>&mdash;Song of All, canto 904</cite></blockquote>",
+
+      /* Serra's Embrace (USG) */
+      "<blockquote>&ldquo;Lifted beyond herself, for that battle Brindri was an angel of light and fury.&rdquo;<cite>&mdash;Song of All, canto 524</cite></blockquote>",
+
+      /* Unfulfilled Desires (MIR) */
+      "<blockquote>&ldquo;Like Day from Night, / I'll live my life apart from you, just glimpsing you across the sky, / because you cannot change, my dear, and nor can I.&rdquo;<cite>&mdash;&ldquo;Love Song of Night and Day&rdquo;</cite></blockquote>",
+
+      /* Village Elder (MIR) */
+      "<blockquote>&ldquo;Enchant me with your tale-telling. Tell about Tree, Grass, River, and Wind. / Tell why Truth must fight with Falsehood, and why Truth will always win.&rdquo;<cite>&mdash;&ldquo;Love Song of Night and Day&rdquo;</cite></blockquote>",
+
+      /* Voice of Grace (USG) */
+      "<blockquote>&ldquo;Opposite Law is Grace, and Grace must be preserved. If the strands of Grace are unraveled, its design will be lost, and the people with it.&rdquo;<cite>&mdash;Song of All, canto 167</cite></blockquote>",
+
+      /* Voice of Law (USG) */
+      "<blockquote>&ldquo;Life's balance is as a star: on one point is Law, and Law must be upheld. If the knots of order are loosened, chaos will spill through.&rdquo;<cite>&mdash;Song of All, canto 167</cite></blockquote>",
+
+      /* Wild Elephant (MIR) */
+      "<blockquote>&ldquo;I will tell my father's stories . . . . How the elephants trampled the leopard cub, and its father, though he knew, killed nine goats instead.&rdquo;<cite>&mdash;&ldquo;Love Song of Night and Day&rdquo;</cite></blockquote>",
+
+      /* Wildgrowth Walker (XLN) */
+      "<blockquote>&ldquo;Hear me, stone, root, branch: be the fist of this land. Turn back those who trample upon your domain.&rdquo;<cite>&mdash;Song of the Shaper</cite></blockquote>",
+
+      /* Zebra Unicorn (MIR) */
+      "<blockquote>&ldquo;I'll capture gentle zebras / for your steeds and fill the stable with every kind of unicorn.&rdquo;<cite>&mdash;&ldquo;Love Song of Night and Day&rdquo;</cite></blockquote>",
+
+      /* Zhalfirin Knight (MIR) */
+      "<blockquote>&ldquo;You returned a warrior. . . . Your hair was cut, your eye tattooed with the red triangle of war.&rdquo;<cite>&mdash;&ldquo;Love Song of Night and Day&rdquo;</cite></blockquote>"
+
+    ];
+
+    var on = false
+    var marquee = function () {
+      if (!$(document.body).is('.loading')) {
+        on = false;
+        return;
+      }
+      var $m = $('.loading .marquee');
+      console.log('firing marquee (on = %s)', on);
+      if (on) {
+        $m.fadeOut();
+        on = !on;
+        window.setTimeout(marquee, 800);
+      } else {
+        $m.html($(msg[parseInt(Math.random() * msg.length)])).fadeIn();
+        on = !on;
+        window.setTimeout(marquee, 7700);
+      }
+    };
+    marquee();
+  }
 
   function switchTo(page) {
     $(document.body).attr('class', '').addClass(page).addClass('i'+parseInt(Math.random() * (275 - 250) + 250).toString());
+    loadertain();
   }
   switchTo('login');
 
@@ -224,9 +340,19 @@ $(function () {
   })
   .on('change', 'input[name="q"]', function (event) {
     event.preventDefault();
-    switchTo('search');
+    console.log('search requested, for (%s)', q);
+    if (!$BASE) {
+      console.log('BASE collection not yet loaded; registering $ONCARD event handler...');
+      $ONCARD = function () {
+        console.log('$ONCARD handler fired... refreshing collection and then proceeded with search for %s', q);
+        refreshCollection(function () { search(q); });
+      };
+      switchTo('loading');
+      return;
+    }
 
-    if (!$CARDS) { return; }
+    switchTo('search');
+    if (!$CARDS) { $CARDS = $BASE; }
 
     $('.results').empty();
     $('.meta-results').css({ visibility: 'hidden' });

@@ -326,12 +326,35 @@ div.login > div button {
 
 
 #main > div { display: none; }
-body.edit   #main > div.edit-collection,
-body.search #main > div.search,
-body.login  #main > div.login  { display: block; }
+body.landing #main > div.landing,
+body.loading #main > div.loading,
+body.edit    #main > div.edit-collection,
+body.search  #main > div.search,
+body.login   #main > div.login  { display: block; }
 
 body.login {
   background-size: cover;
+}
+
+.loading .loading h1 {
+  font-size: 24pt;
+  font-style: italic;
+  text-align: left;
+  width: 50vw;
+  margin: 30vh auto 0em;
+}
+.loading .marquee {
+  line-height: 1.25em;
+  text-indent: -1ex;
+  font-size: 18pt;
+  font-style: italic;
+  width: 50vw;
+  color: #777;
+  margin: 10vh auto;
+}
+.loading .marquee cite {
+  display: block;
+  text-align: right;
 }
 
 
