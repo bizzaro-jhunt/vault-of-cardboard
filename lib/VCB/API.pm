@@ -125,11 +125,11 @@ get '/login.css' => sub {
 };
 
 get '/my/:type' => sub {
-	my $user = authn or return {
-		"error" => "You are not logged in.",
-		"authn" => "required"
+	my $user = authn or do {
+		return "# you are not logged in...\n" if param('type') =~ m/\.vcb$/i;
+		return {}                             if param('type') =~ m/\.json$/i;
+		die "unrecognized type ".param('type')."\n";
 	};
-
 	redirect sprintf("/v/col/%s/%s/%s",
 		$user->id, $user->primary_collection->id, param('type'));
 };
