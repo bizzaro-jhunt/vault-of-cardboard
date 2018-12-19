@@ -396,6 +396,18 @@ $(function () {
     var id   = $(event.target).closest('[data-id]').attr('data-id'),
         card = $INDEX[id];
 
+    var quotify = function (name, set, s) {
+      s = s || '';
+      while (s.match('"')) {
+        s = s.replace('"', '&ldquo;').replace('"', '&rdquo;');
+      }
+      s = s.replace(/&/g, '&amp;').replace(/ *â/, '&lt;cite&gt;&amp;mdash;');
+      if (s.match(';cite')) {
+        s += '&lt;/cite&gt;';
+      }
+      return '/* '+name+' ('+set.code+') */'+"\n\n\"&lt;blockquote&gt;"+s+"&lt;/blockquote&gt;\"";
+    };
+
     $('.modal-fg').empty().append(
       '<img src="'+$(event.target).closest('img').attr('src')+'">'+
       '<div class="detail">'+
@@ -410,6 +422,7 @@ $(function () {
               '<li><strong>CMC:</strong> '+card.cmc+'</li>'+
               '<li>'+card.rarity+'</li>'+
             '</ul>'+
+            '<textarea style="display: none">'+quotify(card.name, card.set, card.flavor)+'</textarea>'+
             '<ul class="owned">'+
               '<li><strong>Owned:</strong> '+card.owned.toString()+'</li>'+
               /*'<li><strong>Proxied:</strong> 1</li>'+*/
