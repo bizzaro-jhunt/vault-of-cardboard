@@ -130,7 +130,7 @@ header input {
 .grid.results > span .card {
   width: 18vw;
   height: 25.14vw;
-  margin: 0.7vw;
+  margin: 0.69vw;
   border-radius: 0.9vw; /* chop off some of the terrible backgrounds */
   overflow: hidden;
   display: inline-block;
