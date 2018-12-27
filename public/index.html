@@ -102,8 +102,21 @@ $(function () {
     url:  '/cards.json',
     success: function (data) {
       console.log('card set data retrieved successfully!');
-      $BASE = data;
+
+      $BASE  = data;
+      $INDEX = {};
+
+      console.log('indexing cards...');
+      for (var set in $BASE) {
+        for (var i = 0; i < $BASE[set].length; i++) {
+          $BASE[set][i].owned = 0;
+          $INDEX[$BASE[set][i].id] = $BASE[set][i];
+        }
+      }
+      console.log('indexing complete!');
+
       if ($ONCARD) {
+        console.log('chaining to the oncard function...');
         var fn = $ONCARD;
         $ONCARD = undefined;
         fn.call();
@@ -135,6 +148,7 @@ $(function () {
         $CARDS = $BASE;
         $INDEX = {};
 
+        console.log('indexing cards (against collection)...');
         for (var set in $CARDS) {
           for (var i = 0; i < $CARDS[set].length; i++) {
             $CARDS[set][i].owned = 0;
