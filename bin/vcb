@@ -8,6 +8,10 @@ use LWP::UserAgent            qw//;
 use JSON::PP                  qw/decode_json
                                  encode_json/;
 
+use lib 'lib';
+use VCB::Format;
+use VCB::Format::Standard;
+
 {
 	no warnings 'redefine';
 
@@ -49,6 +53,11 @@ if (!@ARGV) {
 $| = 1;
 
 my $command = shift @ARGV;
+
+if ($command eq 'fmt') {
+	print VCB::Format::Standard->format(VCB::Format->parse(do { local $/; <STDIN> }));
+	exit 0;
+}
 
 if ($command eq 'recache') {
 	my $res = $ua->post("$VCB_API/v/admin/recache");

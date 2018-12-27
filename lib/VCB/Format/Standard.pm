@@ -1,4 +1,10 @@
 package VCB::Format::Standard;
+use strict;
+use warnings;
+
+use VCB::Format;
+use VCB::Format::Utils;
+BEGIN { VCB::Format::register(__PACKAGE__); }
 
 =cut
 
@@ -41,14 +47,20 @@ This also is unambiguous.
 
 =cut
 
-sub parse {
+sub detect {
 	my ($class, $s) = @_;
 
+	for (lines($s)) {
+		return undef unless m/^\d+x?\s+(F\s+)?((M|NM|VG|EX|G|P|U)\s+)?([A-Za-z0-9]{3,})\s+./;
+	}
+	return 1;
+}
+
+sub parse {
+	my ($class, $s) = @_;
 	my @cards;
 
-	for (grep { $_ } map { s/(^\s+|\s+$)//; $_ } split /\n/, $s) {
-		s/^\s+//; next if m/^#/;
-
+	for (lines($s)) {
 		my @tok = split /\s+/;
 		(my $quantity = shift @tok) =~ s/x$//i;
 		$quantity =~ m/^\d+/

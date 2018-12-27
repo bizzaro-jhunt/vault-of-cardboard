@@ -9,6 +9,7 @@ use File::Find;
 use Cwd qw/cwd/;
 use MIME::Base64 qw/decode_base64/;
 
+use VCB::Format;
 use VCB::Format::Standard;
 use Scry;
 
@@ -168,7 +169,7 @@ post '/v/my/collection/validate' => sub {
 	# }
 
 	local $@;
-	my @errors = eval { validate_cards(VCB::Format::Standard->parse(request->data->{vcb})); };
+	my @errors = eval { validate_cards(VCB::Format->parse(request->data->{vcb})); };
 	if ($@) {
 		warn "unable to parse input: $@\n";
 		return { error => "Invalid VCB request payload." };
@@ -237,7 +238,7 @@ put '/my/collection' => sub {
 	# }
 
 	local $@;
-	my $cards = eval { VCB::Format::Standard->parse(request->data->{vcb}); };
+	my $cards = eval { VCB::Format->parse(request->data->{vcb}); };
 	if ($@) {
 		warn "unable to parse input: $@\n";
 		return { error => "Invalid VCB request payload." };
@@ -519,7 +520,7 @@ put '/v/admin/users/:uuid/collection' => sub {
 	}
 
 	local $@;
-	my $cards = eval { VCB::Format::Standard->parse(request->data->{vcb}); };
+	my $cards = eval { VCB::Format->parse(request->data->{vcb}); };
 	if ($@) {
 		warn "unable to parse input: $@\n";
 		return { error => "Invalid VCB request payload." };
