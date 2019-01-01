@@ -601,6 +601,7 @@ $(function () {
     if (sub.match(/^q\/./)) {
       console.log(sub, sub.replace(/^q\//, ""));
       var q = decodeURIComponent(sub.replace(/^q\//, ''));
+      $('input[name="q"]').val(q);
       console.log('search requested, for (%s)', q);
       if (!$BASE) {
         console.log('BASE collection not yet loaded; registering $ONCARD event handler...');
