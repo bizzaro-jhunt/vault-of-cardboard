@@ -15,10 +15,12 @@
   <nav>
     <li><a>Search</a>
         <nav>
-          <li><a class="if-authed" href="#!/q/owned">My Collection</a></li>
-          <li><a class="if-authed" href="#!/q/own:2+">My Duplicates</a></li>
-          <li><a class="if-authed" href="#!/q/own:4+">My Playsets</a></li>
-
+          <li><a href="#!/docs">How do I search?</a></li>
+          <li class="separator"></li>
+          <li class="if-authed"><a href="#!/q/owned">My Collection</a></li>
+          <li class="if-authed"><a href="#!/q/own:2+">My Duplicates</a></li>
+          <li class="if-authed"><a href="#!/q/own:4+">My Playsets</a></li>
+          <li class="if-authed separator"></li>
           <li><a href="#!/q/type:planeswalker">Planeswalkers</a></li>
           <li><a href="#!/q/=mythic">Mythics</a></li>
           <li><a href="#!/q/+gains? and +loses?">Life Gain + Loss</a></li>
@@ -121,6 +123,226 @@
         <li>&copy; 2018 James Hunt</li>
       </nav>
     </div>
+  </div>
+  <div class="docs prose">
+    <h1>Vault of Cardboard Query Language</h1>
+    <p>This section describes how to write queries against the Vault.</p>
+
+    <p>The simplest of Vault queries consist of single unquoted words
+    (i.e.: <kbd>counterspell</kbd>), and quoted strings (i.e.: <kbd>"Blur Sliver"</kbd>).
+    These queries match cards based on their names.  The unquoted
+    variety is case-insensitive, but matches whole words &mdash; <kbd>ral</kbd>
+    would match <em>Ral, Caller of Storms</em>, but not <em>Baral, Chief of
+    Compliance</em>.</p>
+
+    <p>More advanced expressions exist for matching against other parts
+    of the card.  For example, <kbd>color:W</kbd> is an expression that matches
+    cards whose color identity includes white.</p>
+
+    <p>Here's a list of all the expression types currently supported by
+    the Vault interpreter.  Feel free to skim this list upon first
+    encountering it, and then return once you get to see how
+    expressions can be combined!</p>
+
+    <table class="keywords">
+      <thead><tr>
+        <th>Expression</th>
+        <th>How it works</th>
+        <th>Example</th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td>cmc</td>
+          <td>Match cards based on their converted mana cost.</td>
+          <td>cmc:2+</td>
+        </tr>
+        <tr>
+          <td>color</td>
+          <td>Match cards based on their color identity.</td>
+          <td>color:UR</td>
+        </tr>
+        <tr>
+          <td>flavor</td>
+          <td>Match cards based on the contents of their flavor text.</td>
+          <td>flavor:Niv</td>
+        </tr>
+        <tr>
+          <td>name</td>
+          <td>Match cards based on their name.</td>
+          <td>name:Bolt</td>
+        </tr>
+        <tr>
+          <td>oracle</td>
+          <td>Match cards based on the contents of their oracle text.</td>
+          <td>oracle:draw</td>
+        </tr>
+        <tr>
+          <td>own</td>
+          <td>Match cards based on how many you have in your collection.</td>
+          <td>own:4+</td>
+        </tr>
+        <tr>
+          <td>rarity</td>
+          <td>Match cards based on their commonality / rarity.</td>
+          <td>rarity:mythic</td>
+        </tr>
+        <tr>
+          <td>set</td>
+          <td>Match cards based on the expansion set(s) they were printed in.</td>
+          <td>set:XLN</td>
+        </tr>
+        <tr>
+          <td>type</td>
+          <td>Match cards based on their card type.</td>
+          <td>type:land</td>
+        </tr>
+        <tr>
+          <td>usd</td>
+          <td>Match cards based on their current value/price (per Scryfall)</td>
+          <td>usd:&lt;5.25</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Several of these typed expressions are so common that VCB has
+    either a shorthand or keyword notation for them.</p>
+
+    <table class="shorthand">
+      <thead><tr>
+        <th>Shorthand</th>
+        <th>Equivalent to</th>
+        <th>Example</th>
+      </tr></thead>
+
+      <tbody>
+        <tr>
+          <td>=X</td>
+          <td>rarity:X</td>
+          <td><kbd>=mythic</kbd> will find all Mythic Rares.</td>
+        </tr>
+        <tr>
+          <td>@X</td>
+          <td>color:X</td>
+          <td><kbd>@WB</kbd> will find dual white/black cards.</td>
+        </tr>
+        <tr>
+          <td>+X</td>
+          <td>oracle:X</td>
+          <td><kbd>+draw</kbd> finds cards that have the word "draw" in their rules text.</td>
+        </tr>
+        <tr>
+          <td>owned</td>
+          <td>own:1+</td>
+          <td><kbd>owned</kbd> finds all of your cards.</td>
+        </tr>
+        <tr>
+          <td>have</td>
+          <td>own:1+</td>
+          <td><kbd>have</kbd> is an alias for <kbd>owned</kbd>.</td>
+        </tr>
+        <tr>
+          <td>need</td>
+          <td>own:0</td>
+          <td><kbd>need</kbd> finds all of the cards you don't own (which you clearly <strong>need</strong>).</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="note"><span>Note:</span>
+    if you want to match keywords as a name, for instance if you were
+    looking for <em>Hour of Need</em>, you can use the <kbd>name:</kbd> expression, as in
+    <kbd>name:"Need"</kbd>.  (Due to a technical limitation that should be fixed soon,
+    you do have to quote the value, which means capitalization matters!)</p>
+
+    <p>Finally, for anything but the simplest queries, you're going to want to
+    combine these expressions into larger aggregate expressions.  For these, you
+    need the <em>logical operators</em>: <kbd>and</kbd>, <kbd>or</kbd>, and <kbd>not</kbd>.</p>
+
+    <p><kbd>and</kbd> works by checking both sub-expressions; if those both match, the
+    expression as a whole is a match.  <kbd>or</kbd> considers the whole expression a
+    match if <em>either</em> sub-expression is a match.  This mirrors how we use the
+    words "and" / "or" in English.</p>
+
+    <p>For example, there are a lot of legendary creatures.  To build a blue / black
+    commander (EDH) deck,  I need to find an interesting legendary creature who
+    is both blue and black.  That's two expressions, stitched together with an
+    <kbd>and</kbd>:</p>
+
+    <pre><code class="query">type:legendary and color:UB</code></pre>
+
+    <p>The <kbd>not</kbd> operator lets you negate an assertion.  Commander doesn't
+    generally allow Planeswalkers to serve as Commanders, and since most walkers
+    are listed as "Legendary Planeswalkers", I need to amend my query to
+    exclude all mention of the sub-type:</p>
+
+    <pre><code class="query">type:legendary and color:UB and not type:planeswalker</code></pre>
+
+    <p>Much better.</p>
+
+    <p>In the interest of reducing keystrokes, <kbd>!</kbd> is an alias of <kbd>not</kbd>; forgive
+    me, this is my programmer roots showing.  A nice compact query that takes
+    advantage of all this terseness is:</p>
+
+    <pre><code class="query">owned and !=common</code></pre>
+
+    <p>... which finds all of the uncommons, rares, and mythic rares in your
+    collection.</p>
+
+    <p>Finally, we need to talk about precedence.  Whenever you chain multiple
+    <kbd>and</kbd>'s and <kbd>or</kbd>'s together, you need to consider what you actually mean.
+    For example:</p>
+
+    <pre><code class="query">owned and =rare or =mythic</code></pre>
+
+    <p>The <em>intent</em> behind this query was to find all my rares.  Unfortunately, the
+    precedence rules of the query language <em>bind</em> the <kbd>owned</kbd> and <kbd>=rare</kbd>
+    sub-expressions together, and then checks the <kbd>=mythic</kbd> status.  The upshot
+    is that what I actually get is all of my owned rares, and every mythic rare
+    ever printed.</p>
+
+    <p>I could reword the query to be:</p>
+
+    <pre><code class="query">=rare or =mythic and owned</code></pre>
+
+    <p>(in general, <kbd>and owned</kbd> on the end will almost always do what you want)</p>
+
+    <p>Luckily, you can use parentheses to enforce the precedence you want, without
+    having to reword:</p>
+
+    <pre><code class="query">owned and (=mythic or =rare)</code></pre>
+
+    <p>This causes the rarity expressions to be evaluated, and then checked against
+    ownership status.  Just like math class!</p>
+
+    <h2>A Query Cookbook</h2>
+
+    <p>If you prefer to learn by doing, or just want to try some things
+    out, this is the section for you.</p>
+
+    <p><strong>What do I own from <em>Dominaria</em>?</strong></p>
+
+    <pre><code class="query">set:DOM and owned</code></pre>
+
+    <p><strong>What red playsets do I own?</strong> (i.e. for standard deck
+    construction purposes)</p>
+
+    <pre><code class="query">@R and own:4+</code></pre>
+
+    <p><strong>What taplands exist?</strong></p>
+
+    <pre><code class="query">type:Land and +tapped</code></pre>
+
+    <p><strong>I would like to drool over Zendikar lands please</strong></p>
+
+    <pre><code class="query">set:ZEN or set:BFZ and type:land and type:basic</code></pre>
+
+    <p>or (if you like parentheticals (as I do)):</p>
+
+    <pre><code class="query">(set:ZEN or set:BFZ) and (type:land and type:basic)</code></pre>
+
+    <p><strong>Oh man do I love a good life transfer card!</strong></p>
+
+    <pre><code class="query">+gains? and +loses?</code></pre>
   </div>
   <div class="edit-collection">
     <h2>My Collection</h2><form>

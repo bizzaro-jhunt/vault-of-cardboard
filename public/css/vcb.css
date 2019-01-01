@@ -315,6 +315,12 @@ header nav a {
   text-decoration: none;
   color: inherit;
 }
+header nav li nav li.separator {
+  height: 1px;
+  background-color: #fff;
+  margin: 8px 0;
+  opacity: 0.4;
+}
 header nav li nav li a {
   padding: 12px 24px;
   display: block;
@@ -496,6 +502,7 @@ header input {
 #main > div { display: none; }
 body.landing #main > div.landing,
 body.loading #main > div.loading,
+body.docs    #main > div.docs,
 body.edit    #main > div.edit-collection,
 body.search  #main > div.search,
 body.login   #main > div.login  { display: block; }
@@ -555,4 +562,75 @@ body.login {
 }
 .oops ul li.suppress {
   display: none;
+}
+
+
+.prose {
+  min-width: 50vw;
+  max-width: 80vw;
+  margin: 80px auto;
+  font-family: sans-serif;
+  font-size: 14pt;
+  line-height: 1.4em;
+}
+
+.prose h1 {
+  font-size: 24pt;
+  font-weight: bold;
+  margin: 3em 0 0.6em 0;
+}
+.prose h2 {
+  font-size: 21pt;
+  font-weight: bold;
+  margin: 3em 0 0.6em 0;
+}
+
+.prose p {
+  max-width: 40em;
+  margin: 1.4em 0;
+}
+
+.prose em, .prose i { font-style: italic; }
+.prose strong, .prose b { font-weight: bold; }
+
+.docs kbd,
+.docs pre code {
+  color: #fff;
+  background-color: #555;
+  border-radius: 5px;
+  padding: 4px 8px;
+}
+.docs kbd {
+  height: 1.2em;
+  vertical-align: middle;
+}
+.docs pre code {
+  padding: 1em;
+  display: block;
+  font-family: monospace;
+}
+
+.prose table thead th {
+  font-weight: bold;
+  color: #112;
+  border-bottom: 1px solid #11112233;
+  font-size: 90%;
+  padding: 8px 32px 2px 8px;
+  text-align: left;
+}
+.prose table tbody td {
+  padding: 8px 8px 4px 8px;
+}
+.prose table tbody tr:nth-child(2n) {
+  background-color: #00000008;
+}
+.prose table tbody tr:hover {
+  background-color: #00000018;
+}
+
+.docs table.keywords tbody tr td:nth-child(1),
+.docs table.shorthand tbody tr td:nth-child(1),
+.docs table.shorthand tbody tr td:nth-child(2) {
+  font-family: monospace;
+  color: darkblue;
 }
