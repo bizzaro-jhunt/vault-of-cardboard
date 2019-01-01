@@ -100,7 +100,7 @@ In the interest of reducing keystrokes, `!` is an alias of `not`; forgive
 me, this is my programmer roots showing.  A nice compact query that takes
 advantage of all this terseness is:
 
-    owned && !=common
+    owned and !=common
 
 ... which finds all of the uncommons, rares, and mythic rares in your
 collection.
