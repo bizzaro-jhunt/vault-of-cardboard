@@ -16,6 +16,7 @@
     <li><a>Search</a>
         <nav>
           <li><a href="#!/docs">How do I search?</a></li>
+          <li><a href="#!/sets">What sets are there?</a></li>
           <li class="separator"></li>
           <li class="if-authed"><a href="#!/q/owned">My Collection</a></li>
           <li class="if-authed"><a href="#!/q/own:2+">My Duplicates</a></li>
@@ -123,6 +124,23 @@
         <li>&copy; 2018 James Hunt</li>
       </nav>
     </div>
+  </div>
+  <div class="sets prose">
+    <h1>Currently Known Magic: the Gathering Sets</h1>
+    <p>These are all the M:tG sets that Vault of Cardboard knows about.
+    Most of these should have images.  If a set is missing, or missing its images,
+    please let us know!</p>
+    <table class="sets">
+      <thead><tr>
+        <th></th>
+        <th>Code</th>
+        <th>Name</th>
+        <th>Release Date</th>
+        <th>Size</th>
+      </tr></thead>
+      <tbody>
+      </tbody>
+    </table>
   </div>
   <div class="docs prose">
     <h1>Vault of Cardboard Query Language</h1>
@@ -388,6 +406,7 @@ function colorize(s) {
 $(function () {
   var $BASE  = undefined,
       $CARDS = undefined,
+      $SETS  = undefined,
       $INDEX = {};
 
   console.log('retrieving personal details...');
@@ -408,7 +427,7 @@ $(function () {
     type: 'GET',
     url:  '/cards.json',
     success: function (data) {
-      console.log('card set data retrieved successfully!');
+      console.log('card data retrieved successfully!');
 
       $BASE  = data;
       $INDEX = {};
@@ -426,6 +445,24 @@ $(function () {
         console.log('chaining to the oncard function...');
         var fn = $ONCARD;
         $ONCARD = undefined;
+        fn.call();
+      }
+    }
+  });
+
+  var $ONSET = undefined;
+  console.log('retrieving full set data (/sets.json)...');
+  $.ajax({
+    type: 'GET',
+    url:  '/sets.json',
+    success: function (data) {
+      console.log('set data retrieved successfully!');
+
+      $SETS = data;
+      if ($ONSET) {
+        console.log('chaining to the onset function...');
+        var fn = $ONSET;
+        $ONSET = undefined;
         fn.call();
       }
     }
@@ -584,6 +621,27 @@ $(function () {
 
   function goto(sub) {
     console.log('nav to ['+sub+']');
+    if (sub == "sets") {
+      var thunk = function () {
+        var $t = $('#main > .sets table tbody');
+        $t.empty();
+        $.each($SETS, function (i, e) {
+          $t.append($('<tr>'+
+              '<td><span class="ss ss-'+e.code.toLowerCase()+'"></span></td>'+
+              '<td>'+e.code+'</td>'+
+              '<td>'+e.name+'</td>'+
+              '<td>'+e.release+'</td>'+
+              '<td><a href="#!/q/set:'+e.code+'">'+e.size+'</a></td>'+
+            '</tr>'));
+        });
+      };
+      if (!$SETS) {
+        $ONSET = thunk;
+      } else {
+        thunk();
+      }
+    }
+
     switchTo(sub.replace(/\/.*/, ''));
 
     if (sub == "logout") {

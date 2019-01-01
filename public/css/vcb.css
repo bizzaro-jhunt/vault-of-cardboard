@@ -503,6 +503,7 @@ header input {
 body.landing #main > div.landing,
 body.loading #main > div.loading,
 body.docs    #main > div.docs,
+body.sets    #main > div.sets,
 body.edit    #main > div.edit-collection,
 body.search  #main > div.search,
 body.login   #main > div.login  { display: block; }
@@ -627,10 +628,23 @@ body.login {
 .prose table tbody tr:hover {
   background-color: #00000018;
 }
+.prose table tbody td a {
+  color: #448;
+  text-decoration: none;
+  border-bottom: 1px dotted #888;
+}
 
 .docs table.keywords tbody tr td:nth-child(1),
 .docs table.shorthand tbody tr td:nth-child(1),
 .docs table.shorthand tbody tr td:nth-child(2) {
   font-family: monospace;
   color: darkblue;
+}
+
+.sets table.sets {
+  min-width: 80%;
+}
+.sets table.sets tbody tr td:nth-child(2) {
+  font-size: 70%;
+  color: #00000088;
 }

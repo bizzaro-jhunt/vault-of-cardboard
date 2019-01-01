@@ -649,6 +649,27 @@ get '/cards.json' => sub {
 	send_file datpath("cards.json"), system_path => 1;
 };
 
+get '/sets.json' => sub {
+	# for now, this is a live database query
+	return [
+		map {
+			{
+				code    => $_->code,
+				name    => $_->name,
+				release => $_->release,
+				size    => $_->get_column('num_cards'),
+			}
+		} M('Set')->search(
+			{},
+			{
+				join      => 'prints',
+				distinct  => 1,
+				'+select' => [{ count => 'prints.id', -as => 'num_cards' }],
+			},
+		)
+	];
+};
+
 # recache global /cards.json file
 post '/v/admin/recache' => sub {
 	admin_authn or return admin_authn_failed;
