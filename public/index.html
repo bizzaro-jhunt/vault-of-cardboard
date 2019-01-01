@@ -8,45 +8,118 @@
 <link rel="stylesheet" type="text/css" href="/css/vcb.css?v=1" />
 <link rel="stylesheet" type="text/css" href="/login.css" />
 </head>
-<body>
+<body class="signed-in">
 <header>
   <h1>Vault of Cardboard</h1>
   <input name="q" placeholder="i.e.: Ral color:RU +draw" autocomplete="off">
   <nav>
-    <li><a href="" rel="mycol">Import</a></li>
-    <li>Search
+    <li><a>Search</a>
         <nav>
-          <li><a href="q:owned">My Collection</a></li>
-          <li><a href="q:own:2+">My Duplicates</a></li>
-          <li><a href="q:own:4+">My Playsets</a></li>
-          <li><a href="q:type:planeswalker">Planeswalkers</a></li>
-          <li><a href="q:=mythic">Mythics</a></li>
-          <li><a href="q:+gains? and +loses?">Life Gain + Loss</a></li>
-          <li><a href="q:type:land and +damage">Pain Lands</a></li>
-          <li><a href="q:set:GRN">Guilds of Ravnica (GRN)</a></li>
-          <li><a href="q:set:DOM">Dominaria (DOM)</a></li>
-          <li><a href="q:set:XLN">Explorers of Ixalan (XLN)</a></li>
-          <li><a href="q:set:RIX">Rivals of Ixalan (RIX)</a></li>
+          <li><a class="if-authed" href="#!/q/owned">My Collection</a></li>
+          <li><a class="if-authed" href="#!/q/own:2+">My Duplicates</a></li>
+          <li><a class="if-authed" href="#!/q/own:4+">My Playsets</a></li>
+
+          <li><a href="#!/q/type:planeswalker">Planeswalkers</a></li>
+          <li><a href="#!/q/=mythic">Mythics</a></li>
+          <li><a href="#!/q/+gains? and +loses?">Life Gain + Loss</a></li>
+          <li><a href="#!/q/type:land and +damage">Pain Lands</a></li>
+          <li><a href="#!/q/set:GRN">Guilds of Ravnica (GRN)</a></li>
+          <li><a href="#!/q/set:DOM">Dominaria (DOM)</a></li>
+          <li><a href="#!/q/set:XLN">Explorers of Ixalan (XLN)</a></li>
+          <li><a href="#!/q/set:RIX">Rivals of Ixalan (RIX)</a></li>
+        </nav></li>
+    <li class="if-not-authed"><a href="#!/login" rel="login">Sign in</a></li>
+    <li class="if-authed"><a class="-username">Member</a>
+        <nav>
+          <li><a href="#!/collection" rel="mycol">My Collection</a></li>
+          <li><a href="#!/logout" rel="logout">Sign out</a></li>
         </nav></li>
   </nav>
 </header>
 
 <div id="main">
   <div class="landing">
+    <div class="band header">
+      <h1>Welcome to <span>Vault of Cardboard</span></h1>
+    </div>
+    <div class="band search">
+      <input class="focus" name="q" autocomplete="off" placeholder=" Search the Vault...">
+    </div>
+    <div class="band features">
+      <div><span class="i-search"></span>
+           <h2>Search</h2>
+           <p>The Vault has visuals for every MtG set ever printed, and a fancy
+              query language to make it easier to find just the card you're after.</p>
+      </div>
+      <div><span class="i-track"></span>
+           <h2>Track</h2>
+           <p>Import your inventory into the Vault, and keep track of where your cards
+              are, what decks they're in, and what you're proxying in casual.</p>
+      </div>
+      <div><span class="i-build"></span>
+           <h2>Build</h2>
+           <p>To build a strong deck, you need good cards.  Vault of Cardboard lets you
+              search through printed cards based on their rules text, so you can find
+              that perfect synergy.</p>
+      </div>
+    </div>
+    <div class="band login">
+      <div>
+        <h1>Want an Account?</h1>
+        <p>I appreciate the enthusiasm, I really do.  But right now, Vault of Cardboard is mostly a personal project that I wanted to show to a couple of friends.</p>
+        <p>It's got lots of bugs.  Like, lots and <em>lots</em> of them.  Also, it's missing features.
+        Also, also, when those features get implemented, <em>they</em> will have bugs.</p>
+        <p>Wouldn't you rather wait until those get sussed out?</p>
+        <p>Okay, alright.  If you insist, I suppose it wouldn't hurt to take down some
+        contact information and drop you a line when the site goes <em>open beta</em>.</p>
+        <form id="signup">
+          <input type="text" name="email" placeholder=" Your Email..." /><button type="submit">&rarr;</button>
+        </form>
+      </div>
+      <form id="login">
+        <h1>Have an Account?</h1>
+        <div class="oops"></div>
+        <input type="text"     name="username" placeholder="username">
+        <input type="password" name="password" placeholder="password">
+        <button type="submit">Enter</button>
+      </form>
+    </div>
+    <div class="band footer">
+      <nav>
+        <li>&copy; 2018 James Hunt</li>
+      </nav>
+    </div>
   </div>
   <div class="loading">
     <h1>Loading...</h1>
     <p class="marquee"></p>
   </div>
   <div class="login">
-    <div><form>
-      <h2>Welcome to the Vault</h2>
-      <div class="oops"></div>
-      <p><label for="username">Account</label>
-      <input type="text" name="username"></p>
-      <p><label for="password">Password</label>
-      <input type="password" name="password"></p>
-      <button type="submit">Enter</button></form>
+    <div class="band login">
+      <div>
+        <h1>Want an Account?</h1>
+        <p>I appreciate the enthusiasm, I really do.  But right now, Vault of Cardboard is mostly a personal project that I wanted to show to a couple of friends.</p>
+        <p>It's got lots of bugs.  Like, lots and <em>lots</em> of them.  Also, it's missing features.
+        Also, also, when those features get implemented, <em>they</em> will have bugs.</p>
+        <p>Wouldn't you rather wait until those get sussed out?</p>
+        <p>Okay, alright.  If you insist, I suppose it wouldn't hurt to take down some
+        contact information and drop you a line when the site goes <em>open beta</em>.</p>
+        <form id="signup">
+          <input type="text" name="email" placeholder=" Your Email..." /><button type="submit">&rarr;</button>
+        </form>
+      </div>
+      <form id="login">
+        <h1>Have an Account?</h1>
+        <div class="oops"></div>
+        <input type="text"     name="username" placeholder="username">
+        <input type="password" name="password" placeholder="password">
+        <button type="submit">Enter</button>
+      </form>
+    </div>
+    <div class="band footer">
+      <nav>
+        <li>&copy; 2018 James Hunt</li>
+      </nav>
     </div>
   </div>
   <div class="edit-collection">
@@ -94,6 +167,18 @@ $(function () {
   var $BASE  = undefined,
       $CARDS = undefined,
       $INDEX = {};
+
+  console.log('retrieving personal details...');
+  $.ajax({
+    type: 'GET',
+    url:  '/v/whoami',
+    success: function (data) {
+      if (data.id) {
+        $('.-username').html(data.display);
+        $(document.body).attr('data-user-id', data.id);
+      }
+    }
+  });
 
   var $ONCARD = undefined;
   console.log('retrieving full card set data (/cards.json)...');
@@ -272,12 +357,93 @@ $(function () {
     $(document.body).attr('class', '').addClass(page).addClass('i'+parseInt(Math.random() * (275 - 250) + 250).toString());
     loadertain();
   }
-  switchTo('login');
+  switchTo('landing');
+  $('.focus').focus();
+
+  function goto(sub) {
+    console.log('nav to ['+sub+']');
+    switchTo(sub.replace(/\/.*/, ''));
+
+    if (sub == "logout") {
+      $.ajax({
+        type: 'POST',
+        url:  '/v/logout',
+        complete: function () {
+          document.cookie = 'vcb_sesh=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+          document.location.href = document.location.href.replace(/#.*/, '');
+        }
+      });
+      return;
+    }
+
+    if (sub.match(/^q\/./)) {
+      console.log(sub, sub.replace(/^q\//, ""));
+      var q = decodeURIComponent(sub.replace(/^q\//, ''));
+      console.log('search requested, for (%s)', q);
+      if (!$BASE) {
+        console.log('BASE collection not yet loaded; registering $ONCARD event handler...');
+        $ONCARD = function () {
+          console.log('$ONCARD handler fired... refreshing collection and then proceeded with search for %s', q);
+          refreshCollection(function () { search(q); });
+        };
+        switchTo('loading');
+        return;
+      }
+
+      switchTo('search');
+      if (!$CARDS) { $CARDS = $BASE; }
+
+      $('.results').empty();
+      $('.meta-results').css({ visibility: 'hidden' });
+      $('.oops').hide();
+
+      var query, n = 50000;
+      try {
+        query = Query.parse(q);
+      } catch (e) {
+        $('.search .oops').html(q+': '+e.toString()).fadeIn();
+        return;
+      }
+
+      var found = [];
+      for (var set in $CARDS) {
+        for (var i = 0; i < $CARDS[set].length; i++) {
+          var card = $CARDS[set][i];
+          if (query.match(card)) {
+            found.push(card);
+            n--;
+            if (n == 0) { break; }
+          }
+        }
+        if (n == 0) { break; }
+      }
+      found = found.sort(function (a, b) {
+        if (a.name > b.name) { return 1; }
+        if (a.name < b.name) { return -1; }
+        return 0;
+      });
+      var max = 400;
+      for (var i = 0; i < found.length && i < max; i++) {
+        $('.results').append('<span data-own="'+found[i].owned.toString()+'">'+
+                                cardback()+cardface(found[i])+
+                             '</span>');
+      }
+      $('.meta-results .count').html(found.length);
+      $('.meta-results').css({ visibility: 'visible' });
+      return;
+    }
+  }
+
+  $(window).on('hashchange', function (event) {
+    if (document.location.hash.match(/^#!/)) {
+      goto(document.location.hash.replace(/^#!\/?/, ''));
+    }
+  }).trigger('hashchange');
 
   $(document.body)
-  .on('click', '.login button', function (event) {
+  .on('submit', 'form#login', function (event) {
     event.preventDefault();
-    var $f = $(event.target).closest('.login');
+    var $f = $(event.target);
     $('.oops').hide();
 
     $.ajax({
@@ -290,6 +456,8 @@ $(function () {
       success: function (data) {
         if (data.ok) {
           document.cookie = 'vcb_sesh='+data.user.session+';max-age=7776000;samesite=strict';
+          $(document.body).attr('data-user-id', data.user.id);
+          $('.-username').html(data.user.display);
           refreshCollection();
           switchTo('search');
 
@@ -354,57 +522,14 @@ $(function () {
   })
   .on('change', 'input[name="q"]', function (event) {
     event.preventDefault();
-    console.log('search requested, for (%s)', q);
-    if (!$BASE) {
-      console.log('BASE collection not yet loaded; registering $ONCARD event handler...');
-      $ONCARD = function () {
-        console.log('$ONCARD handler fired... refreshing collection and then proceeded with search for %s', q);
-        refreshCollection(function () { search(q); });
-      };
-      switchTo('loading');
-      return;
+    var q = $(event.target).val();
+    $('input[name="q"]').each(function (i,e) { $(e).val(q); });
+    var dest = '#!/q/'+encodeURIComponent(q);
+    if (document.location.hash == dest) {
+      $(window).trigger('hashchange');
+    } else {
+      document.location.hash = dest;
     }
-
-    switchTo('search');
-    if (!$CARDS) { $CARDS = $BASE; }
-
-    $('.results').empty();
-    $('.meta-results').css({ visibility: 'hidden' });
-    $('.oops').hide();
-
-    var q, n = 50000;
-    try {
-      q = Query.parse($(event.target).val());
-    } catch (e) {
-      $('.search .oops').html($(event.target).val()+': '+e.toString()).fadeIn();
-      return;
-    }
-
-    var found = [];
-    for (var set in $CARDS) {
-      for (var i = 0; i < $CARDS[set].length; i++) {
-        var card = $CARDS[set][i];
-        if (q.match(card)) {
-          found.push(card);
-          n--;
-          if (n == 0) { break; }
-        }
-      }
-      if (n == 0) { break; }
-    }
-    found = found.sort(function (a, b) {
-      if (a.name > b.name) { return 1; }
-      if (a.name < b.name) { return -1; }
-      return 0;
-    });
-    var max = 400;
-    for (var i = 0; i < found.length && i < max; i++) {
-      $('.results').append('<span data-own="'+found[i].owned.toString()+'">'+
-                              cardback()+cardface(found[i])+
-                           '</span>');
-    }
-    $('.meta-results .count').html(found.length);
-    $('.meta-results').css({ visibility: 'visible' });
   })
   .on('click', '.results .face img', function (event) {
     var id   = $(event.target).closest('[data-id]').attr('data-id'),
@@ -431,6 +556,7 @@ $(function () {
               '<li>control</li>'+
             '</ul>'+
             '<ul class="info">'+
+              '<li>'+card.set.name+' ('+card.set.code+')</li>'+
               '<li>#'+card.number+'/'+card.set.total+'</li>'+
               '<li>'+colorize(card.color)+'</li>'+
               '<li><strong>CMC:</strong> '+card.cmc+'</li>'+
@@ -460,10 +586,6 @@ $(function () {
     event.preventDefault();
     $('.modal-bg, .modal-fg').hide();
   })
-  .on('click', '[href^="q:"]', function (event) {
-    event.preventDefault();
-    search($(event.target).closest('[href^="q:"]').attr('href').replace(/^q:/, ''));
-  });
 });
 </script>
 </body>

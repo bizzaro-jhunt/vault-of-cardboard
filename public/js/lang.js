@@ -320,7 +320,7 @@ Query.prototype.match = function (card) {
   case 'OWN':
     return this.a.call(card, card.owned);
   case 'USD':
-    return this.a.call(card, card.usd);
+    return this.a.call(card, card.price);
   case 'CMC':
     return this.a.call(card, card.cmc);
 

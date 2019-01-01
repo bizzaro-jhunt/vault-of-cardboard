@@ -44,6 +44,227 @@ table {
 /**/
 body {
 }
+
+body .if-not-authed, body[data-user-id] .if-authed     { display: block; }
+body .if-authed,     body[data-user-id] .if-not-authed { display: none; }
+
+body.landing {
+}
+body {
+  min-height: 100vh;
+}
+body.landing header { display: none; }
+body.landing {
+  background-image: url(/img/angel.jpg);
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: 50% 50%;
+}
+body.landing .band {
+  width: 100vw;
+  position: relative;
+}
+body.landing .band.header {
+  height: 30vh;
+  background-color: rgba(0,0,0,0.8);
+  color: #fff;
+}
+body.landing .band.header h1 {
+  font-family: sans-serif;
+  font-size: 36pt;
+  text-align: center;
+  line-height: 30vh;
+}
+body.landing .band.header h1 span {
+  color: yellow;
+}
+body.landing .band.search {
+  height: 80vh;
+}
+body.landing .search input {
+  position: absolute;
+  top: 20vh;
+  left: 20vw;
+  width: 60vw;
+  font-size: 24pt;
+  background-color: rgba(0,0,0,0.8);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  color: #fff;
+}
+body.landing .search > input::placeholder { color: yellow; opacity: 0.9; }
+
+body.landing .features {
+  min-height: 60vh;
+  background-color: #5A0089;
+  display: flex;
+}
+body.landing .features > div {
+  width: 33.3333%;
+  background-color: rgba(0,0,0,0.5);
+  color: #fff;
+  font-family: sans-serif;
+}
+body.landing .features > div:nth-child(2n) {
+  background-color: rgba(0,0,0,0.35);
+}
+body.landing .features > div span {
+  height: 15vw;
+  width: 15vw;
+  display: block;
+  background-color: #fff;
+  border-radius: 100%;
+  margin: 4vw auto;
+}
+body.landing .features > div h2 {
+  font-size: 24pt;
+  font-weight: lighter;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 2pt;
+}
+body.landing .features > div p {
+  line-height: 1.5em;
+  width: 70%;
+  margin: 2em auto;
+  text-align: justify;
+}
+
+.band.login {
+  min-height: 60vh;
+  display: flex;
+  font-family: sans-serif;
+}
+.band.login > div,
+.band.login > form {
+  padding: 40px;
+  box-sizing: border-box;
+}
+.band.login > div {
+  width: 40vw;
+  background-color: rgba(0,0,0,0.8);
+  color: #fff;
+}
+.band.login h1 {
+  font-size: 24pt;
+  font-weight: lighter;
+  line-height: 48pt;
+}
+.band.login > div p {
+  line-height: 1.2em;
+  text-align: justify;
+  margin: 1em 0;
+}
+.band.login > form {
+  width: 60vw;
+  background-color: rgba(255,255,255,0.7);
+}
+.band.login .oops {
+  margin: 0;
+  width: 30vw;
+  box-sizing: border-box;
+}
+.band.login > form input {
+  font-size: 24pt;
+  background-color: rgba(0,0,0,0.8);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  color: #fff;
+
+  width: 30vw;
+  margin: 0.5em 0;
+  display: block;
+  box-sizing: border-box;
+}
+.band.login > form button {
+  font-size: 18pt;
+  background-color: rgba(0,0,0,0.8);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  color: #fff;
+
+  margin: 0.5em 0;
+  display: block;
+}
+.band.login > div form input {
+  outline: 0;
+  height: 42px;
+  background: #fff;
+  border: 1px solid black;
+  border-radius: 8px 0 0 8px;
+  font-size: 14pt;
+  margin: 0;
+  box-sizing: border-box;
+  padding-left: 0.5ex;
+}
+.band.login > div form button {
+  font-size: 14pt;
+  border: none;
+  border-radius: 0 8px 8px 0;
+  height: 40px;
+  margin: 0;
+  box-sizing: border-box;
+  background: paleturquoise;
+  color: #000;
+  font-weight: bold;
+}
+
+.band.footer {
+  min-height: 30vh;
+  background-color: #fff;
+  color: #777;
+}
+.band.footer nav {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  line-height: 30vh;
+  list-style: none;
+}
+.band.footer nav li {
+  margin: 0 0.75em;
+}
+.band.footer nav li a {
+  text-decoration: none;
+  color: inherit;
+}
+.band.footer nav li a:hover {
+  border-bottom: 1px dotted slateblue;
+}
+
+/* for chrome */
+button:focus, input:focus { outline: 0; }
+
+body.landing .landing footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  background-color: rgba(255,255,255,0.6);
+}
+body.landing .landing footer nav {
+  display: flex;
+  justify-content: center;
+  list-style: none;
+}
+body.landing .landing footer nav li {
+  margin: 0.7em 1em;
+  font-family: sans-serif;
+  font-size: 9pt;
+  color: #777;
+}
+body.landing .landing footer nav li a {
+  text-decoration: none;
+  font-weight: bold;
+  color: darkblue;
+  border-bottom: 1px dotted darkblue;
+}
+
 header {
   background-color: #000;
   color: #fff;
@@ -71,11 +292,13 @@ header > nav {
 }
 header > nav > li {
   align-self: flex-end;
-  padding: 16px;
 }
 header > nav > li:hover {
     background-color: forestgreen;
-    cursor: pointer;
+}
+header > nav > li > a {
+  display: block;
+  padding: 16px;
 }
 header li nav {
   display: none;
@@ -267,61 +490,6 @@ header input {
   bordeR: none;
   border-radius: 8px;
   padding: 4pt 12pt;
-}
-
-div.login {
-
-}
-div.login > div {
-  width: 60vw;
-  margin: 5vh auto;
-  background-color: #fff;
-  box-shadow: 2px 3px 17px #000;
-  border-radius: 8pt;
-  overflow: hidden;
-}
-div.login > div h2 {
-  background-color: #000;
-  color: lightblue;
-  padding: 1em;
-  text-align: center;
-  font-family: sans-serif;
-}
-div.login > div input {
-  width: 80%;
-  border: 2px solid #555;
-  border-width: 0 0 2px 0;
-  box-sizing: border-box;
-  margin: 0 auto;
-  display: block;
-  padding: 6pt 2pt;
-  font-size: 15pt;
-}
-div.login > div input:focus {
-  border-color: darkblue;
-}
-div.login > div label {
-  width: 80%;
-  display: block;
-  margin: 0 auto;
-  font-size: 11pt;
-  font-family: sans-serif;
-  color: #888;
-  font-variant: small-caps;
-}
-div.login > div p {
-  margin: 3em 0;
-}
-div.login > div button {
-  cursor: pointer;
-  margin: 1em 10% 1em auto;
-  display: block;
-  font-size: 16pt;
-  border: none;
-  border-radius: 8pt;
-  padding: 4pt 16pt;
-  background-color: #111;
-  color: #fff;
 }
 
 
