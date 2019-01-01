@@ -1,6 +1,8 @@
 /dat
 /cache
-/public/img
+/public/img/cards
+/public/img/login
+/public/img/ingest
 x.*
 *.voc
 

@@ -12,7 +12,8 @@ RUN apt-get update \
           Digest::Bcrypt \
           Data::Entropy::Algorithms \
           LWP::UserAgent \
-          LWP::Protocol::https
+          LWP::Protocol::https \
+          Text::CSV
 
 COPY public    /app/public
 COPY lib       /app/lib
