@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 use Digest;
+use Getopt::Long;
 use Data::Entropy::Algorithms qw/rand_bits/;
 use LWP::UserAgent            qw//;
 use JSON::PP                  qw/decode_json
@@ -45,6 +46,10 @@ sub find_user {
 	return undef;
 }
 
+my %OPT;
+GetOptions(\%OPT, qw/
+	images
+/);
 if (!@ARGV) {
 	print STDERR "USAGE: vcb COMMAND args...\n";
 	exit 0;
@@ -74,7 +79,7 @@ if ($command eq 'ingest') {
 
 	for my $set (@ARGV) {
 		print "ingesting set $set...";
-		my $res = $ua->post("$VCB_API/v/admin/sets/$set/ingest");
+		my $res = $ua->post("$VCB_API/v/admin/sets/$set/ingest".($OPT{images} ? '?faces=y' : ''));
 		if (!$res->is_success) {
 			print "FAILED!\n";
 			print $res->decoded_content;

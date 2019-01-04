@@ -13,6 +13,7 @@ RUN apt-get update \
           Data::Entropy::Algorithms \
           LWP::UserAgent \
           LWP::Protocol::https \
+          Net::Amazon::S3 \
           Text::CSV
 
 COPY public    /app/public

@@ -8,6 +8,7 @@ use Data::UUID;
 use File::Find;
 use Cwd qw/cwd/;
 use MIME::Base64 qw/decode_base64/;
+use Net::Amazon::S3;
 
 use VCB::Format;
 use VCB::Format::Standard;
@@ -18,11 +19,17 @@ use Dancer2::Plugin::DBIC;
 
 set serializer => 'JSON';
 set static_handler => true;
-config->{vcb}{imgroot}   ||= '/img';
-config->{vcb}{datroot}   ||= cwd.'/dat';
-config->{vcb}{cacheroot} ||= cwd.'/cache';
+config->{vcb}{imgroot}    ||= '/img';
+config->{vcb}{datroot}    ||= cwd.'/dat';
+config->{vcb}{cacheroot}  ||= cwd.'/cache';
+config->{vcb}{s3}{aki}    ||= $ENV{S3_AKI};
+config->{vcb}{s3}{key}    ||= $ENV{S3_KEY};
+config->{vcb}{s3}{bucket} ||= $ENV{S3_BUCKET} || 'vault-of-cardboard';
+config->{vcb}{s3}{region} ||= $ENV{S3_REGION} || 'us-east-1';
 
-for my $var (keys %ENV) {
+delete $ENV{S3_KEY}; # potentially sensitive
+
+for my $var (sort keys %ENV) {
 	print STDERR "ENV> $var = '$ENV{$var}'\n";
 }
 
@@ -638,6 +645,65 @@ post '/v/admin/sets/:code/ingest' => sub {
 	push @ids, $_ for keys %existing;
 	$s->prints->search({ id => \@ids })->delete
 		if @ids;
+
+	if (!!params->{faces}) {
+		my $aki = config->{vcb}{s3}{aki};
+		my $key = config->{vcb}{s3}{key};
+		if (!$aki or !$key) {
+			warn "card images refresh requested for set [$code]; but no S3 configuration found!\n";
+			return { "error" => "Set refreshed from upstream data; but no S3 configuration was found for image refresh." };
+		}
+
+		my $pid = fork;
+		if ($pid < 0) {
+			warn "card image refresh requested for set [$code]; but background process fork failed!\n";
+			return { "error" => "Set refreshed from upstream data; but the background process for image refresh failed to fork." };
+		}
+
+		if ($pid == 0) { # in child
+			warn "connecting to s3 as $aki\n";
+			my $s3 = Net::Amazon::S3->new({
+				aws_access_key_id     => $aki,
+				aws_secret_access_key => $key,
+			});
+
+			my $bucket = $s3->bucket(config->{vcb}{s3}{bucket});
+			if (!$bucket || !$bucket->get_acl) {
+				warn "card images refresh requested for set [$code]; but bucket '".config->{vcb}{s3}{bucket}."' not found!\n";
+				exit(1);
+			};
+
+			my $ua = LWP::UserAgent->new(
+				agent => 'mtgc-alpha/0.1',
+				ssl_opts => { verify_hostname => 0 },
+			);
+
+			for my $card (@{$set->{cards}}) {
+				my $uri = sprintf("cards/%s/%s-%s.jpg", uc($code), uc($code), $card->{id});
+
+				if ($bucket->head_key($uri)) {
+					$bucket->set_acl({ acl_short => 'public-read', key => $uri });
+					next;
+				}
+				warn "backfilling image for [$code] $card->{name} ($card->{id})...\n";
+
+				if (!$card->{image_uris}{large}) {
+					warn "unable to find large image url for [$code] $card->{name} in card metadata!\n";
+					next;
+				}
+				my $res = $ua->get($card->{image_uris}{large});
+				if (!$res->is_success) {
+					warn "failed to retrieve card face [$code] $card->{name} '$card->{image_uris}{large}': ".$res->status_line."\n";
+					next;
+				}
+
+				$bucket->add_key($uri, $res->decoded_content);
+				$bucket->set_acl({ acl_short => 'public-read', key => $uri });
+			}
+
+			exit(0);
+		}
+	}
 
 	return { "ok" => "Set refreshed from upstream data." };
 };
