@@ -16,10 +16,14 @@ RUN apt-get update \
           Net::Amazon::S3 \
           Text::CSV
 
+RUN cpanm Data::Entropy::Algorithms \
+          JSON::PP
+
 COPY public    /app/public
 COPY lib       /app/lib
 COPY db        /app/db
 COPY bin/start /app/start
+COPY bin/vcb   /bin/vcb
 
 EXPOSE 80
 
