@@ -21,7 +21,6 @@ RUN cpanm Data::Entropy::Algorithms \
 
 COPY public    /app/public
 COPY lib       /app/lib
-COPY db        /app/db
 COPY bin/start /app/start
 COPY bin/vcb   /bin/vcb
 
