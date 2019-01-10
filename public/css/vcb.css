@@ -648,3 +648,6 @@ body.login {
   font-size: 70%;
   color: #00000088;
 }
+.sets table td .ss {
+  text-align: center;
+}

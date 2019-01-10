@@ -613,12 +613,15 @@ post '/v/admin/sets/:code/ingest' => sub {
 		$s = M('Set')->create({
 			code    => $set->{set},
 			name    => $set->{name},
-			release => 12345, # FIXME
+			release => 0, # temporary
 		});
 	}
 
+	my %dates; # majority-wins release dating
 	my %existing = map { $_->id => $_ } $s->prints;
 	for my $card (@{$set->{cards}}) {
+		$dates{$card->{released_at}}++;
+
 		print "updating $set->{set} $card->{name}...\n";
 		my $attrs = {
 			id        => $card->{id},
@@ -645,6 +648,15 @@ post '/v/admin/sets/:code/ingest' => sub {
 		} else {
 			$s->prints->create($attrs);
 		}
+	}
+
+	# whenever 60%+ of cards were released is
+	# close enough to the set release date for me...
+	for my $dated (keys %dates) {
+		next if $dates{$dated} < 0.6 * scalar(@{$set->{cards}});
+		$dated =~ s/-//g;
+		$s->update({ release => $dated });
+		last;
 	}
 
 	my @ids;
