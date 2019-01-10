@@ -14,6 +14,8 @@ use VCB::Format;
 use VCB::Format::Standard;
 use Scry;
 
+use VCB::DB::Setup;
+
 use Dancer2;
 use Dancer2::Plugin::DBIC;
 
@@ -90,6 +92,8 @@ sub rarity {
 }
 
 #########################################################################
+
+VCB::DB::Setup->migrate(config->{plugins}{DBIC}{default}{dsn});
 
 if (M('User')->count == 0 && $ENV{VCB_FAILSAFE_USERNAME} && $ENV{VCB_FAILSAFE_PASSWORD}) {
 	my $admin = M('User')->create({
@@ -631,6 +635,8 @@ post '/v/admin/sets/:code/ingest' => sub {
 			mana      => ($card->{card_faces} ? $card->{card_faces}[0]{mana_cost} : $card->{mana_cost}) || '',
 			artist    => $card->{artist},
 			price     => $card->{usd} || 0,
+			power     => $card->{power}     || '',
+			toughness => $card->{toughness} || '',
 		};
 		my $rc = $existing{$card->{id}};
 		if ($rc) {
@@ -765,6 +771,10 @@ post '/v/admin/recache' => sub {
 			reprint  => !!$card->reprint,
 			reserved => !!$card->reserved,
 			price    => $card->price,
+
+			power     => $card->power,
+			toughness => $card->toughness,
+			pt        => $card->power ? ($card->power . '/' . $card->toughness) : undef,
 		};
 	}
 

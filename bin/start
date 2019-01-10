@@ -21,7 +21,6 @@ plugins:
 EOF
 
 mkdir -p /data
-sqlite3 /data/vcb.db </app/db/schema.sql
 
 export VCB_FAILSAFE_USERNAME=${VCB_FAILSAFE_USERNAME:-urza}
 export VCB_FAILSAFE_PASSWORD=${VCB_FAILSAFE_PASSWORD:-'$2a$12$gVWeTxwtfA5rpM.rj3bQqO$db1ab87bed231995c2b0c275379bb3bafcd12cb4b97474'}

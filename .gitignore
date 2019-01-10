@@ -2,4 +2,6 @@
 /cache
 /public/img
 x.*
+*.db
 *.voc
+*.vif
