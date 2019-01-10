@@ -648,6 +648,6 @@ body.login {
   font-size: 70%;
   color: #00000088;
 }
-.sets table td .ss {
+.sets table td:first-child {
   text-align: center;
 }
