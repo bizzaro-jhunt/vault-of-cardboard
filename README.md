@@ -43,14 +43,20 @@ expressions can be combined!
 
 | Expression | How it works                                                    | Example         |
 | ---------- | --------------------------------------------------------------- | --------------- |
+| artist     | Match cards based on the name of the artist.  Art matters.      | `artist:Poole`  |
 | cmc        | Match cards based on their converted mana cost.                 | `cmc:2+`        |
 | color      | Match cards based on their color identity.                      | `color:UR`      |
+| cpt        | Match cards based on combined power + toughness.                | `cpt:<4`        |
 | flavor     | Match cards based on the contents of their flavor text.         | `flavor:Niv`    |
-| name       | Match cards based on their name.                               | `name:Bolt`     |
+| name       | Match cards based on their name.                                | `name:Bolt`     |
 | oracle     | Match cards based on the contents of their oracle text.         | `oracle:draw`   |
 | own        | Match cards based on how many you have in your collection.      | `own:4+`        |
+| power      | Match (creature) cards based on their power / attack value.     | `power:2+`      |
+| pt         | Match cards based on their literal power/toughness.             | `pt:2/3`        |
+| ptr        | Match cards based on the ratio of power to toughness.           | `pt:0.5+`       |
 | rarity     | Match cards based on their commonality / rarity.                | `rarity:mythic` |
 | set        | Match cards based on the expansion set(s) they were printed in. | `set:XLN`       |
+| toughness  | Match (creature) cards based on their toughness / defense.      | `toughness:<5`  |
 | type       | Match cards based on their card type.                           | `type:land`     |
 | usd        | Match cards based on their current value/price (per Scryfall)   | `usd:<5.25`     |
 
@@ -161,6 +167,14 @@ or (if you like parentheticals (as I do)):
 **Oh man do I love a good life transfer card!**
 
     +gains? and +loses?
+
+**What white weenies have lifelink?**
+
+    @W and +lifelink and pt:1/1
+
+**What GRN creatures had more attack than defense?**
+
+    set:GRN and ptr:>1
 
 
 Developer-y Stuff

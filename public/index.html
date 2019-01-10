@@ -170,6 +170,11 @@
       </tr></thead>
       <tbody>
         <tr>
+          <td>artist</td>
+          <td>Match cards based on the name of the artist.  Art matters.</td>
+          <td>artist:Poole</td>
+        </tr>
+        <tr>
           <td>cmc</td>
           <td>Match cards based on their converted mana cost.</td>
           <td>cmc:2+</td>
@@ -178,6 +183,11 @@
           <td>color</td>
           <td>Match cards based on their color identity.</td>
           <td>color:UR</td>
+        </tr>
+        <tr>
+          <td>cpt</td>
+          <td>Match (creature) cards based on their combined power + toughness values.</td>
+          <td>cpt:&lt;4</td>
         </tr>
         <tr>
           <td>flavor</td>
@@ -200,6 +210,21 @@
           <td>own:4+</td>
         </tr>
         <tr>
+          <td>power</td>
+          <td>Match (creature) cards based on their power / attack value.</td>
+          <td>power:2+</td>
+        </tr>
+        <tr>
+          <td>pt</td>
+          <td>Match (creature) cards based on their literal power/toughness.</td>
+          <td>pt:2/3</td>
+        </tr>
+        <tr>
+          <td>ptr</td>
+          <td>Match (creature) cards based on the ratio of power:toughness.</td>
+          <td>ptr:1.5+</td>
+        </tr>
+        <tr>
           <td>rarity</td>
           <td>Match cards based on their commonality / rarity.</td>
           <td>rarity:mythic</td>
@@ -208,6 +233,11 @@
           <td>set</td>
           <td>Match cards based on the expansion set(s) they were printed in.</td>
           <td>set:XLN</td>
+        </tr>
+        <tr>
+          <td>toughness</td>
+          <td>Match (creature) cards based on their toughness / defense value.</td>
+          <td>toughness:&lt;5</td>
         </tr>
         <tr>
           <td>type</td>
@@ -361,6 +391,14 @@
     <p><strong>Oh man do I love a good life transfer card!</strong></p>
 
     <pre><code class="query">+gains? and +loses?</code></pre>
+
+    <p><strong>What white weenies have lifelink?</strong></p>
+
+    <pre><code class="query">@W and +lifelink and pt:1/1</code></pre>
+
+    <p><strong>What GRN creatures had more attack than defense?</strong></p>
+
+    <pre><code class="query">set:GRN and ptr:&gt;1</code></pre>
   </div>
   <div class="edit-collection">
     <h2>My Collection</h2><form>

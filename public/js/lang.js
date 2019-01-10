@@ -3,12 +3,31 @@ function tokenize(s) {
     AND:   [['AND']],
     OR:    [['OR']],
     NOT:   [['NOT']],
+
     OWNED: [['QUALIFIER','OWN'],
             ['IDENTIFIER', '1+']],
     HAVE:  [['QUALIFIER','OWN'],
             ['IDENTIFIER', '1+']],
     NEED:  [['QUALIFIER','OWN'],
-            ['IDENTIFIER', '0']]
+            ['IDENTIFIER', '0']],
+
+    REPRINT:   [['QUALIFIER', 'REPRINT'],
+                ['IDENTIFIER', 'y']],
+    RESERVED:  [['QUALIFIER', 'RESERVED'],
+                ['IDENTIFIER', 'y']]
+  };
+
+  var aliases = {
+    POWER:  'P',
+    ATTACK: 'P',
+
+    TOUGHNESS: 'T',
+    DEFENSE:   'T'
+  };
+
+  var qualify = function (q) {
+    q = q.toUpperCase();
+    return aliases[q] || q;
   };
 
   var kw = [];
@@ -67,7 +86,6 @@ parsing:
     var m = s.match(kre);
     if (m) {
       var toks = keywords[m[1].toUpperCase()];
-      console.log("toks: ",toks);
       for (var i = 0; i < toks.length; i++) {
         tok.push(toks[i]);
       }
@@ -79,7 +97,7 @@ parsing:
     var m = s.match(re);
     if (m) {
       s = s.replace(re, '');
-      tok.push(['QUALIFIER', m[1].toUpperCase()]);
+      tok.push(['QUALIFIER', qualify(m[1])]);
       continue parsing;
     }
 
@@ -104,12 +122,21 @@ function Query(t,a,b) {
 }
 
 function parse(tok) {
-  console.log(tok);
-
   var strict_re = function (v) { return new RegExp('\\b'+v+'\\b'); },
       loose_re  = function (v) { return new RegExp('\\b'+v+'\\b', 'i'); },
       setcode   = function (v) { return v.toUpperCase(); },
-      literal   = function (v) { return v; },
+      literal   = function (v) { return v ; },
+      boolish   = function (v) {
+        var fn = function (v) { return !v; }
+        fn.string = 'no';
+        switch (v.toLowerCase()) {
+        case 'y':
+        case 'yes':
+        case '1':   fn = function (v) { return !!v; };
+                    fn.string = 'yes';
+        }
+        return fn;
+      },
       colormap  = function (v) {
         var m = {}, l = v.toUpperCase();
         for (var i = 0; i < l.length; i++) { m[l[i]] = true; }
@@ -150,7 +177,7 @@ function parse(tok) {
         'NOT': 2
       };
 
-        console.log('%s', tok);
+  console.log('%s', tok);
   while (tok.length > 0) {
     var t = tok.shift();
     switch (t[0]) {
@@ -172,12 +199,19 @@ function parse(tok) {
         throw 'bad value for '+t[1]+' qualifier';
       }
       switch (t[1]) {
-      case 'SET':    fn = setcode;  break;
-      case 'RARITY': fn = literal;  break;
-      case 'COLOR':  fn = colormap; break;
+      case 'SET':     fn = setcode;  break;
+      case 'PT':
+      case 'RARITY':  fn = literal;  break;
+      case 'RESERVED':
+      case 'REPRINT': fn = boolish;  break;
+      case 'COLOR':   fn = colormap; break;
       case 'OWN':
       case 'USD':
-      case 'CMC':    fn = range;    break;
+      case 'P':
+      case 'T':
+      case 'CPT':
+      case 'PTR':
+      case 'CMC':     fn = range;    break;
       }
       data.push(new Query(t[1], fn(v[1])));
       break;
@@ -264,6 +298,7 @@ function parse(tok) {
   if (data.length != 1) {
     throw 'syntax error';
   }
+  console.log(data[0].toString());
   return data[0];
 }
 
@@ -276,8 +311,17 @@ Query.prototype.toString = function () {
   case 'SET':
   case 'TYPE':
   case 'NAME':
+  case 'ORACLE':
+  case 'FLAVOR':
+  case 'ARTIST':
   case 'RARITY':
+  case 'PT':
     return '('+this.type+' '+this.a.toString()+')';
+
+  case 'RESERVED':
+  case 'REPRINT':
+    return '('+this.type+' '+this.a.string+')';
+
   case 'COLOR':
     var l = [];
     for (var k in this.a) { l.push(k); }
@@ -286,6 +330,10 @@ Query.prototype.toString = function () {
   case 'OWN':
   case 'USD':
   case 'CMC':
+  case 'P':
+  case 'T':
+  case 'CPT':
+  case 'PTR':
     return '('+this.type+' '+this.a.string+')';
 
   case 'NOT':
@@ -310,6 +358,8 @@ Query.prototype.match = function (card) {
     return this.a.exec(card.oracle);
   case 'FLAVOR':
     return this.a.exec(card.flavor);
+  case 'ARTIST':
+    return this.a.exec(card.artist);
   case 'RARITY':
     return this.a == card.rarity;
   case 'COLOR':
@@ -317,6 +367,20 @@ Query.prototype.match = function (card) {
       if (card.color.indexOf(color) < 0) { return false; }
     }
     return true;
+  case 'P':
+      return card.power != "" && this.a.call(card, card.power);
+  case 'T':
+      return card.power != "" && this.a.call(card, card.toughness);
+  case 'CPT':
+      return card.power != "" && this.a.call(card, parseInt(card.power) + parseInt(card.toughness));
+  case 'PTR':
+      return card.power != "" && this.a.call(card, parseInt(card.power) * 1.0 / parseInt(card.toughness));
+  case 'PT':
+      return this.a == card.pt;
+  case 'RESERVED':
+      return this.a.call(card, card.reserved);
+  case 'REPRINT':
+      return this.a.call(card, card.reprint);
   case 'OWN':
     return this.a.call(card, card.owned);
   case 'USD':
