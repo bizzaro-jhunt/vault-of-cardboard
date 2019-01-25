@@ -737,6 +737,12 @@ body.login {
     margin: 5vw;
     border-radius: 3.9vw;
   }
+  .grid.results > span .card.face {
+    transform: rotate(0deg);
+  }
+  .grid.results > span .back {
+    transform: rotate(-5deg);
+  }
 
   .modal-fg > img {
     display: none;
