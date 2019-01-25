@@ -18,4 +18,8 @@
       return '<i class="ms ms-cost '+classes.join(' ')+'"></i>';
     });
   };
+
+  exported.price = function (d) {
+    return '$'+d.toFixed(2).split('').reverse().join('').match(/.{1,3}/g).join(',').split('').reverse().join('').replace(/,\./, '.');
+  };
 })(window, document);

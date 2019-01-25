@@ -1271,7 +1271,11 @@ $(function () {
             '<ul>'+
               '<li class="oracle"><p>'+symbolize(clean(card.oracle)).replace(/\n/g, '</p><p>')+'</p></li>'+
             '</ul>'+
-            '<p class="price">$'+card.price+'</p>'+
+            '<p class="price">'+price(card.price)+
+               (card.price > 999 ? '<span class="w1">remember kids, M:tG is <strong>NOT</strong> an investment...</span>' :
+                card.price >  99 ? '<span class="w2">oof</span>' :
+                card.price >   9 ? '<span class="w3">that\'s a tad much, don\'t you think?</span>' : '')+
+            '</p>'+
           '</div>'+
       '</div>');
     $('.modal-bg, .modal-fg').show();

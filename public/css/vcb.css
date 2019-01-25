@@ -476,6 +476,19 @@ header input {
   margin: 8pt;
 }
 
+.modal-fg .price .w1,
+.modal-fg .price .w2,
+.modal-fg .price .w3 {
+  font-style: italic;
+  font-size: 9pt;
+  display: block;
+  text-align: right;
+  opacity: 0.7;
+}
+.modal-fg .price .w1 { color: darkred; }
+.modal-fg .price .w2 { color: #ba6c2a; }
+.modal-fg .price .w3 { color: inherit; }
+
 
 .edit-collection {
   padding: 5vh 10vw;
