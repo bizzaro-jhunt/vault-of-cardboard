@@ -420,6 +420,7 @@
 
 <script type="text/javascript" src="js/jquery.js"></script>
 <script type="text/javascript" src="js/lang.js"></script>
+<script type="text/javascript" src="js/util.js"></script>
 <script type="text/javascript" src="config.js"></script>
 <script type="text/javascript">
 
@@ -1250,7 +1251,7 @@ $(function () {
             '</ul>'+
             '<ul class="info">'+
               '<li><strong>'+card.name+'</strong></li>'+
-              '<li><em>'+card.type.replace(/\xe2\x80\x94/g, '-')+'</em></li>'+
+              '<li><em>'+clean(card.type)+'</em></li>'+
               '<li>'+card.set.name+' ('+card.set.code+')</li>'+
               '<li>#'+card.number+'/'+card.set.total+'</li>'+
               '<li>'+colorize(card.color)+'</li>'+
@@ -1268,7 +1269,7 @@ $(function () {
               '<li>1 in <a href="#">Collection →</a></li>'+
             '</ul>'+*/
             '<ul>'+
-              '<li class="oracle"><p>'+card.oracle.replace(/\xe2\x88\x92/g, '-').replace(/\n/g, '</p><p>')+'</p></li>'+
+              '<li class="oracle"><p>'+symbolize(clean(card.oracle)).replace(/\n/g, '</p><p>')+'</p></li>'+
             '</ul>'+
             '<p class="price">$'+card.price+'</p>'+
           '</div>'+
