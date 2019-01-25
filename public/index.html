@@ -131,13 +131,13 @@
     <p>These are all the M:tG sets that Vault of Cardboard knows about.
     Most of these should have images.  If a set is missing, or missing its images,
     please let us know!</p>
-    <table class="sets">
+    <table class="sets sortable">
       <thead><tr>
         <th></th>
-        <th>Code</th>
-        <th>Name</th>
-        <th>Release Date</th>
-        <th>Size</th>
+        <th class="sortable">Code</th>
+        <th class="sortable">Name</th>
+        <th class="sortable" data-sort-as="number">Release Date</th>
+        <th class="sortable" data-sort-as="number">Size</th>
       </tr></thead>
       <tbody>
       </tbody>
@@ -421,6 +421,7 @@
 <script type="text/javascript" src="js/jquery.js"></script>
 <script type="text/javascript" src="js/lang.js"></script>
 <script type="text/javascript" src="js/util.js"></script>
+<script type="text/javascript" src="js/table.js"></script>
 <script type="text/javascript" src="config.js"></script>
 <script type="text/javascript">
 
@@ -834,6 +835,8 @@ $(function () {
     }
   });
 
+  $('table.sortable').sortableTable();
+
   var $ONCARD = undefined;
   console.log('retrieving full card set data (/cards.json)...');
   $.ajax({
@@ -1044,7 +1047,7 @@ $(function () {
               '<td>'+e.code+'</td>'+
               '<td>'+e.name+'</td>'+
               '<td data-sort="'+e.release+'">'+strftime("%B %Oe, %Y", dated(e.release))+'</td>'+
-              '<td><a href="#!/q/set:'+e.code+'">'+e.size+'</a></td>'+
+              '<td data-sort="'+e.size+'"><a href="#!/q/set:'+e.code+'">'+e.size+'</a></td>'+
             '</tr>'));
         });
       };
