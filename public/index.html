@@ -1249,6 +1249,8 @@ $(function () {
               '<li>control</li>'+
             '</ul>'+
             '<ul class="info">'+
+              '<li><strong>'+card.name+'</strong></li>'+
+              '<li><em>'+card.type.replace(/\xe2\x80\x94/g, '-')+'</em></li>'+
               '<li>'+card.set.name+' ('+card.set.code+')</li>'+
               '<li>#'+card.number+'/'+card.set.total+'</li>'+
               '<li>'+colorize(card.color)+'</li>'+
@@ -1265,6 +1267,9 @@ $(function () {
               '<li>1 in <a href="#">ctl60 →</a></li>'+
               '<li>1 in <a href="#">Collection →</a></li>'+
             '</ul>'+*/
+            '<ul>'+
+              '<li class="oracle"><p>'+card.oracle.replace(/\xe2\x88\x92/g, '-').replace(/\n/g, '</p><p>')+'</p></li>'+
+            '</ul>'+
             '<p class="price">$'+card.price+'</p>'+
           '</div>'+
       '</div>');

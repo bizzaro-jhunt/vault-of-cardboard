@@ -404,7 +404,7 @@ header input {
   display: block;
   position: fixed;
   box-sizing: border-box;
-  top:  20vh; height: 60vh;
+  top:  20vh; min-height: 60vh;
   left: 15vw; width:  70vw;
   z-index: 110;
   padding: 24px 24px 24px 35vw;
@@ -447,6 +447,7 @@ header input {
 
 .modal-fg .detail {
   font-size: 14pt;
+  font-family: sans-serif;
 }
 .modal-fg .detail ul {
   margin: 0 0 1em 0;
@@ -469,7 +470,11 @@ header input {
   font-weight: bold;
   color: #888;
 }
-
+.modal-fg .detail em     { font-style:  italic; }
+.modal-fg .detail strong { font-weight: bold; }
+.modal-fg li p {
+  margin: 8pt;
+}
 
 
 .edit-collection {
