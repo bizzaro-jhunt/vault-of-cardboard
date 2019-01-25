@@ -65,6 +65,7 @@ body.landing .band {
   position: relative;
 }
 body.landing .band.header {
+  box-sizing: border-box;
   height: 30vh;
   background-color: rgba(0,0,0,0.8);
   color: #fff;
@@ -82,6 +83,7 @@ body.landing .band.search {
   height: 80vh;
 }
 body.landing .search input {
+  box-sizing: border-box;
   position: absolute;
   top: 20vh;
   left: 20vw;
@@ -401,8 +403,9 @@ header input {
   background-color: #fff;
   display: block;
   position: fixed;
+  box-sizing: border-box;
   top:  20vh; height: 60vh;
-  left: 15vw; width:  35vw;
+  left: 15vw; width:  70vw;
   z-index: 110;
   padding: 24px 24px 24px 35vw;
   border-radius: 12px;
@@ -650,4 +653,98 @@ body.login {
 }
 .sets table td:first-child {
   text-align: center;
+}
+
+
+/*
+
+   ########  ########  ######  ########   #######  ##    ##  ######  #### ##     ## ########
+   ##     ## ##       ##    ## ##     ## ##     ## ###   ## ##    ##  ##  ##     ## ##
+   ##     ## ##       ##       ##     ## ##     ## ####  ## ##        ##  ##     ## ##
+   ########  ######    ######  ########  ##     ## ## ## ##  ######   ##  ##     ## ######
+   ##   ##   ##             ## ##        ##     ## ##  ####       ##  ##   ##   ##  ##
+   ##    ##  ##       ##    ## ##        ##     ## ##   ### ##    ##  ##    ## ##   ##
+   ##     ## ########  ######  ##         #######  ##    ##  ######  ####    ###    ########
+
+ */
+
+@media only screen and (max-width: 1000px) {
+}
+
+@media only screen and (max-width: 720px) {
+  body.landing .band.header {
+    height: auto;
+    padding: 8pt;
+  }
+  body.landing .band.header h1 {
+    font-size:   20pt;
+    line-height: 30pt;
+  }
+
+  body.landing .band.search {
+    height: 75vh;
+  }
+  body.landing .band.search input {
+    left: 5vw;
+    width: 90vw;
+    font-size: 16pt;
+  }
+
+  body.landing .band.features {
+    flex-direction: column;
+  }
+  body.landing .band.features > div {
+    width: 100%;
+  }
+
+  body.landing .band.login {
+    flex-direction: column-reverse;
+  }
+  body.landing .band.login > div,
+  body.landing .band.login > form {
+    width: 100%;
+  }
+  body.landing .band.login form input,
+  body.landing .band.login form button {
+    font-size: 10pt;
+  }
+  body.landing .band.login > form input {
+    width: 100%;
+  }
+  body.landing .band.login > div p {
+    text-align: left; /* not justify */
+  }
+
+
+  header {
+    flex-direction: column;
+  }
+  header h1 {
+    height: 32px;
+    width: 70px;
+    margin: 16px 0 0 16px;
+  }
+  header input {
+    margin: 12px;
+  }
+  header nav {
+    display: none; /* FIXME: temporary */
+  }
+
+  .grid.results > span .card {
+    width: 85vw;
+    height: 118vw;
+    margin: 5vw;
+    border-radius: 3.9vw;
+  }
+
+  .modal-fg > img {
+    display: none;
+  }
+  .modal-fg > div {
+    top:  5vh; height: 90vh;
+    left: 5vw; width:  90vw;
+    padding: none;
+    padding: 12px;
+  }
 }
