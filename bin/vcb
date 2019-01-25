@@ -66,7 +66,20 @@ $| = 1;
 my $command = shift @ARGV;
 
 if ($command eq 'fmt') {
-	print VCB::Format::Standard->format(VCB::Format->parse(do { local $/; <STDIN> }));
+	my $all = VCB::Format->parse(do { local $/; <STDIN> });
+	my %cards;
+	my $n = 0;
+	for my $card (@$all) {
+		$n += $card->{quantity};
+		my $key = join('//', $card->{name}, $card->{condition}, $card->{flags}, $card->{set});
+		if (!$cards{$key}) {
+			$cards{$key} = $card;
+		} else {
+			$cards{$key}{quantity} += $card->{quantity};
+		}
+	}
+	print VCB::Format::Standard->format([map { $cards{$_} } sort keys %cards]);
+	print "\n# $n total\n" if -t STDOUT;
 	exit 0;
 }
 
