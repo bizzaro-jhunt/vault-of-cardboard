@@ -369,6 +369,8 @@ header input {
 .grid.results > span .card.face {
   transform: rotate(5deg);
   cursor: pointer;
+  background-image: url(/mtgblank.jpg);
+  background-size: cover;
 }
 .grid.results > span .back {
   position: absolute;
