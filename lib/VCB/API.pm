@@ -98,7 +98,7 @@ sub backfill_image {
 		warn "backfilling image for $msg...\n";
 		my $res = $ua->get($theirs);
 		if (!$res->is_success) {
-			$! = "failed to retrieve card face $msg '$theirs': ".$res->status_line;
+			warn "failed to retrieve card face $msg '$theirs': ".$res->status_line."\n";
 			return undef;
 		}
 		$bucket->add_key($ours, $res->decoded_content);
@@ -711,23 +711,20 @@ post '/v/admin/sets/:code/ingest' => sub {
 						sprintf("cards/%s/%s-%s.jpg", uc($code), uc($code), $card->{id}),
 						$card->{card_faces}[0]{image_uris}{large},
 						"[$code] $card->{name} ($card->{id}) front face",
-						!!params->{force})
-							or warn "$!\n";
+						!!params->{force});
 
 					backfill_image($ua, $bucket,
 						sprintf("cards/%s/%s-%s.flip.jpg", uc($code), uc($code), $card->{id}),
 						$card->{card_faces}[1]{image_uris}{large},
 						"[$code] $card->{name} ($card->{id}) back face",
-						!!params->{force})
-							or warn "$!\n";
+						!!params->{force});
 
 				} elsif ($card->{image_uris}{large}) {
 					backfill_image($ua, $bucket,
 						sprintf("cards/%s/%s-%s.jpg", uc($code), uc($code), $card->{id}),
 						$card->{image_uris}{large},
 						"[$code] $card->{name} ($card->{id})",
-						!!params->{force})
-							or warn "$!\n";
+						!!params->{force});
 
 				} else {
 					warn "unable to find card image url for [$code] $card->{name} (layout:$card->{layout}) in card metadata!\n";
