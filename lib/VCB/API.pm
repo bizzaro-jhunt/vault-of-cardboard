@@ -91,6 +91,21 @@ sub rarity {
 	return $convert{lc($_[0])} || $_[0];
 }
 
+sub backfill_image {
+	my ($ua, $bucket, $ours, $theirs, $msg) = @_;
+	if (!$bucket->head_key($ours)) {
+		warn "backfilling image for $msg...\n";
+		my $res = $ua->get($theirs);
+		if (!$res->is_success) {
+			$! = "failed to retrieve card face $msg '$theirs': ".$res->status_line;
+			return undef;
+		}
+		$bucket->add_key($ours, $res->decoded_content);
+	}
+	$bucket->set_acl({ acl_short => 'public-read', key => $ours });
+	return 1;
+}
+
 #########################################################################
 
 VCB::DB::Setup->migrate(config->{plugins}{DBIC}{default}{dsn});
@@ -566,6 +581,7 @@ post '/v/admin/sets/:code/ingest' => sub {
 	# }
 
 	my $code = lc(param('code'));
+	warn "ingesting set [$code]...\n";
 	my $cache = cachepath("$code.set");
 	if (! -f $cache) {
 		mkdir cachepath();
@@ -616,10 +632,10 @@ post '/v/admin/sets/:code/ingest' => sub {
 		my $attrs = {
 			id        => $card->{id},
 			name      => $card->{name},
-			oracle    => $card->{oracle_text},
+			oracle    => ($card->{card_faces} ? join("\n---\n", map { $_->{oracle_text} } @{$card->{card_faces}}) : $card->{oracle_text}) || '',
 			type      => $card->{type_line},
 			colnum    => $card->{collector_number},
-			flavor    => $card->{flavor_text},
+			flavor    => ($card->{card_faces} ? join("\n---\n", map { $_->{flavor_text} } @{$card->{card_faces}}) : $card->{flavor_text}) || '',
 			rarity    => substr($card->{rarity}, 0, 1),
 			reprint   => !!$card->{reprint},
 			reserved  => !!$card->{reserved},
@@ -630,6 +646,7 @@ post '/v/admin/sets/:code/ingest' => sub {
 			price     => $card->{usd} || 0,
 			power     => $card->{power}     || '',
 			toughness => $card->{toughness} || '',
+			layout    => $card->{layout},
 		};
 		my $rc = $existing{$card->{id}};
 		if ($rc) {
@@ -687,28 +704,35 @@ post '/v/admin/sets/:code/ingest' => sub {
 			);
 
 			for my $card (@{$set->{cards}}) {
-				my $uri = sprintf("cards/%s/%s-%s.jpg", uc($code), uc($code), $card->{id});
+				if ($card->{image_uris}{large}) {
+					backfill_image($ua, $bucket,
+						sprintf("cards/%s/%s-%s.jpg", uc($code), uc($code), $card->{id}),
+						$card->{image_uris}{large},
+						"[$code] $card->{name} ($card->{id})",
+						!!params->{force})
+							or warn "$!\n";
 
-				if ($bucket->head_key($uri)) {
-					$bucket->set_acl({ acl_short => 'public-read', key => $uri });
-					next;
-				}
-				warn "backfilling image for [$code] $card->{name} ($card->{id})...\n";
+				} elsif ($card->{card_faces} && @{$card->{card_faces}} == 3) { # flippy
+					backfill_image($ua, $bucket,
+						sprintf("cards/%s/%s-%s.jpg", uc($code), uc($code), $card->{id}),
+						$card->{card_faces}[0]{image_uris}{large},
+						"[$code] $card->{name} ($card->{id}) front face",
+						!!params->{force})
+							or warn "$!\n";
 
-				if (!$card->{image_uris}{large}) {
-					warn "unable to find large image url for [$code] $card->{name} in card metadata!\n";
-					next;
-				}
-				my $res = $ua->get($card->{image_uris}{large});
-				if (!$res->is_success) {
-					warn "failed to retrieve card face [$code] $card->{name} '$card->{image_uris}{large}': ".$res->status_line."\n";
-					next;
-				}
+					backfill_image($ua, $bucket,
+						sprintf("cards/%s/%s-%s.flip.jpg", uc($code), uc($code), $card->{id}),
+						$card->{card_faces}[1]{image_uris}{large},
+						"[$code] $card->{name} ($card->{id}) back face",
+						!!params->{force})
+							or warn "$!\n";
 
-				$bucket->add_key($uri, $res->decoded_content);
-				$bucket->set_acl({ acl_short => 'public-read', key => $uri });
+				} else {
+					warn "unable to find card image url for [$code] $card->{name} in card metadata!\n";
+				}
 			}
 
+			warn "finished ingesting [$code]\n";
 			exit(0);
 		}
 	}
@@ -751,46 +775,63 @@ post '/v/admin/recache' => sub {
 	my %ALL;
 	my $Print = M('Print')->search_rs;
 
-	mkdir "dat";
-	while (my $card = $Print->next) {
-		push @{$ALL{$card->set_id}}, {
-			id       => $card->id,
-			set      => { code  => $card->set_id,
-			              name  => $card->set->name,
-			              total => $card->set->prints->count },
-			name     => $card->name,
-			type     => $card->type,
-			cmc      => $card->cmc,
-			cost     => $card->mana,
-			color    => $card->color,
-			oracle   => $card->oracle,
-			artist   => $card->artist,
-			flavor   => $card->flavor,
-			image    => sprintf("%s/%s-%s.jpg", $card->set_id, $card->set_id, $card->id),
-			number   => $card->colnum,
-			owned    => 0,
-			rarity   => rarity($card->rarity),
-			reprint  => !!$card->reprint,
-			reserved => !!$card->reserved,
-			price    => $card->price,
-
-			power     => $card->power,
-			toughness => $card->toughness,
-			pt        => $card->power ? ($card->power . '/' . $card->toughness) : undef,
-		};
+	my $pid = fork;
+	if ($pid < 0) {
+		warn "recache requested for all card data; but background process fork failed!\n";
+		return { "error" => "recache requested for all card data; but background process fork failed!" };
 	}
 
-	open my $fh, ">", datpath(".new.json") or do {
-		warn "unable to open $DATFILE: $!\n";
-		return undef;
-	};
-	print $fh encode_json(\%ALL);
-	close $fh;
+	if ($pid == 0) { # in child
+		mkdir "dat";
+		my $n = 0;
+		my $total = $Print->count;
+		while (my $card = $Print->next) {
+			$n++;
+			print "$n/$total cards recached.\n" if $n % 100 == 0;
+			push @{$ALL{$card->set_id}}, {
+				id       => $card->id,
+				set      => { code  => $card->set_id,
+				              name  => $card->set->name,
+				              total => $card->set->prints->count },
+				name     => $card->name,
+				type     => $card->type,
+				cmc      => $card->cmc,
+				cost     => $card->mana,
+				color    => $card->color,
+				oracle   => $card->oracle,
+				artist   => $card->artist,
+				flavor   => $card->flavor,
+				layout   => $card->layout,
+				image    => sprintf("%s/%s-%s.jpg", $card->set_id, $card->set_id, $card->id),
+				back     => ($card->layout eq 'flip') ? sprintf("%s/%s-%s.flip.jpg", $card->set_id, $card->set_id, $card->id)
+				                                      : undef,
+				number   => $card->colnum,
+				owned    => 0,
+				rarity   => rarity($card->rarity),
+				reprint  => !!$card->reprint,
+				reserved => !!$card->reserved,
+				price    => $card->price,
 
-	rename datpath(".new.json"),
-	       datpath("cards.json");
+				power     => $card->power,
+				toughness => $card->toughness,
+				pt        => $card->power ? ($card->power . '/' . $card->toughness) : undef,
+			};
+		}
 
-	return { ok => "Global cache updated." };
+		open my $fh, ">", datpath(".new.json") or do {
+			warn "unable to open $DATFILE: $!\n";
+			return undef;
+		};
+		print $fh encode_json(\%ALL);
+		close $fh;
+
+		rename datpath(".new.json"),
+		       datpath("cards.json");
+
+		exit 0;
+	}
+
+	return { ok => "Global cache in progress." };
 };
 
 # retrieve cache status for all users + collections

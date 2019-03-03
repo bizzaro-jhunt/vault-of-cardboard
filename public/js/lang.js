@@ -200,6 +200,7 @@ function parse(tok) {
       }
       switch (t[1]) {
       case 'SET':     fn = setcode;  break;
+      case 'LAYOUT':
       case 'PT':
       case 'RARITY':  fn = literal;  break;
       case 'RESERVED':
@@ -315,6 +316,7 @@ Query.prototype.toString = function () {
   case 'FLAVOR':
   case 'ARTIST':
   case 'RARITY':
+  case 'LAYOUT':
   case 'PT':
     return '('+this.type+' '+this.a.toString()+')';
 
@@ -375,6 +377,8 @@ Query.prototype.match = function (card) {
       return card.power != "" && this.a.call(card, parseInt(card.power) + parseInt(card.toughness));
   case 'PTR':
       return card.power != "" && this.a.call(card, parseInt(card.power) * 1.0 / parseInt(card.toughness));
+  case 'LAYOUT':
+      return this.a == card.layout;
   case 'PT':
       return this.a == card.pt;
   case 'RESERVED':

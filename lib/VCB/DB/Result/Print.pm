@@ -121,6 +121,12 @@ __PACKAGE__->table("prints");
   default_value: (empty string)
   is_nullable: 0
 
+=head2 layout
+
+  data_type: 'text'
+  default_value: 'normal'
+  is_nullable: 0
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -158,6 +164,8 @@ __PACKAGE__->add_columns(
   { data_type => "text", default_value => "", is_nullable => 0 },
   "toughness",
   { data_type => "text", default_value => "", is_nullable => 0 },
+  "layout",
+  { data_type => "text", default_value => "normal", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -205,8 +213,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07049 @ 2019-01-09 19:35:09
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Jab9qlGT6UOQPK8sRODsdA
+# Created by DBIx::Class::Schema::Loader v0.07049 @ 2019-03-02 23:11:25
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:id0SWU3sfyhZ+BcaUYFnaA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

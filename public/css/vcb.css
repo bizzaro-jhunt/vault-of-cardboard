@@ -278,6 +278,21 @@ header input {
 .grid.results .card img {
   width: 100%;
 }
+.grid.results .card a[rel=flip] {
+  display: block;
+  position: absolute;
+  background-image: url(/flip.png);
+  background-size: cover;
+  background-color: #ffffffb3;
+  border-radius: 100%;
+  width: 17%;
+  height: 12%;
+  right: 3%;
+  bottom: 8%;
+}
+.grid.results .card:hover a[rel=flip] {
+  background-color: #ffff00b3;
+}
 .modal-bg,
 .modal-fg {
   position: fixed;

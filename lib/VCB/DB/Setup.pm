@@ -67,6 +67,12 @@ EOF
 		$db->do("ALTER TABLE prints ADD COLUMN toughness TEXT NOT NULL DEFAULT ''");
 		$set_v->execute(++$version);
 	}
+
+	if ($version == 1) {
+		print __PACKAGE__.": migrating v1 -> v2 (support for flippy cards)\n";
+		$db->do("ALTER TABLE prints ADD COLUMN layout TEXT NOT NULL DEFAULT 'normal'");
+		$set_v->execute(++$version);
+	}
 }
 
 sub init {

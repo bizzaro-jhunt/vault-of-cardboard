@@ -1,7 +1,7 @@
 ;(function (exported, document, undefined) {
   exported.clean = function (s) {
-    return s.replace(/\xe2\x80\x94/g, '&mdash;')
-            .replace(/\xe2\x88\x92/g, '-');
+    return (s || '').replace(/\xe2\x80\x94/g, '&mdash;')
+                    .replace(/\xe2\x88\x92/g, '-');
   };
 
   exported.symbolize = function (s) {
