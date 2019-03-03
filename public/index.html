@@ -7,7 +7,6 @@
 <link rel="stylesheet" type="text/css" href="/css/keyrune.min.css" />
 <link rel="stylesheet" type="text/css" href="/css/mana.min.css" />
 <link rel="stylesheet" type="text/css" href="/css/vcb.css?v=2" />
-<link rel="stylesheet" type="text/css" href="/login.css" />
 </head>
 <body class="signed-in">
 <header>
@@ -43,89 +42,94 @@
 
 <div id="main">
   <div class="landing">
-    <div class="band header">
-      <h1>Welcome to <span>Vault of Cardboard</span></h1>
-    </div>
-    <div class="band search">
-      <input class="focus" name="q" autocomplete="off" placeholder=" Search the Vault...">
-    </div>
-    <div class="band features">
-      <div><span class="i-search"></span>
-           <h2>Search</h2>
-           <p>The Vault has visuals for every MtG set ever printed, and a fancy
-              query language to make it easier to find just the card you're after.</p>
-      </div>
-      <div><span class="i-track"></span>
-           <h2>Track</h2>
-           <p>Import your inventory into the Vault, and keep track of where your cards
-              are, what decks they're in, and what you're proxying in casual.</p>
-      </div>
-      <div><span class="i-build"></span>
-           <h2>Build</h2>
-           <p>To build a strong deck, you need good cards.  Vault of Cardboard lets you
-              search through printed cards based on their rules text, so you can find
-              that perfect synergy.</p>
-      </div>
-    </div>
-    <div class="band login">
-      <div>
-        <h1>Want an Account?</h1>
-        <p>I appreciate the enthusiasm, I really do.  But right now, Vault of Cardboard is mostly a personal project that I wanted to show to a couple of friends.</p>
-        <p>It's got lots of bugs.  Like, lots and <em>lots</em> of them.  Also, it's missing features.
-        Also, also, when those features get implemented, <em>they</em> will have bugs.</p>
-        <p>Wouldn't you rather wait until those get sussed out?</p>
-        <p>Okay, alright.  If you insist, I suppose it wouldn't hurt to take down some
-        contact information and drop you a line when the site goes <em>open beta</em>.</p>
-        <form id="signup">
-          <input type="text" name="email" placeholder=" Your Email..." /><button type="submit">&rarr;</button>
-        </form>
-      </div>
-      <form id="login">
-        <h1>Have an Account?</h1>
-        <div class="oops"></div>
-        <input type="text"     name="username" placeholder="username">
-        <input type="password" name="password" placeholder="password">
-        <button type="submit">Enter</button>
-      </form>
-    </div>
-    <div class="band footer">
-      <nav>
-        <li>&copy; 2018 James Hunt</li>
-      </nav>
+    <div><img src="/front.png"></div>
+    <div>
+      <p>Whether you're putting together <a href="#!/q/type:sliver">that Sliver deck,</a>
+      seeking out <a href="#!/q/type:legendary and type:creature">your next Commander,</a>
+      or <a href="#!/q/Didgeridoo or type:Minotaur">just looking for some jank</a>,
+      <em>Vault of Cardboard</em> has got you covered.</p>
+
+      <p>With a <strong>powerful and flexible query language</strong> that lets you refine
+      queries until you find <em>exactly</em> what you're looking for, and a
+      <strong>buy / sell / trade</strong> model of <strong>collection management</strong>,
+      you'll never again wonder what you have or what you need.</p>
+
+      <footer>Copyright &copy; 2019 <a href="https://jameshunt.us">James Hunt</a></footer>
     </div>
   </div>
+</div>
+
+
+<div class="modal-bg"></div>
+<div class="modal-fg"></div>
+
+<script type="text/html" id="template:loading"><!-- {{{ -->
   <div class="loading">
     <h1>Loading...</h1>
     <p class="marquee"></p>
   </div>
-  <div class="login">
-    <div class="band login">
-      <div>
-        <h1>Want an Account?</h1>
-        <p>I appreciate the enthusiasm, I really do.  But right now, Vault of Cardboard is mostly a personal project that I wanted to show to a couple of friends.</p>
-        <p>It's got lots of bugs.  Like, lots and <em>lots</em> of them.  Also, it's missing features.
-        Also, also, when those features get implemented, <em>they</em> will have bugs.</p>
-        <p>Wouldn't you rather wait until those get sussed out?</p>
-        <p>Okay, alright.  If you insist, I suppose it wouldn't hurt to take down some
-        contact information and drop you a line when the site goes <em>open beta</em>.</p>
-        <form id="signup">
-          <input type="text" name="email" placeholder=" Your Email..." /><button type="submit">&rarr;</button>
-        </form>
-      </div>
+</script><!-- }}} -->
+<script type="text/html" id="template:login"><!-- {{{ -->
+  <div class="landing login">
+    <div><img src="/front.png"></div>
+    <div>
+      <p>Whether you're putting together <a href="#!/q/type:sliver">that Sliver deck,</a>
+      seeking out <a href="#!/q/type:legendary and type:creature">your next Commander,</a>
+      or <a href="#!/q/Didgeridoo or type:Minotaur">just looking for some jank</a>,
+      <em>Vault of Cardboard</em> has got you covered.</p>
+
       <form id="login">
-        <h1>Have an Account?</h1>
-        <div class="oops"></div>
-        <input type="text"     name="username" placeholder="username">
-        <input type="password" name="password" placeholder="password">
-        <button type="submit">Enter</button>
+        <div>
+          <label>Username</label><!--a href="#">need an account?</a-->
+          <input type="text" name="username" autocomplete="off">
+        </div>
+        <div>
+          <label>Password</label><!--a href="#">forgot your password?</a-->
+          <input type="password" name="password">
+        </div>
+        <div>
+          <button class="default safe">Sign in</button>
+        </div>
       </form>
-    </div>
-    <div class="band footer">
-      <nav>
-        <li>&copy; 2018 James Hunt</li>
-      </nav>
+      <footer>Copyright &copy; 2019 <a href="https://jameshunt.us">James Hunt</a></footer>
     </div>
   </div>
+</script><!-- }}} -->
+<script type="text/html" id="template:results"><!-- {{{ -->
+  [[#
+      {results} - Main View Search Results
+  ]]
+<div class="search">
+  [[ if (_.oops) { ]]
+  <div class="oops">[[= _.q ]]: [[= _.oops ]]</div>
+  [[ } else { ]]
+  <div class="meta-results">found <span class="count">[[= _.results.length ]]</span> card[[= _.results.length == 1 ? '' : 's' ]].</div>
+  <div class="results grid">
+    [[ for (var i = 0; i < _.results.length && i < _.max; i++) {
+         var card = _.results[i];
+         var alt = card.name + ' [' + card.set.code + ']';
+    ]]
+    <span data-own="[[= card.owned ]]">
+      <span class="card back"><img src="/mtgback.jpg"></span>
+      <span class="card face">
+        <img data-id="[[= card.id ]]" src="[[= $CONFIG.imgroot ]]/cards/[[= card.image ]]"
+             alt="[[= alt ]]" title="[[= alt ]]">
+      </span>
+    </span>
+    [[ } ]]
+  </div>
+  [[ } ]]
+</div>
+</script><!-- }}} -->
+<script type="text/html" id="template:edit-collection"><!-- {{{ -->
+  <div class="edit-collection">
+    <h2>My Collection</h2><form>
+    <div class="oops" style="display: none"></div>
+    <textarea name="collection">[[= _.data ]]</textarea>
+    <button type="submit">Save</button></form>
+  </div>
+</script><!-- }}} -->
+<script type="text/html" id="template:sets"><!-- {{{ -->
   <div class="sets prose">
     <h1>Currently Known Magic: the Gathering Sets</h1>
     <p>These are all the M:tG sets that Vault of Cardboard knows about.
@@ -140,9 +144,20 @@
         <th class="sortable" data-sort-as="number">Size</th>
       </tr></thead>
       <tbody>
+      [[ $.each(_.sets, function (i, set) { ]]
+        <tr>
+          <td><span class="ss ss-[[= set.code.toLowerCase() ]]"></span></td>
+          <td>[[= set.code ]]</td>
+          <td>[[= set.name ]]</td>
+          <td data-sort="[[= set.release ]]">[[= strftime("%B %Oe, %Y", dated(set.release)) ]]</td>
+          <td data-sort="[[= set.size ]]"><a href="#!/q/set:[[= set.code ]]">[[= set.size ]]</a></td>
+        </tr>
+      [[ }); ]]
       </tbody>
     </table>
   </div>
+</script><!-- }}} -->
+<script type="text/html" id="template:docs"><!-- {{{ -->
   <div class="docs prose">
     <h1>Vault of Cardboard Query Language</h1>
     <p>This section describes how to write queries against the Vault.</p>
@@ -401,27 +416,13 @@
 
     <pre><code class="query">set:GRN and ptr:&gt;1</code></pre>
   </div>
-  <div class="edit-collection">
-    <h2>My Collection</h2><form>
-    <div class="oops"></div>
-    <textarea name="collection"></textarea>
-    <button type="submit">Save</button></form>
-  </div>
-  <div class="search">
-    <div class="oops"></div>
-    <div class="meta-results">found <span class="count">0</span> matching card(s).</div>
-    <div class="grid results"></div>
-  </div>
-</div>
-
-
-<div class="modal-bg"></div>
-<div class="modal-fg"></div>
+</script><!-- }}} -->
 
 <script type="text/javascript" src="js/jquery.js"></script>
 <script type="text/javascript" src="js/lang.js"></script>
 <script type="text/javascript" src="js/util.js"></script>
 <script type="text/javascript" src="js/table.js"></script>
+<script type="text/javascript" src="js/lens.js"></script>
 <script type="text/javascript" src="config.js"></script>
 <script type="text/javascript">
 
@@ -454,337 +455,6 @@ function tparse(d) { // {{{
 
   return d;
 } // }}}
-function strftime(fmt, d) { // {{{
-  d = tparse(d);
-  if (typeof(d) === 'undefined') {
-    return "";
-  }
-
-  en_US = {
-    pref: {
-      /* %c */ datetime: function (d) { return strftime("%a %b %e %H:%M:%S %Y", d); },
-      /* %x */ date:     function (d) { return strftime("%m/%d/%Y", d); },
-      /* %X */ time:     function (d) { return strftime("%H:%M:%S", d); }
-    },
-    weekday: {
-      abbr: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-      full: ['Sunday',
-            'Monday',
-            'Tuesday',
-            'Wednesday',
-            'Thursday',
-            'Friday',
-            'Saturday']
-    },
-    month: {
-      abbr: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-      full: ['January',
-            'February',
-            'March',
-            'April',
-            'May',
-            'June',
-            'July',
-            'August',
-            'September',
-            'October',
-            'November',
-            'December']
-    },
-    AM: "AM", am: "am", PM: "PM", pm: "pm",
-    ordinal: ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th', 'th', //  1 - 10
-                    'th', 'th', 'th', 'th', 'th', 'th', 'th', 'th', 'th', 'th', // 11 - 20
-                    'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th', 'th', // 21 - 30
-                    'st'],
-    zero:  ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09',
-            '10', '11', '12', '13', '14', '15', '16', '17', '18', '19',
-            '20', '21', '22', '23', '24', '25', '26', '27', '28', '29',
-            '30', '31', '32', '33', '34', '35', '36', '37', '38', '39',
-            '40', '41', '42', '43', '44', '45', '46', '47', '48', '49',
-            '50', '51', '52', '53', '54', '55', '56', '57', '58', '59'],
-
-    space: [' 0', ' 1', ' 2', ' 3', ' 4', ' 5', ' 6', ' 7', ' 8', ' 9',
-            '10', '11', '12', '13', '14', '15', '16', '17', '18', '19',
-            '20', '21', '22', '23', '24', '25', '26', '27', '28', '29',
-            '30', '31', '32', '33', '34', '35', '36', '37', '38', '39',
-            '40', '41', '42', '43', '44', '45', '46', '47', '48', '49',
-            '50', '51', '52', '53', '54', '55', '56', '57', '58', '59'],
-  };
-
-  var lc = en_US;
-
-  var inspec = false;
-  var alt_o  = false;
-
-  var s = '';
-  for (var i = 0; i < fmt.length; i++) {
-    var c = fmt.charCodeAt(i);
-    if (inspec) {
-      switch (c) {
-      // %%   A literal '%' character
-      case 37:
-        s += '%';
-        break;
-
-      // %a   The abbreviated name of the day of the week according to the
-      //      current locale.
-      case 97:
-        s += lc.weekday.abbr[d.getDay()];
-        break;
-
-      // %A   The full name of the day of the week according to the current
-      //      locale.
-      case 65:
-        s += lc.weekday.full[d.getDay()];
-        break;
-
-      // %b   The abbreviated month name according to the current locale.
-      case 98:
-        s += lc.month.abbr[d.getMonth()];
-        break;
-
-      // %h   Equivalent to %b.
-      case 104:
-        s += lc.month.abbr[d.getMonth()];
-        break;
-
-      // %B   The full month name according to the current locale.
-      case 66:
-        s += lc.month.full[d.getMonth()];
-        break;
-
-      // %c   The preferred date and time representation for the current
-      //      locale.
-      case 99:
-        s += lc.pref.datetime(d);
-        break;
-
-      // %C   The century number (year/100) as a 2-digit integer
-      case 67:
-        s += d.getFullYear() / 100;
-        break;
-
-      // %d   The day of the month as a decimal number (range 01 to 31).
-      case 100:
-        s += lc.zero[d.getDate()];
-        break;
-
-      // %D   Equivalent to %m/%d/%y.  (Yecch—for Americans only.  Americans
-      //      should note that in other countries %d/%m/%y is rather common.
-      //      This means that in international context this format is
-      //      ambiguous and should not be used.)
-      case 68:
-        s += strftime("%m/%d/%y", d);
-        break;
-
-      // %e   Like %d, the day of the month as a decimal number, but a
-      //      leading zero is replaced by a space.
-      case 101:
-        s += d.getDate().toString()+(alt_o ? lc.ordinal[d.getDate()] : '');
-        break;
-
-      // %E   Modifier: use alternative format, see below.
-      case 69:
-        // not supported; just skip it
-        continue;
-
-      // %F   Equivalent to %Y-%m-%d (the ISO 8601 date format).
-      case 70:
-        s += strftime("%Y-%m-%d", d);
-        break;
-
-      // %G   The ISO 8601 week-based year (see NOTES) with century as a
-      //      decimal number.  The 4-digit year corresponding to the ISO
-      //      week number (see %V).  This has the same format and value as
-      //      %Y, except that if the ISO week number belongs to the previous
-      //      or next year, that year is used instead.
-      case 71:
-        throw "this strftime() does not support '%G'"; // FIXME
-
-      // %g   Like %G, but without century, that is, with a 2-digit year
-      //      (00-99).
-      case 103:
-        throw "this strftime() does not support '%g'"; // FIXME
-
-      // %H   The hour as a decimal number using a 24-hour clock (range 00 to 23).
-      case 72:
-        s += lc.zero[d.getHours()]
-        break;
-
-      // %I   The hour as a decimal number using a 12-hour clock (range 01 to 12)
-      case 73:
-        s += lc.zero[d.getHours() % 12 == 0 ? 12 : d.getHours() % 12];
-        break;
-
-      // %j   The day of the year as a decimal number (range 001 to 366).
-      case 106:
-        throw "this strftime() does not support '%j'"; // FIXME
-
-      // %k   The hour (24-hour clock) as a decimal number (range 0 to 23);
-      //      single digits are preceded by a blank.  (See also %H.)
-      case 107:
-        s += lc.space[d.getHours()];
-        break;
-
-      // %l   The hour (12-hour clock) as a decimal number (range 1 to 12);
-      //      single digits are preceded by a blank.  (See also %I.)
-      case 108:
-        s += lc.space[d.getHours() % 12 == 0 ? 12 : d.getHours() % 12];
-        break;
-
-      // %m   The month as a decimal number (range 01 to 12).
-      case 109:
-        s += lc.zero[d.getMonth()+1];
-        break;
-
-      // %M   The minute as a decimal number (range 00 to 59).
-      case 77:
-        s += lc.zero[d.getMinutes()];
-        break;
-
-      // %n   A newline character.
-      case 110:
-        s += "\n";
-        break;
-
-      // %O   Modifier: use alternative format, see below.
-      case 79:
-        alt_o = true;
-        continue;
-
-      // %p   Either "AM" or "PM" according to the given time value, or the
-      //      corresponding strings for the current locale.  Noon is treated
-      //      as "PM" and midnight as "AM".
-      case 112:
-        s += (d.getHours() < 12 ? lc.AM : lc.PM);
-        break;
-
-      // %P   Like %p but in lowercase: "am" or "pm" or a corresponding
-      //      string for the current locale.
-      case 80:
-        s += (d.getHours() < 12 ? lc.am : lc.pm);
-        break;
-
-      // %r   The time in a.m. or p.m. notation.  In the POSIX locale this
-      //      is equivalent to %I:%M:%S %p.
-      case 114:
-        s += lc.zero[d.getHours() % 12 == 0 ? 12 : d.getHours() % 12] + ":" +
-            lc.zero[d.getMinutes()]                                  + ":" +
-            lc.zero[d.getSeconds()]                                  + " " +
-            (d.getHours() < 12 ? lc.AM : lc.PM);
-        break;
-
-      // %R   The time in 24-hour notation (%H:%M).  For a version
-      //      including the seconds, see %T below.
-      case 82:
-        s += lc.zero[d.getHours()] + ":" +
-            lc.zero[d.getMinutes()];
-        break;
-
-      // %s   The number of seconds since the Epoch,
-      //      1970-01-01 00:00:00+0000 (UTC).
-      case 115:
-        s += d.getTime().toString();
-        break;
-
-      // %S   The second as a decimal number (range 00 to 60).  (The range
-      //      is up to 60 to allow for occasional leap seconds.)
-      case 83:
-        s += lc.zero[d.getSeconds()];
-        break;
-
-      // %t   A tab character.
-      case 116:
-        s += "\t";
-        break;
-
-      // %T   The time in 24-hour notation (%H:%M:%S).
-      case 84:
-        s += lc.zero[d.getHours()]   + ":" +
-            lc.zero[d.getMinutes()] + ":" +
-            lc.zero[d.getSeconds()];
-        break;
-
-      // %u   The day of the week as a decimal, range 1 to 7, Monday being 1.
-      //       See also %w.
-      case 117:
-        s += (d.getDay()+1).toString()+(alt_o ? lc.ordinal[d.getDay()+1] : '');
-        break;
-
-      // %U   The week number of the current year as a decimal number, range
-      //      00 to 53, starting with the first Sunday as the first day of
-      //      week 01.  See also %V and %W.
-      case 85:
-        throw "this strftime() does not support '%U'"; // FIXME
-
-      // %V   The ISO 8601 week number (see NOTES) of the current year as a
-      //      decimal number, range 01 to 53, where week 1 is the first week
-      //      that has at least 4 days in the new year.  See also %U and %W.
-      case 86:
-        throw "this strftime() does not support '%V'"; // FIXME
-
-      // %w   The day of the week as a decimal, range 0 to 6, Sunday being 0
-      //      See also %u.
-      case 119:
-        s += (d.getDay()).toString();
-        break;
-
-      // %W   The week number of the current year as a decimal number, range
-      //      00 to 53, starting with the first Monday as the first day of
-      //      week 01.
-      case 87:
-        throw "this strftime() does not support '%W'"; // FIXME
-
-      // %x   The preferred date representation for the current locale
-      //      without the time.
-      case 120:
-        s += lc.pref.date(d);
-        break;
-
-      // %X   The preferred time representation for the current locale
-      //      without the date.
-      case 88:
-        s += lc.pref.time(d);
-        break;
-
-      // %y   The year as a decimal number without a century (range 00 to 99).
-      case 121:
-        s += lc.zero[d.getFullYear() % 100];
-        break;
-
-      // %Y   The year as a decimal number including the century.
-      case 89:
-        s += d.getFullYear();
-        break;
-
-      // %z   The +hhmm or -hhmm numeric timezone (that is, the hour and
-      //      minute offset from UTC).
-      case 122:
-        throw "this strftime() does not support '%z'"; // FIXME
-
-      // %Z   The timezone name or abbreviation.
-      case 90:
-        throw "this strftime() does not support '%Z'"; // FIXME
-
-      default:
-        throw "unrecognized strftime sequence '%"+fmt[i]+"'";
-      }
-
-      inspec = false;
-      alt_o  = false;
-      continue;
-    }
-
-    if (c == 37) { // %
-      inspec = true
-      continue;
-    }
-
-    s += fmt[i];
-  }
-  return s;
-} // }}}
 
 function dated(yyyymmdd, unknown) {
   yyyymmdd = yyyymmdd.toString();
@@ -797,16 +467,6 @@ function dated(yyyymmdd, unknown) {
   var yyyy = (yyyymmdd - mm*100 - dd) / 10000;
   console.log("[%s]; yyyy = %d; mm = %d; dd = %d", yyyymmdd, yyyy, mm, dd);
   return new Date(yyyy, mm-1, dd);
-}
-function cardface(card) {
-  var alt = card.name + ' [' + card.set.code + ']';
-  return '<span class="card face">'+
-    '<img data-id="'+card.id+'" src="'+$CONFIG.imgroot+'/cards/'+card.image+'" alt="'+alt+'" title="'+alt+'">'+
-  '</span>';
-}
-
-function cardback() {
-  return '<span class="card back"><img src="/mtgback.jpg"></span>';
 }
 
 function colorize(s) {
@@ -834,8 +494,6 @@ $(function () {
       }
     }
   });
-
-  $('table.sortable').sortableTable();
 
   var $ONCARD = undefined;
   console.log('retrieving full card set data (/cards.json)...');
@@ -1009,12 +667,11 @@ $(function () {
 
     var on = false
     var marquee = function () {
-      if (!$(document.body).is('.loading')) {
+      if ($('.loading .marquee').length == 0) {
         on = false;
         return;
       }
       var $m = $('.loading .marquee');
-      console.log('firing marquee (on = %s)', on);
       if (on) {
         $m.fadeOut();
         on = !on;
@@ -1029,27 +686,23 @@ $(function () {
   }
 
   function switchTo(page) {
-    $(document.body).attr('class', '').addClass(page).addClass('i'+parseInt(Math.random() * (275 - 250) + 250).toString());
+    $(document.body).attr('class', '').addClass(page);
     loadertain();
   }
-  switchTo('landing');
-  $('.focus').focus();
 
   function goto(sub) {
     console.log('nav to ['+sub+']');
+    if (sub == "login") {
+      $('#main').template('login');
+      $('input[name=username]').focus();
+      return;
+    }
+
     if (sub == "sets") {
       var thunk = function () {
-        var $t = $('#main > .sets table tbody');
-        $t.empty();
-        $.each($SETS, function (i, e) {
-          $t.append($('<tr>'+
-              '<td><span class="ss ss-'+e.code.toLowerCase()+'"></span></td>'+
-              '<td>'+e.code+'</td>'+
-              '<td>'+e.name+'</td>'+
-              '<td data-sort="'+e.release+'">'+strftime("%B %Oe, %Y", dated(e.release))+'</td>'+
-              '<td data-sort="'+e.size+'"><a href="#!/q/set:'+e.code+'">'+e.size+'</a></td>'+
-            '</tr>'));
-        });
+        $('#main').template('sets', { sets: $SETS });
+        $('#main table.sortable').sortableTable();
+
       };
       if (!$SETS) {
         $ONSET = thunk;
@@ -1059,6 +712,11 @@ $(function () {
     }
 
     switchTo(sub.replace(/\/.*/, ''));
+
+    if (sub == "docs") {
+      $('#main').template('docs');
+      return;
+    }
 
     if (sub == "logout") {
       $.ajax({
@@ -1090,15 +748,11 @@ $(function () {
       switchTo('search');
       if (!$CARDS) { $CARDS = $BASE; }
 
-      $('.results').empty();
-      $('.meta-results').css({ visibility: 'hidden' });
-      $('.oops').hide();
-
       var query, n = 50000;
       try {
         query = Query.parse(q);
       } catch (e) {
-        $('.search .oops').html(q+': '+e.toString()).fadeIn();
+        $('#main').template('results', { q: q, oops: e.toString() });
         return;
       }
 
@@ -1119,14 +773,12 @@ $(function () {
         if (a.name < b.name) { return -1; }
         return 0;
       });
-      var max = 400;
-      for (var i = 0; i < found.length && i < max; i++) {
-        $('.results').append('<span data-own="'+found[i].owned.toString()+'">'+
-                                cardback()+cardface(found[i])+
-                             '</span>');
-      }
-      $('.meta-results .count').html(found.length);
-      $('.meta-results').css({ visibility: 'visible' });
+
+      $('#main').template('results', {
+        q:       q,
+        max:     400,
+        results: found,
+      }, true)
       return;
     }
   }
@@ -1155,8 +807,8 @@ $(function () {
           document.cookie = 'vcb_sesh='+data.user.session+';max-age=7776000;samesite=strict';
           $(document.body).attr('data-user-id', data.user.id);
           $('.-username').html(data.user.display);
-          refreshCollection();
-          switchTo('search');
+          document.location.hash = '#!/q/owned';
+          $(window).trigger('hashchange');
 
         } else if (data.error) {
           $('.login .oops').html(data.error).fadeIn();
@@ -1174,8 +826,7 @@ $(function () {
       type: 'GET',
       url:  '/my/collection.vcb',
       success: function (data) {
-        $('.edit-collection textarea').val(data);
-        switchTo('edit');
+        $('#main').template('edit-collection', { data: data });
       }
     });
   })

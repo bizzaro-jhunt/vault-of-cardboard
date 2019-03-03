@@ -42,229 +42,126 @@ table {
   border-spacing: 0;
 }
 /**/
-body {
-}
 
 body .if-not-authed, body[data-user-id] .if-authed     { display: block; }
 body .if-authed,     body[data-user-id] .if-not-authed { display: none; }
 
-body.landing {
-}
 body {
   min-height: 100vh;
-}
-body.landing header { display: none; }
-body.landing {
-  background-image: url(/img/angel.jpg);
-  background-attachment: fixed;
-  background-size: cover;
-  background-position: 50% 50%;
-}
-body.landing .band {
-  width: 100vw;
   position: relative;
-}
-body.landing .band.header {
-  box-sizing: border-box;
-  height: 30vh;
-  background-color: rgba(0,0,0,0.8);
-  color: #fff;
-}
-body.landing .band.header h1 {
-  font-family: sans-serif;
-  font-size: 36pt;
-  text-align: center;
-  line-height: 30vh;
-}
-body.landing .band.header h1 span {
-  color: yellow;
-}
-body.landing .band.search {
-  height: 80vh;
-}
-body.landing .search input {
-  box-sizing: border-box;
-  position: absolute;
-  top: 20vh;
-  left: 20vw;
-  width: 60vw;
-  font-size: 24pt;
-  background-color: rgba(0,0,0,0.8);
-  border: none;
-  border-radius: 8px;
-  padding: 8px 16px;
-  color: #fff;
-}
-body.landing .search > input::placeholder { color: yellow; opacity: 0.9; }
-
-body.landing .features {
-  min-height: 60vh;
-  background-color: #5A0089;
-  display: flex;
-}
-body.landing .features > div {
-  width: 33.3333%;
-  background-color: rgba(0,0,0,0.5);
-  color: #fff;
-  font-family: sans-serif;
-}
-body.landing .features > div:nth-child(2n) {
-  background-color: rgba(0,0,0,0.35);
-}
-body.landing .features > div span {
-  height: 15vw;
-  width: 15vw;
-  display: block;
-  background-color: #fff;
-  border-radius: 100%;
-  margin: 4vw auto;
-}
-body.landing .features > div h2 {
-  font-size: 24pt;
-  font-weight: lighter;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 2pt;
-}
-body.landing .features > div p {
-  line-height: 1.5em;
-  width: 70%;
-  margin: 2em auto;
-  text-align: justify;
-}
-
-.band.login {
-  min-height: 60vh;
-  display: flex;
-  font-family: sans-serif;
-}
-.band.login > div,
-.band.login > form {
-  padding: 40px;
-  box-sizing: border-box;
-}
-.band.login > div {
-  width: 40vw;
-  background-color: rgba(0,0,0,0.8);
-  color: #fff;
-}
-.band.login h1 {
-  font-size: 24pt;
-  font-weight: lighter;
-  line-height: 48pt;
-}
-.band.login > div p {
-  line-height: 1.2em;
-  text-align: justify;
-  margin: 1em 0;
-}
-.band.login > form {
-  width: 60vw;
-  background-color: rgba(255,255,255,0.7);
-}
-.band.login .oops {
-  margin: 0;
-  width: 30vw;
-  box-sizing: border-box;
-}
-.band.login > form input {
-  font-size: 24pt;
-  background-color: rgba(0,0,0,0.8);
-  border: none;
-  border-radius: 8px;
-  padding: 8px 16px;
-  color: #fff;
-
-  width: 30vw;
-  margin: 0.5em 0;
-  display: block;
-  box-sizing: border-box;
-}
-.band.login > form button {
-  font-size: 18pt;
-  background-color: rgba(0,0,0,0.8);
-  border: none;
-  border-radius: 8px;
-  padding: 8px 16px;
-  color: #fff;
-
-  margin: 0.5em 0;
-  display: block;
-}
-.band.login > div form input {
-  outline: 0;
-  height: 42px;
-  background: #fff;
-  border: 1px solid black;
-  border-radius: 8px 0 0 8px;
-  font-size: 14pt;
-  margin: 0;
-  box-sizing: border-box;
-  padding-left: 0.5ex;
-}
-.band.login > div form button {
-  font-size: 14pt;
-  border: none;
-  border-radius: 0 8px 8px 0;
-  height: 40px;
-  margin: 0;
-  box-sizing: border-box;
-  background: paleturquoise;
-  color: #000;
-  font-weight: bold;
-}
-
-.band.footer {
-  min-height: 30vh;
-  background-color: #fff;
-  color: #777;
-}
-.band.footer nav {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  line-height: 30vh;
-  list-style: none;
-}
-.band.footer nav li {
-  margin: 0 0.75em;
-}
-.band.footer nav li a {
-  text-decoration: none;
-  color: inherit;
-}
-.band.footer nav li a:hover {
-  border-bottom: 1px dotted slateblue;
 }
 
 /* for chrome */
 button:focus, input:focus { outline: 0; }
 
-body.landing .landing footer {
+.landing {
+  margin: 5vh 10vw;
+  padding-bottom: 3em;
+  overflow: none;
+  display: flex;
+  flex-flow: row wrap;
+}
+.landing img {
+  max-width: 700px;
+  width: 100%;
+}
+.landing > div {
+  width: 50%;
+}
+.landing > div:nth-child(2) {
+  font-size: 16pt;
+  line-height: 1.4em;
+  padding: 8em 0 0 4em;
+  box-sizing: border-box;
+}
+.landing div p {
+  margin-bottom: 1em;
+}
+.landing div a {
+  text-decoration: none;
+  color: #0071bc;
+  border-bottom: 1px dotted #0071bc;
+}
+.landing div strong {
+  font-weight: bold;
+  font-family: sans-serif;
+  font-size: 90%;
+  padding: 2px 6px;
+  background-image: url(/hili.png);
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+.landing div em {
+  font-style: italic;
+  font-weight: bold;
+}
+.landing div footer {
   position: absolute;
   bottom: 0;
-  left: 0;
-  width: 100vw;
-  background-color: rgba(255,255,255,0.6);
-}
-body.landing .landing footer nav {
-  display: flex;
-  justify-content: center;
-  list-style: none;
-}
-body.landing .landing footer nav li {
-  margin: 0.7em 1em;
+  right: 2em;
   font-family: sans-serif;
-  font-size: 9pt;
-  color: #777;
+  font-size: 10pt;
+  opacity: 0.5;
 }
-body.landing .landing footer nav li a {
-  text-decoration: none;
+
+.landing form {
+  margin: 2em auto;
+  max-width: 44ex;
+}
+.landing form div {
+  margin: 1em;
+  position: relative;
+}
+.landing form div a {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  font-size: 11pt;
+  border: none;
+  line-height: 1.1em;
+  visibility: hidden;
+}
+.landing form div:hover a {
+  visibility: visible;
+}
+.landing form label {
+  display: block;
+  line-height: 1.333em;
+  font-size: 10pt;
+  font-family: sans-serif;
+  text-transform: lowercase;
   font-weight: bold;
-  color: darkblue;
-  border-bottom: 1px dotted darkblue;
+}
+.landing form input {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 24pt;
+  padding: 0.3em;
+  border: 2px solid dodgerblue;
+  border-radius: 5px;
+  background-color: #fff;
+  color: dodgerblue;
+}
+.landing form input:focus {
+  background-color: dodgerblue;
+  color: #fff;
+}
+.landing form button {
+  cursor: pointer;
+  font-weight: bold;
+  box-sizing: border-box;
+  font-size: 16pt;
+  padding: 0.3em 0.9em;
+  border: 2px solid dodgerblue;
+  border-radius: 5px;
+}
+.landing form button.safe {
+  background-color: dodgerblue;
+  color: #fff;
+}
+.landing form > div:last-child {
+  display: flex;
+  flex-flow: row-reverse;
 }
 
 header {
@@ -516,33 +413,19 @@ header input {
   font-size: 18pt;
   font-weight: bold;
   cursor: pointer;
-  bordeR: none;
+  border: none;
   border-radius: 8px;
   padding: 4pt 12pt;
 }
 
-
-#main > div { display: none; }
-body.landing #main > div.landing,
-body.loading #main > div.loading,
-body.docs    #main > div.docs,
-body.sets    #main > div.sets,
-body.edit    #main > div.edit-collection,
-body.search  #main > div.search,
-body.login   #main > div.login  { display: block; }
-
-body.login {
-  background-size: cover;
-}
-
-.loading .loading h1 {
+#main .loading h1 {
   font-size: 24pt;
   font-style: italic;
   text-align: left;
   width: 50vw;
   margin: 30vh auto 0em;
 }
-.loading .marquee {
+#main .loading .marquee {
   line-height: 1.25em;
   text-indent: -1ex;
   font-size: 18pt;
@@ -551,7 +434,7 @@ body.login {
   color: #777;
   margin: 10vh auto;
 }
-.loading .marquee cite {
+#main .loading .marquee cite {
   display: block;
   text-align: right;
 }
@@ -561,7 +444,6 @@ body.login {
   font-weight: normal;
   font-size: 12pt;
 
-  display: none;
   border-radius: 4pt;
   padding: 1em 2em;
   margin: 1em auto;
@@ -703,54 +585,16 @@ table th.sortable.asc ::before {
 
  */
 
-@media only screen and (max-width: 1000px) {
+@media only screen and (max-width: 1030px) {
+  .landing {
+    margin: 1em;
+  }
+  .landing > div:nth-child(2) {
+    padding: 1em;
+  }
 }
 
 @media only screen and (max-width: 720px) {
-  body.landing .band.header {
-    height: auto;
-    padding: 8pt;
-  }
-  body.landing .band.header h1 {
-    font-size:   20pt;
-    line-height: 30pt;
-  }
-
-  body.landing .band.search {
-    height: 75vh;
-  }
-  body.landing .band.search input {
-    left: 5vw;
-    width: 90vw;
-    font-size: 16pt;
-  }
-
-  body.landing .band.features {
-    flex-direction: column;
-  }
-  body.landing .band.features > div {
-    width: 100%;
-  }
-
-  body.landing .band.login {
-    flex-direction: column-reverse;
-  }
-  body.landing .band.login > div,
-  body.landing .band.login > form {
-    width: 100%;
-  }
-  body.landing .band.login form input,
-  body.landing .band.login form button {
-    font-size: 10pt;
-  }
-  body.landing .band.login > form input {
-    width: 100%;
-  }
-  body.landing .band.login > div p {
-    text-align: left; /* not justify */
-  }
-
-
   header {
     flex-direction: column;
   }
@@ -764,6 +608,21 @@ table th.sortable.asc ::before {
   }
   header nav {
     display: none; /* FIXME: temporary */
+  }
+
+  .landing {
+    flex-flow: column wrap;
+    margin: 1em;
+  }
+  .landing.login {
+    flex-direction: column-reverse;
+  }
+  .landing > div {
+    width: 100%;
+  }
+  .landing div {
+    padding: 0;
+    margin: 1em 0 0 0;
   }
 
   .grid.results > span .card {

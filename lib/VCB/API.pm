@@ -115,7 +115,7 @@ if (M('User')->count == 0 && $ENV{VCB_FAILSAFE_USERNAME} && $ENV{VCB_FAILSAFE_PA
 #########################################################################
 
 get '/' => sub {
-	redirect '/index.html';
+	send_file 'index.html';
 };
 
 get '/config.js' => sub {
@@ -124,16 +124,6 @@ get '/config.js' => sub {
 			imgroot => config->{vcb}{imgroot},
 		}).';',
 		{ content_type => 'application/javascript' };
-};
-
-get '/login.css' => sub {
-	my @css;
-	my $root = config->{vcb}{imgroot};
-	for my $i (250..274) {
-		push @css, "body.login.i$i { background-image: url($root/login/$i.jpg); }\n";
-	}
-	send_as plain => join("", @css),
-		{ content_type => 'text/css' };
 };
 
 get '/my/:type' => sub {
