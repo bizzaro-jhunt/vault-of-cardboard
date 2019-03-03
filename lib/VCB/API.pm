@@ -657,7 +657,7 @@ post '/v/admin/sets/:code/ingest' => sub {
 			power     => $card->{power}     || '',
 			toughness => $card->{toughness} || '',
 			layout    => $card->{layout},
-			legalese  => to_json($card->{legalities}),
+			legalese  => to_json($card->{legalities} || {}),
 		};
 		my $rc = $existing{$card->{id}};
 		if ($rc) {
@@ -824,7 +824,7 @@ post '/v/admin/recache' => sub {
 				toughness => $card->toughness,
 				pt        => $card->power ? ($card->power . '/' . $card->toughness) : undef,
 
-				legal     => from_json($card->legalese),
+				legal     => from_json($card->legalese || '{}'),
 			};
 		}
 		print "$n/$total cards recached.\n";
