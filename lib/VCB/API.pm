@@ -25,6 +25,7 @@ set static_handler => true;
 config->{vcb}{imgroot}    ||= '/img';
 config->{vcb}{datroot}    ||= cwd.'/dat';
 config->{vcb}{cacheroot}  ||= cwd.'/cache';
+config->{vcb}{cachefor}   ||= 1;
 config->{vcb}{s3}{aki}    ||= $ENV{S3_AKI};
 config->{vcb}{s3}{key}    ||= $ENV{S3_KEY};
 config->{vcb}{s3}{bucket} ||= $ENV{S3_BUCKET} || 'vault-of-cardboard';
@@ -584,6 +585,14 @@ post '/v/admin/sets/:code/ingest' => sub {
 	my $code = lc(param('code'));
 	warn "ingesting set [$code]...\n";
 	my $cache = cachepath("$code.set");
+	if (-f $cache) {
+		warn "checking if our cache file needs to be re-synced or not...\n";
+		my $mtime = (stat($cache))[9];
+		if (time - $mtime > config->{vcb}{cachefor} * 86400) {
+			warn "cache file is ".((time - $mtime)/86400.0)." day(s) old (> ".config->{vcb}{cachefor}."); invalidating.\n";
+			unlink $cache;
+		}
+	}
 	if (! -f $cache) {
 		mkdir cachepath();
 		print "cache path '$cache' not found; pulling [$code] from scryfall...\n";
