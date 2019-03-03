@@ -94,6 +94,17 @@ if ($command eq 'recache') {
 	exit 0;
 }
 
+if ($command eq 'sets') {
+	my $res = $ua->get("$VCB_API/sets.json");
+	if (!$res->is_success) {
+		print STDERR "FAILED!\n";
+		print STDERR $res->decoded_content;
+		exit 1;
+	}
+	print $res->decoded_content."\n";
+	exit 0;
+}
+
 if ($command eq 'ingest') {
 	my $rc = 0;
 
