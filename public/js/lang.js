@@ -112,7 +112,19 @@ parsing:
     throw 'unrecognized query fragment: ['+s.substr(0,50)+'...]';
   }
 
-  return tok;
+  /* collapse adjacent IDENTIFIER tokens */
+  var collapsed = [],
+      last = tok[0];;
+  for (var i = 1; i < tok.length; i++) {
+    if (last[0] == 'IDENTIFIER' && tok[i][0] == last[0]) {
+      last[1] += ' ' + tok[i][1];
+    } else {
+      collapsed.push(last);
+      last = tok[i];
+    }
+  }
+  collapsed.push(last);
+  return collapsed;
 }
 
 function Query(t,a,b) {
