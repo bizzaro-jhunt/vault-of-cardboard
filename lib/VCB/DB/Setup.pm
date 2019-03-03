@@ -73,6 +73,12 @@ EOF
 		$db->do("ALTER TABLE prints ADD COLUMN layout TEXT NOT NULL DEFAULT 'normal'");
 		$set_v->execute(++$version);
 	}
+
+	if ($version == 2) {
+		print __PACKAGE__.": migrating v2 -> v3 (support for card legality)\n";
+		$db->do("ALTER TABLE prints ADD COLUMN legalese TEXT NOT NULL DEFAULT '{}'");
+		$set_v->execute(++$version);
+	}
 }
 
 sub init {

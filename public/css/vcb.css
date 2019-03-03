@@ -560,6 +560,10 @@ header input {
   font-family: monospace;
   color: darkblue;
 }
+.docs table.keywords tbody tr td ul {
+  list-style: circle;
+  padding: 1em 1em 1em 2em;
+}
 
 table th.sortable {
   cursor: pointer;

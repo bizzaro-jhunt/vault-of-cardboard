@@ -126,6 +126,13 @@ function parse(tok) {
       loose_re  = function (v) { return new RegExp('\\b'+v+'\\b', 'i'); },
       setcode   = function (v) { return v.toUpperCase(); },
       literal   = function (v) { return v ; },
+      legalese  = function (v) {
+        v = v.toLowerCase();
+        if (v == 'edh') {
+          v = 'commander';
+        }
+        return v;
+      },
       boolish   = function (v) {
         var fn = function (v) { return !v; }
         fn.string = 'no';
@@ -203,6 +210,7 @@ function parse(tok) {
       case 'LAYOUT':
       case 'PT':
       case 'RARITY':  fn = literal;  break;
+      case 'LEGAL':   fn = legalese; break;
       case 'RESERVED':
       case 'REPRINT': fn = boolish;  break;
       case 'COLOR':   fn = colormap; break;
@@ -317,6 +325,7 @@ Query.prototype.toString = function () {
   case 'ARTIST':
   case 'RARITY':
   case 'LAYOUT':
+  case 'LEGAL':
   case 'PT':
     return '('+this.type+' '+this.a.toString()+')';
 
@@ -379,6 +388,8 @@ Query.prototype.match = function (card) {
       return card.power != "" && this.a.call(card, parseInt(card.power) * 1.0 / parseInt(card.toughness));
   case 'LAYOUT':
       return this.a == card.layout;
+  case 'LEGAL':
+      return card.legal[this.a.toLowerCase()] == 'legal';
   case 'PT':
       return this.a == card.pt;
   case 'RESERVED':

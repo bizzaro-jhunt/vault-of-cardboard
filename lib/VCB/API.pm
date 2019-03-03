@@ -9,6 +9,7 @@ use File::Find;
 use Cwd qw/cwd/;
 use MIME::Base64 qw/decode_base64/;
 use Net::Amazon::S3;
+use JSON::MaybeXS qw/to_json from_json/;
 
 use VCB::Format;
 use VCB::Format::Standard;
@@ -647,6 +648,7 @@ post '/v/admin/sets/:code/ingest' => sub {
 			power     => $card->{power}     || '',
 			toughness => $card->{toughness} || '',
 			layout    => $card->{layout},
+			legalese  => to_json($card->{legalities}),
 		};
 		my $rc = $existing{$card->{id}};
 		if ($rc) {
@@ -815,6 +817,8 @@ post '/v/admin/recache' => sub {
 				power     => $card->power,
 				toughness => $card->toughness,
 				pt        => $card->power ? ($card->power . '/' . $card->toughness) : undef,
+
+				legal     => from_json($card->legalese),
 			};
 		}
 
