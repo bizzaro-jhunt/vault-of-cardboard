@@ -53,6 +53,7 @@ my %OPT = (
 );
 GetOptions(\%OPT, qw/
 	images
+	force
 	timeout|T=i
 /);
 if (!@ARGV) {
@@ -98,7 +99,7 @@ if ($command eq 'ingest') {
 
 	for my $set (@ARGV) {
 		print "ingesting set $set...";
-		my $res = $ua->post("$VCB_API/v/admin/sets/$set/ingest".($OPT{images} ? '?faces=y' : ''));
+		my $res = $ua->post("$VCB_API/v/admin/sets/$set/ingest".($OPT{images} ? '?faces=y'.($OPT{force} ? '&force=y' : '') : ''));
 		if (!$res->is_success) {
 			print "FAILED!\n";
 			print $res->decoded_content;

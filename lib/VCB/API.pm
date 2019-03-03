@@ -92,8 +92,8 @@ sub rarity {
 }
 
 sub backfill_image {
-	my ($ua, $bucket, $ours, $theirs, $msg) = @_;
-	if (!$bucket->head_key($ours)) {
+	my ($ua, $bucket, $ours, $theirs, $msg, $force) = @_;
+	if ($force || !$bucket->head_key($ours)) {
 		warn "backfilling image for $msg...\n";
 		my $res = $ua->get($theirs);
 		if (!$res->is_success) {
