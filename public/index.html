@@ -605,8 +605,8 @@ $(function () {
     });
   }
 
-  function loadertain() {
-    var msg = [
+  function loading() {
+    var msg = [ /* {{{ */
       /* flavor:canto or flavor:"Song" */
       /* Arbor Armament (DOM) */
       "<blockquote>&ldquo;Llanowar's boughs are ever ready<br>To unleash an autumn of steel leaves.&rdquo;<cite>&mdash;&ldquo;Song of Freyalise&rdquo;</cite></blockquote>",
@@ -684,7 +684,9 @@ $(function () {
       "<blockquote>&ldquo;You returned a warrior. . . . Your hair was cut, your eye tattooed with the red triangle of war.&rdquo;<cite>&mdash;&ldquo;Love Song of Night and Day&rdquo;</cite></blockquote>"
 
     ];
+    /* }}} */
 
+    $('#main').template('loading');
     var on = false
     var marquee = function () {
       if ($('.loading .marquee').length == 0) {
@@ -703,11 +705,6 @@ $(function () {
       }
     };
     marquee();
-  }
-
-  function switchTo(page) {
-    $(document.body).attr('class', '').addClass(page);
-    loadertain();
   }
 
   function goto(sub) {
@@ -730,8 +727,6 @@ $(function () {
         thunk();
       }
     }
-
-    switchTo(sub.replace(/\/.*/, ''));
 
     if (sub == "docs") {
       $('#main').template('docs');
@@ -761,11 +756,10 @@ $(function () {
           console.log('$ONCARD handler fired... refreshing collection and then proceeded with search for %s', q);
           refreshCollection(function () { search(q); });
         };
-        switchTo('loading');
+        loading();
         return;
       }
 
-      switchTo('search');
       if (!$CARDS) { $CARDS = $BASE; }
 
       var query, n = 50000;
@@ -841,7 +835,7 @@ $(function () {
   })
   .on('click', 'a[rel="mycol"]', function (event) {
     event.preventDefault();
-    switchTo('loading');
+    loading();
     $.ajax({
       type: 'GET',
       url:  '/my/collection.vcb',
