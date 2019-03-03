@@ -153,19 +153,16 @@ function parse(tok) {
         var n, op, fn = function () { return false; };
         var m = v.match('^([<>]?=?)?([0-9]+(\\.[0-9]+)?)$');
         if (m) {
-          console.log(m);
           op = m[1] || '=';
           n = parseFloat(m[2]);
         } else {
           m = v.match('^([0-9]+(\\.[0-9]+)?)\\+$');
           if (m) {
-          console.log(m);
             op = '>=';
             n = parseFloat(m[1]);
           }
         }
 
-        console.log("op = ", op, " n = ", n);
         switch (op) {
         case '>':  fn = function (v) { return v >  n; }; break;
         case '<':  fn = function (v) { return v <  n; }; break;
@@ -184,7 +181,6 @@ function parse(tok) {
         'NOT': 2
       };
 
-  console.log('%s', tok);
   while (tok.length > 0) {
     var t = tok.shift();
     switch (t[0]) {
@@ -307,7 +303,6 @@ function parse(tok) {
   if (data.length != 1) {
     throw 'syntax error';
   }
-  console.log(data[0].toString());
   return data[0];
 }
 
