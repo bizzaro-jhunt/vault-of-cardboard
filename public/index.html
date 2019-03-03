@@ -112,9 +112,9 @@
     <span data-own="[[= card.owned ]]">
       <span class="card back"><img src="/mtgback.jpg"></span>
       <span class="card face [[= card.layout]]">
-        [[ if (card.form == 'flip') { ]]<a href="#" rel="flip"></a>[[ } ]]
+        [[ if (card.layout == 'transform') { ]]<a href="#" rel="flip"></a>[[ } ]]
         <img data-id="[[= card.id ]]" src="[[= $CONFIG.imgroot ]]/cards/[[= card.image ]]"
-             [[ if (card.layout == 'transforms') { ]]data-flip-src="[[= $CONFIG.imgroot ]]/cards/[[= card.image.replace(/\.jpg/, '.flip.jpg') ]]"[[ } ]]
+             [[ if (card.layout == 'transform') { ]]data-flip-src="[[= $CONFIG.imgroot ]]/cards/[[= card.back ]]"[[ } ]]
              alt="[[= alt ]]" title="[[= alt ]]">
       </span>
     </span>

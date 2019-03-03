@@ -706,15 +706,7 @@ post '/v/admin/sets/:code/ingest' => sub {
 			);
 
 			for my $card (@{$set->{cards}}) {
-				if ($card->{image_uris}{large}) {
-					backfill_image($ua, $bucket,
-						sprintf("cards/%s/%s-%s.jpg", uc($code), uc($code), $card->{id}),
-						$card->{image_uris}{large},
-						"[$code] $card->{name} ($card->{id})",
-						!!params->{force})
-							or warn "$!\n";
-
-				} elsif ($card->{card_faces} && @{$card->{card_faces}} == 3) { # flippy
+				if ($card->{layout} eq 'transform') {
 					backfill_image($ua, $bucket,
 						sprintf("cards/%s/%s-%s.jpg", uc($code), uc($code), $card->{id}),
 						$card->{card_faces}[0]{image_uris}{large},
@@ -729,8 +721,16 @@ post '/v/admin/sets/:code/ingest' => sub {
 						!!params->{force})
 							or warn "$!\n";
 
+				} elsif ($card->{image_uris}{large}) {
+					backfill_image($ua, $bucket,
+						sprintf("cards/%s/%s-%s.jpg", uc($code), uc($code), $card->{id}),
+						$card->{image_uris}{large},
+						"[$code] $card->{name} ($card->{id})",
+						!!params->{force})
+							or warn "$!\n";
+
 				} else {
-					warn "unable to find card image url for [$code] $card->{name} in card metadata!\n";
+					warn "unable to find card image url for [$code] $card->{name} (layout:$card->{layout}) in card metadata!\n";
 				}
 			}
 
@@ -788,8 +788,8 @@ post '/v/admin/recache' => sub {
 		my $n = 0;
 		my $total = $Print->count;
 		while (my $card = $Print->next) {
-			$n++;
 			print "$n/$total cards recached.\n" if $n % 100 == 0;
+			$n++;
 			push @{$ALL{$card->set_id}}, {
 				id       => $card->id,
 				set      => { code  => $card->set_id,
@@ -805,8 +805,8 @@ post '/v/admin/recache' => sub {
 				flavor   => $card->flavor,
 				layout   => $card->layout,
 				image    => sprintf("%s/%s-%s.jpg", $card->set_id, $card->set_id, $card->id),
-				back     => ($card->layout eq 'flip') ? sprintf("%s/%s-%s.flip.jpg", $card->set_id, $card->set_id, $card->id)
-				                                      : undef,
+				back     => ($card->layout eq 'transform') ? sprintf("%s/%s-%s.flip.jpg", $card->set_id, $card->set_id, $card->id)
+				                                           : undef,
 				number   => $card->colnum,
 				owned    => 0,
 				rarity   => rarity($card->rarity),
@@ -821,6 +821,7 @@ post '/v/admin/recache' => sub {
 				legal     => from_json($card->legalese),
 			};
 		}
+		print "$n/$total cards recached.\n";
 
 		open my $fh, ">", datpath(".new.json") or do {
 			warn "unable to open $DATFILE: $!\n";
