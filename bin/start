@@ -27,6 +27,7 @@ export VCB_FAILSAFE_PASSWORD=${VCB_FAILSAFE_PASSWORD:-'$2a$12$gVWeTxwtfA5rpM.rj3
 export DANCER_ENVIRONMENT=docker
 export DANCER_ENVDIR=/app/environments
 export DANCER_APPDIR=/app
+export DANCER_PUBLIC=/app/public
 export DANCER_PORT=80
 
 cd /app
