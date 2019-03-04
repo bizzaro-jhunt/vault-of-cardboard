@@ -39,6 +39,7 @@
         </nav></li>
   </nav>
 </header>
+<div class="colors"></div>
 
 <div id="main">
   <div class="landing">
@@ -708,6 +709,7 @@ $(function () {
   }
 
   function goto(sub) {
+    $('body > .colors').css({visibility: 'hidden' });
     console.log('nav to ['+sub+']');
     if (sub == "login") {
       $('#main').template('login');
@@ -771,17 +773,47 @@ $(function () {
       }
 
       var found = [];
+      var colors = {};
       for (var set in $CARDS) {
         for (var i = 0; i < $CARDS[set].length; i++) {
           var card = $CARDS[set][i];
           if (query.match(card)) {
             found.push(card);
+            $.each(card.color.split(''), function (j, color) {
+              colors[color] = (colors[color] || 0) + 1;
+              colors.total = (colors.total || 0) + 1;
+            });
             n--;
             if (n == 0) { break; }
           }
         }
         if (n == 0) { break; }
       }
+
+      var at = 0, n = 0, colorliteral;
+      var css = 'linear-gradient(90deg';
+      $.each('WUBRG'.split(''), function (j, color) {
+        if (!(color in colors)) { return; }
+        n++;
+        css += ', ';
+        switch (color) {
+        case 'W': colorliteral = '#EEE6B5'; break;
+        case 'U': colorliteral = '#375FB6'; break;
+        case 'B': colorliteral = '#333'; break;
+        case 'R': colorliteral = '#AE4441'; break;
+        case 'G': colorliteral = '#2F7A5B'; break;
+        }
+        if (at > 0) {
+          css += ' '+at+'vw, ';
+        }
+        css += colorliteral;
+        if (at > 0) {
+          css += ' '+at+'vw'
+        }
+        at += colors[color] / colors.total * 100.0;
+      });
+      css += ')';
+      $('body > .colors').css({background: n == 1 ? colorliteral : css, visibility: found.length == 0 ? 'hidden' : 'visible'});
       found = found.sort(function (a, b) {
         if (a.name > b.name) { return 1; }
         if (a.name < b.name) { return -1; }
