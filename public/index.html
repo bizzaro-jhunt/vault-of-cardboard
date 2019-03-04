@@ -113,8 +113,9 @@
     <span data-own="[[= card.owned ]]">
       <span class="card back"><img src="/mtgback.jpg"></span>
       <span class="card face [[= card.layout]]">
-        [[ if (card.layout == 'transform') { ]]<a href="#" rel="flip"></a>[[ } ]]
+        [[ if (card.layout == 'transform' || card.layout == 'flip') { ]]<a href="#" rel="flip"></a>[[ } ]]
         <img data-id="[[= card.id ]]" src="[[= $CONFIG.imgroot ]]/cards/[[= card.image ]]"
+             data-layout="[[= card.layout ]]"
              [[ if (card.layout == 'transform') { ]]data-flip-src="[[= $CONFIG.imgroot ]]/cards/[[= card.back ]]"[[ } ]]
              alt="[[= alt ]]" title="[[= alt ]]">
       </span>
@@ -927,10 +928,17 @@ $(function () {
   })
   .on('click', '.results .face a[rel=flip]', function (event) {
     event.preventDefault();
-    var $img = $(event.target).closest('.face').find('img');
-    var src = $img.attr('src');
-    $img.attr('src', $img.attr('data-flip-src'));
-    $img.attr('data-flip-src', src);
+    var $card = $(event.target).closest('.face');
+    var $img  = $(event.target).closest('.face').find('img');
+
+    if ($card.is('.transform')) {
+      var src = $img.attr('src');
+      $img.attr('src', $img.attr('data-flip-src'));
+      $img.attr('data-flip-src', src);
+
+    } else if ($card.is('.flip')) {
+      $img.toggleClass('flipped');
+    }
   })
   .on('click', '.results .face img', function (event) {
     var id   = $(event.target).closest('[data-id]').attr('data-id'),
@@ -948,8 +956,9 @@ $(function () {
       return '/* '+name+' ('+set.code+') */'+"\n\n\"&lt;blockquote&gt;"+s+"&lt;/blockquote&gt;\"";
     };
 
+    window.$current = card;
     $('.modal-fg').empty().append(
-      '<img src="'+$(event.target).closest('img').attr('src')+'">'+
+      '<img class="'+$(event.target).closest('img').attr('class')+'" src="'+$(event.target).closest('img').attr('src')+'">'+
       '<div class="detail">'+
         '<a class="close" href="#">X</a>'+
             '<ul class="tags">'+
