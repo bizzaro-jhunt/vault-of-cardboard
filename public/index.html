@@ -113,10 +113,10 @@
     <span data-own="[[= card.owned ]]">
       <span class="card back"><img src="/mtgback.jpg"></span>
       <span class="card face [[= card.layout]]">
-        [[ if (card.layout == 'transform' || card.layout == 'flip') { ]]<a href="#" rel="flip"></a>[[ } ]]
+        [[ if (card.layout == 'transform' || card.layout == 'double_faced_token' || card.layout == 'flip') { ]]<a href="#" rel="flip"></a>[[ } ]]
         <img data-id="[[= card.id ]]" src="[[= $CONFIG.imgroot ]]/cards/[[= card.image ]]"
              data-layout="[[= card.layout ]]"
-             [[ if (card.layout == 'transform') { ]]data-flip-src="[[= $CONFIG.imgroot ]]/cards/[[= card.back ]]"[[ } ]]
+             [[ if (card.layout == 'transform' || card.layout == 'double_faced_token') { ]]data-flip-src="[[= $CONFIG.imgroot ]]/cards/[[= card.back ]]"[[ } ]]
              alt="[[= alt ]]" title="[[= alt ]]">
       </span>
     </span>
@@ -931,7 +931,7 @@ $(function () {
     var $card = $(event.target).closest('.face');
     var $img  = $(event.target).closest('.face').find('img');
 
-    if ($card.is('.transform')) {
+    if ($card.is('.transform') || $card.is('.double_faced_token')) {
       var src = $img.attr('src');
       $img.attr('src', $img.attr('data-flip-src'));
       $img.attr('data-flip-src', src);

@@ -725,7 +725,7 @@ post '/v/admin/sets/:code/ingest' => sub {
 			);
 
 			for my $card (@cards) {
-				if ($card->{layout} eq 'transform') {
+				if ($card->{layout} eq 'transform' or $card->{layout} eq 'double_faced_token') {
 					backfill_image($ua, $bucket,
 						sprintf("cards/%s/%s-%s.jpg", uc($code), uc($code), $card->{id}),
 						$card->{card_faces}[0]{image_uris}{large},
@@ -821,8 +821,10 @@ post '/v/admin/recache' => sub {
 				flavor   => $card->flavor,
 				layout   => $card->layout,
 				image    => sprintf("%s/%s-%s.jpg", $card->set_id, $card->set_id, $card->id),
-				back     => ($card->layout eq 'transform') ? sprintf("%s/%s-%s.flip.jpg", $card->set_id, $card->set_id, $card->id)
-				                                           : undef,
+				back     => ($card->layout eq 'transform' ||
+				             $card->layout eq 'double_faced_token')
+				               ? sprintf("%s/%s-%s.flip.jpg", $card->set_id, $card->set_id, $card->id)
+				               : undef,
 				number   => $card->colnum,
 				owned    => 0,
 				rarity   => rarity($card->rarity),
