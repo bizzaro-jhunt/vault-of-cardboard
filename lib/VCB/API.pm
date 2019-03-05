@@ -95,6 +95,7 @@ sub rarity {
 
 sub backfill_image {
 	my ($ua, $bucket, $ours, $theirs, $msg, $force) = @_;
+	warn "checking image state for $msg...\n";
 	if ($force || !$bucket->head_key($ours)) {
 		warn "backfilling image for $msg...\n";
 		my $res = $ua->get($theirs);
@@ -582,63 +583,72 @@ post '/v/admin/sets/:code/ingest' => sub {
 	#    "ok": "Set refreshed from upstream data."
 	# }
 
-	my $code = lc(param('code'));
-	warn "ingesting set [$code]...\n";
-	my $cache = cachepath("$code.set");
-	if (-f $cache) {
-		warn "checking if our cache file needs to be re-synced or not...\n";
-		my $mtime = (stat($cache))[9];
-		if (time - $mtime > config->{vcb}{cachefor} * 86400) {
-			warn "cache file is ".((time - $mtime)/86400.0)." day(s) old (> ".config->{vcb}{cachefor}."); invalidating.\n";
-			unlink $cache;
+	my @cards;
+	my $crit = 1;
+	my $s;
+
+	for my $code (lc(param('code')), 't'.(lc(param('code')))) {
+		warn "ingesting set [$code]...\n";
+		my $cache = cachepath("$code.set");
+		if (-f $cache) {
+			warn "checking if our cache file needs to be re-synced or not...\n";
+			my $mtime = (stat($cache))[9];
+			if (time - $mtime > config->{vcb}{cachefor} * 86400) {
+				warn "cache file is ".((time - $mtime)/86400.0)." day(s) old (> ".config->{vcb}{cachefor}."); invalidating.\n";
+				unlink $cache;
+			}
 		}
-	}
-	if (! -f $cache) {
-		mkdir cachepath();
-		print "cache path '$cache' not found; pulling [$code] from scryfall...\n";
-		open my $fh, ">", $cache or do {
-			warn "failed to open cache file '$cache': $!\n";
-			return { error => "failed to open cache file '$cache': $!" };
-		};
+		if (! -f $cache) {
+			mkdir cachepath();
+			print "cache path '$cache' not found; pulling [$code] from scryfall...\n";
 
-		my $scry = Scry->new;
-		my $set = $scry->get1("/sets/$code") or do {
-			warn "failed to query ScryFall API for set [$code] data\n";
-			return { "error" => "Failed to query Scryfall API." };
-		};
+			my $scry = Scry->new;
+			my $set = $scry->get1("/sets/$code") or do {
+				next unless $crit;
+				warn "failed to query ScryFall API for set [$code] data\n";
+				return { "error" => "Failed to query Scryfall API." };
+			};
 
-		print "querying $set->{search_uri} ...\n";
-		$set->{cards} = $scry->get($set->{search_uri}) or do {
-			warn "failed to query ScryFall API for set [$code] card data\n";
-			return { "error" => "Failed to query Scryfall API." };
-		};
+			print "querying $set->{search_uri} ...\n";
+			$set->{cards} = $scry->get($set->{search_uri}) or do {
+				warn "failed to query ScryFall API for set [$code] card data\n";
+				return { "error" => "Failed to query Scryfall API." };
+			};
 
-		print $fh encode_json($set);
+			open my $fh, ">", $cache or do {
+				warn "failed to open cache file '$cache': $!\n";
+				return { error => "failed to open cache file '$cache': $!" };
+			};
+			print $fh encode_json($set);
+			close $fh;
+		}
+
+		open my $fh, "<", $cache
+			or return { error => "failed to read cache file: $!" };
+
+		my $set = decode_json(do { local $/; <$fh> });
 		close $fh;
-	}
 
-	open my $fh, "<", $cache
-		or return { error => "failed to read cache file: $!" };
-
-	my $set = decode_json(do { local $/; <$fh> });
-	close $fh;
-
-	$set->{set} = uc($set->{set} || $code);
-	my $s = M('Set')->find({ code => $set->{set} });
-	if (!$s) {
-		$s = M('Set')->create({
-			code    => $set->{set},
-			name    => $set->{name},
-			release => 0, # temporary
+		$set->{set} = uc($set->{set} || $code);
+		$set->{set} =~ s/^T// if $set->{set} =~ m/^T...$/;
+		$s = M('Set')->find({ code => $set->{set} })
+		  || M('Set')->create({
+		                 code    => $set->{set},
+		                 name    => $set->{name},
+		                 release => 0, # temporary
 		});
+
+		@cards = (@cards, @{$set->{cards}});
+		$crit = 0;
 	}
 
+	my $code = $s->code;
 	my %dates; # majority-wins release dating
 	my %existing = map { $_->id => $_ } $s->prints;
-	for my $card (@{$set->{cards}}) {
+	for my $card (@cards) {
 		$dates{$card->{released_at}}++;
 
-		print "updating $set->{set} $card->{name}...\n";
+		print "updating $code $card->{name}...\n";
 		my $attrs = {
 			id        => $card->{id},
 			name      => $card->{name},
@@ -671,7 +681,7 @@ post '/v/admin/sets/:code/ingest' => sub {
 	# whenever 60%+ of cards were released is
 	# close enough to the set release date for me...
 	for my $dated (keys %dates) {
-		next if $dates{$dated} < 0.6 * scalar(@{$set->{cards}});
+		next if $dates{$dated} < 0.6 * scalar(@cards);
 		$dated =~ s/-//g;
 		$s->update({ release => $dated });
 		last;
@@ -714,7 +724,7 @@ post '/v/admin/sets/:code/ingest' => sub {
 				ssl_opts => { verify_hostname => 0 },
 			);
 
-			for my $card (@{$set->{cards}}) {
+			for my $card (@cards) {
 				if ($card->{layout} eq 'transform') {
 					backfill_image($ua, $bucket,
 						sprintf("cards/%s/%s-%s.jpg", uc($code), uc($code), $card->{id}),
