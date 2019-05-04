@@ -42,6 +42,7 @@
 <div class="colors"></div>
 
 <div id="main">
+  <p class="changes">Collection management is now in full beta! <a href="#!/changelog/v20190503">read more &raquo;</a></p>
   <div class="landing">
     <div><img src="/front.png"></div>
     <div>
@@ -441,6 +442,258 @@
     <p><strong>What GRN creatures had more attack than defense?</strong></p>
 
     <pre><code class="query">set:GRN and ptr:&gt;1</code></pre>
+  </div>
+</script><!-- }}} -->
+<script type="text/html" id="template:changelog"><!-- {{{ -->
+  <div class="docs changelog prose">
+    [[# commit c3326b6 ]]
+    <h2 id="!/changelog/v20190503">
+    <img src="/h/v20190503.png">
+    Buy / Sell / Trade Collection Management (BETA)
+    <a href="/#!/changelog/v20190503">(permalink)</a>
+    <span>May 3rd 2019</span></h2>
+
+    <p>Okay, we've been working on this one for a long time, so bear with us...</p>
+
+    <p>Vault of Cardboard's collection management facilities just got a major boost.
+    No longer are you required to manage a single listing of all the cards in your
+    entire collection.  Instead, you can start with an initial import, and then use
+    <em>Buy</em> and <em>Sell</em> events to add cards to, and remove cards from your
+    collection.</p>
+
+    <p>I started doing this when I first got back into Magic, using spreadsheets and
+    some cobbled-together scripts to consolidate all the data.  I found it useful to
+    be able to go through and figure out when I got what cards, where they came from
+    (did I buy packs?  singles?  did someone gift them to me?), etc.</p>
+
+    <p>Now you can do that too!  Keep in mind, this is still in beta, and probably
+    has lots of bugs and corner cases that we haven't had a chance to suss out.</p>
+
+    <p>Oh, and if you need an account (we're still in closed registration), let us know!</p>
+
+
+    [[# not a commit; just data ]]
+    <h2 id="!/changelog/v20190427">
+    <img src="/h/v20190427.png">
+    War of the Spark Prerelease Weekend
+    <a href="/#!/changelog/v20190427">(permalink)</a>
+    <span>April 27th, 2019</span></h2>
+
+    <p>It's officially War of the Spark Prerelease Weekend, so we've added
+    <a href="#!/q/set:WAR">the <code>WAR</code> set</a> to Vault's database.
+    Have fun spelunking through all that new <em>amass</em> / <em>proliferate</em>
+    goodness, and drooling over those new walkers!</p>
+
+
+    [[# commits 0e3227e..f9da098 ]]
+    <h2 id="!/changelog/v20190305">
+    <img src="/h/v20190305.png">
+    Tokens, Flip Cards, and Color Splash!
+    <a href="/#!/changelog/v20190305">(permalink)</a>
+    <span>March 5th, 2019</span></h2>
+
+    <p>We now have card data on Tokens!  You can find tokens the same way
+    you find any other card, since the word "Token" shows up in their type
+    line: <code>type:token</code> works like a champ.  The Vault even supports
+    those pesky double-faced tokens from the Ravnica Guild Kits (GK1 / GK2).</p>
+
+    <p>Like flip cards?  Then you'll love the new <em>flippy</em> UI widget we've
+    added to the Kamigawa flip cards, and the Innistrad transform cards.  Click
+    the little rotate-y icon in the bottom right corner of a multi-faced card
+    and the other card face will be shown.  The modal card view even blows up
+    whatever face is shown in the grid!</p>
+
+    <p>Finally, the color breakdown of the entire search resultset is now encoded
+    in a 5-color bar at the top of the page.  Ever wonder who has the most draw-based
+    damage?  Just search for <a href="#!/q/+draw%20and+damage">+draw
+    and +damage</a> and you'll get immediate confirmation that it's mostly a
+    blue / red thing.</p>
+
+
+    [[# commits b0c4280..2b69dec ]]
+    <h2 id="!/changelog/v20190303">
+    <img src="/h/v20190303.png">
+    Even More Search Niceties
+    <a href="/#!/changelog/v20190303">(permalink)</a>
+    <span>March 3rd, 2019</span></h2>
+
+    <p>The <a href="#!/docs">Vault of Cardboard Query Language</a> now
+    handles adjacent <em>bare word</em> identifiers as parts of a card name.
+    That means you can now search <code>lady of scrolls</code> rather than
+    the (less specific) <code>lady AND of AND scrolls</code>.  We've caught
+    ourselves just typing card names into the search bar one too many times
+    to not just fix this.</p>
+
+    <p>Loading screens look prettier, but here's hoping you don't have to
+    spend enough time looking at them to notice...</p>
+
+
+    [[# commits fc4b0c9..6ebeb38 ]]
+    <h2 id="!/changelog/v20190302">
+    <img src="/h/v20190302.png">
+    My Pretties...
+    <a href="/#!/changelog/v20190302">(permalink)</a>
+    <span>March 2nd, 2019</span></h2>
+
+    <p>This update has a whole bunch of visual tweaks and improvements,
+    as well as a long-overdue addition to the querying capability.</p>
+
+    <p>The Vault now supports a <code>legal:...</code> predicate, allowing
+    you to refine your card search based on ban lists and pre-constructed
+    format rules.  It's never been easier to stay within the confines of
+    Modern, Vintage, Legacy, Standard, Brawl, and EDH/Commander.</p>
+
+    <p>Also, the <em>unusual</em> card formats are now queryable!  The Vault
+    now lets you search for cards based on their card layout, so you can finally
+    find all those splits, transform cards, melds, and flippies.</p>
+
+    <p>For prerelease and spoilers, Scryfall uses low-resolution digitals,
+    so our RNA card faces looked bad.  Those have been refreshed,
+    and the backend systems updated to avoid that in the future, as new
+    sets are released.</p>
+
+    <p>We now also have a "blank" card face which browsers will load before
+    attempting to fetch the actual card faces.  This makes the whole user
+    experience way nicer on slower links (i.e. conference / airport wifi).</p>
+
+
+    [[# commits 358f16d..d7d57a7 ]]
+    <h2 id="!/changelog/v20190125">
+    <img src="/h/v20190125.png">
+    Mobile Support, Ravnica Allegiance, and More
+    <a href="/#!/changelog/v20190125">(permalink)</a>
+    <span>January 25th, 2019</span></h2>
+
+    <p><a href="#!/q/set:RNA">Ravnica Allegiance is out!</a>
+    We've got all the cards and all the images for the newest set, where we get to
+    play as the other five Ravnican guilds: Orzhov, Rakdos, Simic, Gruul, and Azorius.</p>
+
+    <p>The Vault now supports mobile browsing, both on small screens (like my ancient
+    iPhone 5s) and tablet-sized displays (like my wife's iPad Pro).  Try it out and see
+    what you think!  Now you can check the prices, oracle text, errata, and other card
+    details, wherever you are.  We use it to settle disputes mid-game!</p>
+
+    <p>We've done a bunch of other various updates, tweaks and fixes as well:</p>
+
+    <ul>
+      <li><strong>Collection imports are now normalized</strong> to a single entry
+      per card+set, which can be helpful when you've got some last-minute additions
+      to the collection and don't want to bother with deduplication yourself.</li>
+
+      <li><strong>More Modal Card Detail.</strong>  When you click on a card to get
+      more information, you now get the title, card type, and oracle text, along
+      the right-hand side of the modal.  Useful for copying / pasting into your favorite
+      chat software, or M:tG forum.  We also integrated mana and tap symbols.</li>
+
+      <li><strong>Pricing is formatted more sanely now;</strong> <em>$120.0</em> is
+      just plain embarassing.  For ludicrously expensive cards (looking at you, Reserve
+      List), we now gently remind you that cardboard is a poor investment vehicle.</li>
+
+      <li><strong>All tables are now click-sortable.</strong>  Too many have suffered
+      with the inability to sort random tables by header columns.  No more!</li>
+    </ul>
+
+
+    [[# commits 5c202b0..7afcf1f ]]
+    <h2 id="!/changelog/v20190109">
+    <img src="/h/v20190109.png">
+    New Query Language Predicates / Set Listing Updates
+    <a href="/#!/changelog/v20190109">(permalink)</a>
+    <span>January 9th, 2019</span></h2>
+
+    <p>We have some new predicates in the query language that let you do some
+    pretty spicy stuff.  Use <code>artist:...</code> to find the prints by the
+    artists you love.  The new power / toughness predicates (<code>p/t/pt/cpt/ptr</code>)
+    will finally let us brew that killer <a href="#!/q/Wild Pair">Wild Pair</a>
+    deck for some sweet library-to-battlefield shenanigans.</p>
+
+    <p>Oh!  The <a href="#!/sets">Set Listing Page</a> got some love too; we now
+    track release dates (in a sortable table) so you can look through the sets
+    (reverse) chronologically, if you're into that sort of thing.  We also lined up
+    the set icons, so they look prettier.  Visuals matter!</p>
+
+
+    [[# commits 45111b6..eda7a07 ]]
+    <h2 id="!/changelog/v20190104">
+    <img src="/h/v20190104.png">
+    Missing Card Faces
+    <a href="/#!/changelog/v20190104">(permalink)</a>
+    <span>January 4th, 2019</span></h2>
+
+    <p>We were missing some images from random sets,  The ingestion process
+    now properly (and intelligently!) backfills missing images from Scryfall.
+    We have always hosted our own copies of the card images (front and back),
+    to ease load on Scryfalls bottom-line, now we're just better at it.</p>
+
+
+    [[# commits f68738b..71142ad ]]
+    <h2 id="!/changelog/v20190101">
+    <img src="/h/v20190101.png">
+    Docs, Fixes, and a UI Overhaul &mdash; Ooh! Shiny!!
+    <a href="/#!/changelog/v20190101">(permalink)</a>
+    <span>January 1st, 2019</span></h2>
+
+    <p>Vault of Cardboard gets a redesign!  The old full-art land login box is gone,
+    as is the annoying old front page.  We here at the Vault pride ourselves on the
+    visual, aesthetic nature of the site, so this is kind of a big deal for us.</p>
+
+    <p>We also finally sat down and wrote out how to use the <a href="#!/docs">Vault
+    of Cardboard Query Language</a> &mdash; it is definitely worth a read and may even
+    teach you a few tricks you didn't already know!</p>
+
+    <p>The <a href="#!/sets">Set Listing Page</a> is new, and it shows you what sets
+    the Vault knows about.  Did we miss a set?  Let us know!</p>
+
+
+    [[# commit ec64054 ]]
+    <h2 id="!/changelog/v20181227">
+    <img src="/h/v20181227.png">
+    Formats, Formats, Formats
+    <a href="/#!/changelog/v20181227">(permalink)</a>
+    <span>December 27th, 2018</span></h2>
+    <p><abbr title="Vault of Cardboard">VCB</abbr> now supports additional import
+    formats, including:</p>
+
+    <ul>
+      <li>TCGPlayer.com's <abbr title="comma-separated values">CSV</abbr> format</li>
+      <li><a href="https://archidekt.com">Archidekt's</a> deck export format</li>
+    </ul>
+
+    <p>The super neat thing about the TCGPlayer support is that the importer
+    will properly detect the fields it needs, in whatever order they appear in the
+    CSV output, provided you include the header row.  This makes it possible to
+    support other comma-separated formats natively!</p>
+
+
+    [[# all commits prior to ec64054 ]]
+    <h2 id="launch">
+    <img src="/h/launch.png">
+    Welcome to the Vault!
+    <a href="/#!/changelog/launch">(permalink)</a>
+    <span>December, 2018</span></h2>
+    <blockquote class="ed">I got back into Magic: the Gathering in the week
+    leading up to Thanksgiving, 2018.  By early December, I had realized that
+    I wanted a better search engine and collection management system.  I started
+    working on Vault of Cardboard December 13th, and I think it was deployed
+    to "production" sometime just after Christmas.
+    <cite>jhunt</cite></blockquote>
+
+    <p>This is it!  The historic (as in legendary!) initial public launch
+    of Vault of Cardboard.  You've got deck ideas, and we've got a search
+    engine for you, rivaling that of anything we've seen out there, and
+    fueled by the inimitable Scryfall data.</p>
+
+    <p>How does it work?  We regularly scrape card and pricing data from
+    Scryfall (pursuant to their terms of service) and make it available
+    in a visual, searchable database.  The <a href="#!/docs">Vault of
+    Cardboard Query Language</a> gives you unprecedented power in searching
+    the totality of printed Magic: the Gathering cards.</p>
+
+    <p>Right now, we're in a bit of a closed+open beta, publicly-ish.
+    The collection management aspects of the Vault are still under development,
+    and are subject to change, so we have not yet made the user account signup
+    process open to any or all.  However, you can still search the database
+    even without an account!</p>
   </div>
 </script><!-- }}} -->
 
@@ -930,10 +1183,24 @@ $(function () {
     marquee();
   }
 
+  var $LANDING = $('#main').html();
+
   function goto(sub) {
+    var topify = function () {
+      $('html, body').animate({ scrollTop: 0 }, 200);
+    };
+
     $('body > .colors').css({visibility: 'hidden' });
     console.log('nav to ['+sub+']');
+
+    if (sub == "") {
+      topify();
+      $('#main').html($LANDING);
+      return;
+    }
+
     if (sub == "login") {
+      topify();
       $('#main').template('login');
       $('input[name=username]').focus();
       return;
@@ -941,6 +1208,7 @@ $(function () {
 
     if (sub == "sets") {
       var thunk = function () {
+        topify();
         $('#main').template('sets', { sets: $SETS });
         $('#main table.sortable').sortableTable();
 
@@ -953,7 +1221,22 @@ $(function () {
     }
 
     if (sub == "docs") {
-      $('#main').template('docs');
+      topify();
+      $('#main').template(sub);
+      return;
+    }
+
+    if (sub.match(/^changelog(\/.*)?$/)) {
+      $('#main').template("changelog");
+
+      var $target = $('h2[id="!/'+sub+'"]');
+      if ($target.length != 0) {
+        $('html, body').animate({
+          scrollTop: $target.offset().top
+        }, 200);
+      } else {
+        topify();
+      }
       return;
     }
 
@@ -1089,6 +1372,11 @@ $(function () {
   }).trigger('hashchange');
 
   $(document.body)
+  .on('click',  'header > h1', function (event) {
+    event.preventDefault();
+    document.location.hash = '#!/';
+    goto('');
+  })
   .on('click',  'form a[rel=toggle-extra]', function (event) {
     event.preventDefault();
     $(event.target).closest('a').toggleClass('on').closest('form').find('.extra').fadeToggle();
