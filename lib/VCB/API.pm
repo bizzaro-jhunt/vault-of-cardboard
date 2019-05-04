@@ -661,6 +661,7 @@ post '/v/login' => sub {
 		};
 	}
 
+	status 401;
 	return { error => "Invalid username or password." };
 };
 
