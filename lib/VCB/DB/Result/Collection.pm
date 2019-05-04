@@ -140,10 +140,71 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07049 @ 2019-03-02 23:11:25
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:YdU8jJ5+VtwPBCxL4AZiCw
+# Created by DBIx::Class::Schema::Loader v0.07049 @ 2019-03-03 14:28:26
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:q5LBJL00C2MgtlmRiVbuFA
 
 use Data::UUID ();
+
+sub replay {
+	my ($self, @changes) = @_;
+
+	# FIXME : transactions!
+	$self->cards->delete_all;
+
+	my $UUID = Data::UUID->new;
+
+	for my $change (@changes) {
+		printf "ingesting change '%s' [%s], of type '%s'\n", $change->summary, $change->id, $change->type;
+		my ($gain, $loss) = $change->cards;
+		for (@$loss) {
+			$_->quantity *= -1;
+		}
+
+		for my $card ((@$gain, @$loss)) {
+			my $print = $self->result_source->schema->resultset('Print')->search({
+				name   => $card->{name},
+				set_id => $card->{set},
+			}) or die "card [$card->{set}] '$card->{name}' not found in print table.\n";
+
+			$print->count > 0
+				or die "card '$card->{name}' ($card->{set}) not found in print cards table.\n";
+			$print->count == 1
+				or warn "card '$card->{name}' ($card->{set}) found more than once in print cards table.\n";
+			$print = $print->first;
+
+			my $existing = $self->cards->find({
+				print_id => $print->id,
+				quality  => $card->{quality} || 'U',
+				flags    => $card->{flags}    || '',
+			});
+			if ($existing) {
+				my $n = $existing->quantity($existing->quantity + $card->{quantity});
+				if ($n <= 0) {
+					print "  - removing '$card->{name}' ($card->{set}) from collection...\n";
+					$existing->delete;
+				} else {
+					my $copy = $n == 1 ? "copy" : "copies";
+					print "  - collection now has $n $copy of '$card->{name}' ($card->{set})...\n";
+					$existing->update;
+				}
+
+			} elsif (!$existing) {
+				my $n = $card->{quantity};
+				my $copy = $n == 1 ? "copy" : "copies";
+				print "  - adding $n $copy of '$card->{name}' ($card->{set}) to collection...\n";
+				$self->cards->create({
+					id       => lc($UUID->to_string($UUID->create)),
+					print_id => $print->id,
+					proxied  => 0,
+					quality  => $card->{quality}  || 'U',
+					quantity => $card->{quantity} || 1,
+					flags    => $card->{flags}    || '',
+				}) or die "failed to put card '$card->{name}' ($card->{set}) into collection.\n";
+			}
+		}
+	}
+	return $self;
+}
 
 sub replace {
 	my ($self, $cards) = @_;

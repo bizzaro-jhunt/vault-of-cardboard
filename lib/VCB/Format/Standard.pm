@@ -4,6 +4,7 @@ use warnings;
 
 use VCB::Format;
 use VCB::Format::Utils;
+use VCB::Format::LineParser;
 BEGIN { VCB::Format::register(__PACKAGE__); }
 
 =cut
@@ -51,7 +52,7 @@ sub detect {
 	my ($class, $s) = @_;
 
 	for (lines($s)) {
-		return undef unless m/^\d+x?\s+(F\s+)?((M|NM|VG|EX|G|P|U)\s+)?([A-Za-z0-9]{3,})\s+./;
+		return undef unless m/^\d+x?\s+(F\s+)?((M|NM|VG|EX|G|P|U)\s+)?([A-Za-z0-9]{3,})/;
 	}
 	return 1;
 }
@@ -60,15 +61,22 @@ sub parse {
 	my ($class, $s) = @_;
 	my @cards;
 
-	for (lines($s)) {
+	my $parser = VCB::Format::LineParser->for($s);
+	while (my $line = $parser->next()) {
+		local $_ = $line->{text};
+		s/^\s+|\s+$//;
+		s/\s*#.*//;
+		next unless $_;
+
 		my @tok = split /\s+/;
 		(my $quantity = shift @tok) =~ s/x$//i;
 		$quantity =~ m/^\d+/
 			or die "bad quantity '$quantity'\n";
 
-		my $set = uc(shift @tok);
-		$set =~ m/^[A-Z0-9]{2,}$/
-			or die "bad set code '$set'\n";
+		my $set = '';
+		if ($tok[0] =~ m/^[A-Z0-9]{2,}$/) {
+			$set = shift @tok;
+		}
 
 		my $flags = '';
 		my $cond  = '';
@@ -87,7 +95,13 @@ sub parse {
 		unshift @tok, $next;
 		my $name = join(' ', @tok);
 
+		if (!$name && $set) {
+			$name = $set;
+			$set = '';
+		}
+
 		push @cards, {
+			_parser   => $line,
 			quantity  => $quantity,
 			set       => $set,
 			flags     => $flags,

@@ -55,9 +55,36 @@ GetOptions(\%OPT, qw/
 	images
 	force
 	timeout|T=i
+
+	summary|s=s
+	notes=s
+	type|t=s
+	dated=s
 /);
 if (!@ARGV) {
-	print STDERR "USAGE: vcb COMMAND args...\n";
+	print STDERR "USAGE: vcb COMMAND args...\n\n";
+	print STDERR "Environment:\n\n";
+	print STDERR"    VCB_API        Full HTTP(S) URL to the Vault.\n";
+	print STDERR"    VCB_USERNAME   Your administrative account username.\n";
+	print STDERR"    VCB_PASSWORD   Your administrative account password.\n";
+	print STDERR "\n";
+	print STDERR "Commands:\n\n";
+	print STDERR "   fmt            Format an import file (on stdin) to VIF.\n";
+	print STDERR "\n";
+	print STDERR "   recache        Regenerate server-side Vault caches.\n";
+	print STDERR "   sets           Print the list of sets (as JSON) known to the Vault.\n";
+	print STDERR "   ingest         Ingest set data from Scryfall.\n";
+	print STDERR "\n";
+	print STDERR "   users          List all users.\n";
+	print STDERR "   useradd        Create a new user.\n";
+	print STDERR "   bcrypt         Encrypt a password (passed as argv).\n";
+	print STDERR "\n";
+	print STDERR "   validate       Validate an import (from stdin) against server data.\n";
+	print STDERR "   import         Import an import file (from stdin) into a users collection.\n";
+	print STDERR "   collection     Export a user's collection to VIF (on stdout).\n";
+	print STDERR "\n";
+	print STDERR "   curl           Issue arbitrary HTTP requests, with authentication.\n";
+	print STDERR "\n";
 	exit 0;
 }
 
@@ -188,11 +215,17 @@ if ($command eq 'import') {
 		or die "Unable to find user '$id'...\n";
 	$user = $user->{id};
 
+	my $t = $OPT{type} || 'buy';
 	my $vcb = do { local $/; <>; };
-	my $res = $ua->put("$VCB_API/v/admin/users/$user/collection",
+	my $res = $ua->post("$VCB_API/v/admin/users/$user/changes",
 		'Content-Type' => 'application/json',
 		Content => encode_json({
-				vcb => $vcb
+				occurred_at => $OPT{dated} || 0,
+				type        => $t,
+				summary     => $OPT{summary} || 'Initial import',
+				notes       => $OPT{notes} || 'imported via vcb command-line utility.',
+				raw_gain    => $t eq 'sell' ? '' : $vcb,
+				raw_loss    => $t ne 'sell' ? '' : $vcb,
 			}));
 	$res->is_success
 		or die "oops: ".$res->decoded_content."\n";

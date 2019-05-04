@@ -108,6 +108,21 @@ __PACKAGE__->add_unique_constraint("account_unique", ["account"]);
 
 =head1 RELATIONS
 
+=head2 changes
+
+Type: has_many
+
+Related object: L<VCB::DB::Result::Change>
+
+=cut
+
+__PACKAGE__->has_many(
+  "changes",
+  "VCB::DB::Result::Change",
+  { "foreign.user_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 collections
 
 Type: has_many
@@ -124,8 +139,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07049 @ 2018-12-13 22:16:42
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:5Mpkvny2qysi1EyzOaKm+Q
+# Created by DBIx::Class::Schema::Loader v0.07049 @ 2019-03-03 14:28:26
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Uv2wOxvBTl6CktUCtWL8HQ
 
 use Data::Entropy::Algorithms qw/rand_bits/;
 use Digest                    qw//;

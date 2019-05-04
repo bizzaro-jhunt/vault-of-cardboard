@@ -58,14 +58,16 @@ EOF
 	##
 	## what version are we at?
 	##
-	$version = $get_v->execute() or
+	$get_v->execute() or
 		die __PACKAGE__.": failed to determine schema_info version: ".$db->errstr."\n";
+	$version = $get_v->fetchrow_hashref->{version};
+	print __PACKAGE__.": database at schema version $version\n";
 
 	if ($version == 0) {
 		print __PACKAGE__.": migrating v0 -> v1 (adding power/toughness to card data)\n";
-		$db->do("ALTER TABLE prints ADD COLUMN power     TEXT NOT NULL DEFAULT ''");
-		$db->do("ALTER TABLE prints ADD COLUMN toughness TEXT NOT NULL DEFAULT ''");
-		$set_v->execute(++$version);
+		$db->do("ALTER TABLE prints ADD COLUMN power     TEXT NOT NULL DEFAULT ''") or die __PACKAGE__.": failed: ".$db->errstr."\n";
+		$db->do("ALTER TABLE prints ADD COLUMN toughness TEXT NOT NULL DEFAULT ''") or die __PACKAGE__.": failed: ".$db->errstr."\n";
+		$set_v->execute($version = 1);
 	}
 
 	if ($version == 1) {
@@ -77,6 +79,35 @@ EOF
 	if ($version == 2) {
 		print __PACKAGE__.": migrating v2 -> v3 (support for card legality)\n";
 		$db->do("ALTER TABLE prints ADD COLUMN legalese TEXT NOT NULL DEFAULT '{}'");
+		$set_v->execute(++$version);
+	}
+
+	if ($version == 3) {
+		print __PACKAGE__.": migrating v3 -> v4 (migrating to buy/sell model)\n";
+		$db->do(<<EOF);
+CREATE TABLE changes (
+  id           UUID         NOT NULL PRIMARY KEY,
+  user_id      UUID         NOT NULL,
+  type         VARCHAR(20)  NOT NULL, -- import / buy / sell
+  occurred_at  INTEGER      NOT NULL,
+
+  summary      TEXT         NOT NULL,
+  notes        TEXT         NOT NULL DEFAULT '',
+
+  raw_gain     TEXT,
+  card_gain    INTEGER      NOT NULL DEFAULT 0,
+  unique_gain  INTEGER      NOT NULL DEFAULT 0,
+
+  raw_loss     TEXT,
+  card_loss    INTEGER      NOT NULL DEFAULT 0,
+  unique_loss  INTEGER      NOT NULL DEFAULT 0,
+
+  sets         TEXT         NOT NULL DEFAULT '',
+  analyzed     BOOLEAN      NOT NULL DEFAULT 0,
+
+  FOREIGN KEY (user_id) REFERENCES users(id)
+)
+EOF
 		$set_v->execute(++$version);
 	}
 }

@@ -34,7 +34,7 @@
     <li class="if-not-authed"><a href="#!/login" rel="login">Sign in</a></li>
     <li class="if-authed"><a class="-username">Member</a>
         <nav>
-          <li><a href="#!/collection" rel="mycol">My Collection</a></li>
+          <li><a href="#!/timeline">My Collection</a></li>
           <li><a href="#!/logout" rel="logout">Sign out</a></li>
         </nav></li>
   </nav>
@@ -96,6 +96,19 @@
     </div>
   </div>
 </script><!-- }}} -->
+
+<script type="text/html" id="template:cardface"><!-- {{{ -->
+  [[ var alt = _.card.name + ' [' + _.card.set.code + ']'; ]]
+  <span data-own="[[= _.owned ]]">
+    <span class="card back"><img src="/mtgback.jpg"></span>
+    <span class="card face [[= _.card.layout]]">
+      [[ if (_.card.layout == 'transform') { ]]<a href="#" rel="flip"></a>[[ } ]]
+      <img data-id="[[= _.card.id ]]" src="[[= $CONFIG.imgroot ]]/cards/[[= _.card.image ]]"
+           [[ if (_.card.layout == 'transform') { ]]data-flip-src="[[= $CONFIG.imgroot ]]/cards/[[= _.card.back ]]"[[ } ]]
+           alt="[[= alt ]]" title="[[= alt ]]">
+    </span>
+  </span>
+</script><!-- }}} -->
 <script type="text/html" id="template:results"><!-- {{{ -->
   [[#
       {results} - Main View Search Results
@@ -106,21 +119,12 @@
   [[ } else { ]]
   <div class="meta-results">found <span class="count">[[= _.results.length ]]</span> card[[= _.results.length == 1 ? '' : 's' ]].</div>
   <div class="results grid">
-    [[ for (var i = 0; i < _.results.length && i < _.max; i++) {
-         var card = _.results[i];
-         var alt = card.name + ' [' + card.set.code + ']';
+    [[
+      for (var i = 0; i < _.results.length && i < _.max; i++) {
+        include('cardface', { owned: _.results[i].owned,
+                              card:  _.results[i] });
+      }
     ]]
-    <span data-own="[[= card.owned ]]">
-      <span class="card back"><img src="/mtgback.jpg"></span>
-      <span class="card face [[= card.layout]]">
-        [[ if (card.layout == 'transform' || card.layout == 'double_faced_token' || card.layout == 'flip') { ]]<a href="#" rel="flip"></a>[[ } ]]
-        <img data-id="[[= card.id ]]" src="[[= $CONFIG.imgroot ]]/cards/[[= card.image ]]"
-             data-layout="[[= card.layout ]]"
-             [[ if (card.layout == 'transform' || card.layout == 'double_faced_token') { ]]data-flip-src="[[= $CONFIG.imgroot ]]/cards/[[= card.back ]]"[[ } ]]
-             alt="[[= alt ]]" title="[[= alt ]]">
-      </span>
-    </span>
-    [[ } ]]
   </div>
   [[ } ]]
 </div>
@@ -139,7 +143,7 @@
     <p>These are all the M:tG sets that Vault of Cardboard knows about.
     Most of these should have images.  If a set is missing, or missing its images,
     please let us know!</p>
-    <table class="sets sortable">
+    <table class="sets sortable listing">
       <thead><tr>
         <th></th>
         <th class="sortable">Code</th>
@@ -440,13 +444,219 @@
   </div>
 </script><!-- }}} -->
 
+<script type="text/html" id="template:clarify"><!-- {{{ -->
+  [[
+    $.each(_.problems, function (i, problem) {
+      include('problem', $.extend({ i: i }, problem));
+    });
+  ]]
+</script><!-- }}} -->
+<script type="text/html" id="template:problem"><!-- {{{ -->
+  <div class="problem" data-problem="[[= _.i ]]">
+    <p>line <span class="lineno">[[= _.wanted.lineno ]]</span>:
+            <span class="line">[[= _.wanted.card ]] (in [[= _.wanted.set ]])</span>:
+            <span class="problem">[[= _.description ]]</span></p>
+    <div class="grid results">
+    [[ $.each(_.candidates, function (j, candidate) {
+         var card = $INDEX[candidate];
+         if (!card) {
+           console.log("unable to locate card id %s in $INDEX... skipping!", candidate);
+           return;
+         } ]]
+      <span data-vif="[[= card.set.code ]] [[= card.name ]]">
+        [[ include('cardface', { owned: 0, card: card }); ]]
+        <span class="clarif"><span class="band"><a href="#" rel="dec">◀</a> <span>0</span> <a href="#" rel="inc">▶</a></span></span>
+      </span>
+    [[ }); ]]
+    </div>
+    <ul class="changes"></ul>
+    <button rel="re-validate">Apply Changes</button>
+  </div>
+</script><!-- }}} -->
+
+<script type="text/html" id="template:timeline"><!-- {{{ -->
+  <div class="prose">
+    [[ if (_.changes.length == 0) { ]]
+    <h1>Let's Get You A <em>Collection</em>...</h1>
+    <p>We don't have a clue what's in your collection.<br>
+    Why don't we fix that, and get to know one another better?</p>
+
+    <form id="import" class="import">
+      <input type="hidden" name="summary" value="Initial import">
+      <input type="hidden" name="type"    value="import">
+      <div>
+        <label for="raw_gain">What Cards Do You Own?</label>
+        <textarea name="raw_gain" class="vif"
+                  data-validate="present;max=100k"># enter your list of cards here, i.e.:
+# 1x M19 Arcades, the Strategist
+
+</textarea>
+      </div>
+      <div class="clarify"></div>
+      <div>
+        <button class="default safe" type="submit">Save</button></form>
+      </div>
+    </form>
+    [[ } else { ]]
+    <h1>Your Magic Collection <em>Through Time!</em></h1>
+    <div class="timeline">
+      [[
+         var gainloss = function (n) {
+           return n < 0 ? 'loss' :
+                  n > 0 ? 'gain' :
+                          '';
+         };
+
+         var now = {
+           card:   0,
+           unique: 0,
+           sets:   {}
+         };
+
+         $.each(_.changes, function (i, change) {
+           now.card   += change.card_gain   - change.card_loss;
+           now.unique += change.unique_gain - change.unique_loss;
+
+           $.each(change.sets.split(/:/), function (j, set) {
+             now.sets[set] = 1;
+           });
+         });
+
+         var sets = [];
+         for (var k in now.sets) { sets.push(k); }
+         now.sets = sets;
+      ]]
+      <div class="now summary">
+        <h2>Today</h2>
+        <ul>
+          <li><em>[[= now.card ]]</em> cards (<em>[[= now.unique ]]</em> unique)</li>
+          <li>across <em>[[= now.sets.length ]]</em> sets</li>
+        </ul>
+
+        <div class="buttons">
+          <button class="buy"  rel="new-buy">Buy</button>
+          <button class="sell" rel="new-sell">Sell</button>
+        </div>
+      </div>
+
+      [[ var dates = {};
+         var totals = {};
+         for (var i = 0; i < _.changes.length; i++) {
+           var d = _.changes[i].occurred_at;
+           d = (100 * parseInt(d / 100)).toString()
+
+           if (!(d in dates)) {
+             dates[d] = [];
+             totals[d] = {
+               card_delta:   0,
+               unique_delta: 0,
+               sets:         {}
+             };
+           }
+           dates[d].push(_.changes[i]);
+           totals[d].card_delta += _.changes[i].card_gain;
+           totals[d].card_delta -= _.changes[i].card_loss;
+           totals[d].unique_delta += _.changes[i].unique_gain;
+           totals[d].unique_delta -= _.changes[i].unique_loss;
+           $.each(_.changes[i].sets.split(/:/), function (j, set) {
+             totals[d].sets[k] = 1;
+           });
+         }
+
+         var bands = [];
+         for (var d in dates) {
+           bands.push([d, dates[d].sort(function (a, b) { return b.occurred_at - a.occurred_at; })]);
+         }
+         dates = bands.sort(function (a, b) {
+           return b[0] - a[0];
+         });
+         bands = undefined;
+
+         for (var i = 0; i < dates.length; i++) {
+           var d = dates[i][0];
+      ]]
+      <div class="aggr">
+        <h2>[[= strftime("%B %Y", dated(d)) ]] <span class="[[= gainloss(totals[d].card_delta) ]]">[[= sprintf("%+d", totals[d].card_delta) ]] cards <span class="[[= gainloss(totals[d].unique_delta) ]]">([[= sprintf("%+d", totals[d].unique_delta) ]] unique)</span></span></h2>
+        <ul>
+          [[ $.each(dates[i][1], function (j, change) { ]]
+          <li class="[[= change.type ]]"><em class="[[= gainloss(change.card_gain - change.card_loss) ]]">[[= sprintf("%+d", change.card_gain - change.card_loss) ]]</em> cards (<em>[[= change.sets.split(/:/).length ]]</em> sets) in [[= change.type ]] <strong>[[= change.summary ]]</strong> <a href="#">(edit)</a></li>
+          [[ }); ]]
+        </ul>
+      </div>
+      [[ } ]]
+    </div>
+    [[ } ]]
+  </div>
+</script><!-- }}} -->
+<script type="text/html" id="template:collection-change-form"><!-- {{{ -->
+  <div class="prose">
+    <h1>[[= (_.type == 'buy') ? '<strong>Add</strong> Cards to the Collection'
+                              : '<strong>Remove</strong> Cards from the Collection' ]]</h1>
+    <div class="oops" style="display: none"></div>
+
+    <form id="[[= _.type ]]" class="import">
+      <input type="hidden" name="type" value="[[= _.type ]]">
+      <div><label for="summary">Name</label>
+           <p class="advanced-options">
+             <a href="#" rel="toggle-extra" class="off"><span class="on">simplified form</span><span class="off">advanced options</span></a>
+           </p>
+
+           <input type="text" name="summary"
+                  class="autofocus"
+                  placeholder="A (unique-ish) name for this [[= _.type ]] operation"
+                  data-validate="present;min=3;max=50"
+                  data-error-if-missing="Please provide a name, which will be displayed in the timeline."
+                  data-error-out-of-bounds="Names must be between 3 and 50 characters long."
+                  autocomplete="off">
+      </div>
+
+      <div class="extra">
+           <label for="occurred_at">Date</label>
+           <input type="date" name="occurred_at"
+                  data-validate="present;format=date;happened"
+                  autocomplete="off">
+      </div>
+
+      <div class="extra">
+           <label for="notes">Notes</label>
+           <textarea name="notes" placeholder="(notes, thoughts, context - only visible to you...)"
+                     data-validate="max=2000"></textarea>
+      </div>
+
+      [[ var raw = (_.type == 'buy') ? 'raw_gain' : 'raw_loss'; ]]
+      <div><label for="[[= raw ]]">Cards (in <a href="#">VIF format</a>)</label>
+           <textarea name="[[= raw ]]" class="vif"
+                     data-validate="present;max=100k"
+># enter your list of cards here, i.e.:
+# 1x M19 Arcades, the Strategist
+
+</textarea>
+      </div>
+
+      <div class="clarify"></div>
+      <div>
+        <button class="default safe" type="submit">Save</button>
+      </div>
+    </form>
+  </div>
+</script><!-- }}} -->
+
 <script type="text/javascript" src="js/jquery.js"></script>
 <script type="text/javascript" src="js/lang.js"></script>
 <script type="text/javascript" src="js/util.js"></script>
 <script type="text/javascript" src="js/table.js"></script>
 <script type="text/javascript" src="js/lens.js"></script>
+<script type="text/javascript" src="js/forms.js"></script>
+<script type="text/javascript" src="js/diff.js"></script>
 <script type="text/javascript" src="config.js"></script>
 <script type="text/javascript">
+
+String.prototype.reline = function (n,s) {
+  var l = this.split(/\n/);
+  if (s instanceof Array) { s = s.join("\n"); }
+  l.splice(n-1,1,s);
+  return l.join("\n");
+}
 
 function tparse(d) { // {{{
   if (typeof d == "string") {
@@ -478,8 +688,19 @@ function tparse(d) { // {{{
   return d;
 } // }}}
 
+function yyyymmdd(d) {
+  console.log('yyyymmdd() called: ', d);
+  var yyyy = (d.getUTCFullYear()).toString(),
+        mm = (d.getUTCMonth() + 1).toString(),
+        dd = (d.getUTCDate()).toString();
+
+  if (mm.length == 1) { mm = "0"+mm; }
+  if (dd.length == 1) { dd = "0"+dd; }
+  return yyyy+mm+dd;
+}
+
 function dated(yyyymmdd, unknown) {
-  yyyymmdd = yyyymmdd.toString();
+  yyyymmdd = (yyyymmdd || '').toString();
   if (yyyymmdd.length == 4) { yyyymmdd += '0101'; }
   if (yyyymmdd.length == 6) { yyyymmdd +=   '01'; }
   if (yyyymmdd.length != 8) { return unknown; }
@@ -488,7 +709,7 @@ function dated(yyyymmdd, unknown) {
   var mm   = (yyyymmdd -          dd) /   100 % 100;
   var yyyy = (yyyymmdd - mm*100 - dd) / 10000;
   console.log("[%s]; yyyy = %d; mm = %d; dd = %d", yyyymmdd, yyyy, mm, dd);
-  return new Date(yyyy, mm-1, dd);
+  return new Date(yyyy, mm, dd);
 }
 
 function colorize(s) {
@@ -499,12 +720,12 @@ function colorize(s) {
   return c.join('');
 }
 
-$(function () {
-  var $BASE  = undefined,
-      $CARDS = undefined,
-      $SETS  = undefined,
-      $INDEX = {};
+var $BASE  = undefined,
+    $CARDS = undefined,
+    $SETS  = undefined,
+    $INDEX = {};
 
+$(function () {
   console.log('retrieving personal details...');
   $.ajax({
     type: 'GET',
@@ -740,9 +961,40 @@ $(function () {
       $.ajax({
         type: 'POST',
         url:  '/v/logout',
+        contentType: 'application/json',
         complete: function () {
           document.cookie = 'vcb_sesh=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
           document.location.href = document.location.href.replace(/#.*/, '');
+        }
+      });
+      return;
+    }
+
+    if (sub == "collection") {
+      loading();
+      $.ajax({
+        type: 'GET',
+        url:  '/my/collection.vcb',
+        success: function (data) {
+          $('.edit-collection textarea').val(data);
+          switchTo('edit');
+        }
+      });
+      return;
+    }
+
+    if (sub.match(/^timeline(\/.*)?$/)) {
+      loading();
+      $.ajax({
+        type: 'GET',
+        url:  '/my/timeline',
+        success: function (data) {
+          if (data.authn == 'required') {
+            document.location.hash = '#!/login';
+            return;
+          }
+          console.log(data);
+          $('#main').template('timeline', { changes: data });
         }
       });
       return;
@@ -837,6 +1089,20 @@ $(function () {
   }).trigger('hashchange');
 
   $(document.body)
+  .on('click',  'form a[rel=toggle-extra]', function (event) {
+    event.preventDefault();
+    $(event.target).closest('a').toggleClass('on').closest('form').find('.extra').fadeToggle();
+  })
+  .on('click', 'button[rel="new-buy"]', function (event) {
+    event.preventDefault();
+    $('#main').template("collection-change-form", { type: 'buy' })
+              .autofocus();
+  })
+  .on('click', 'button[rel="new-sell"]', function (event) {
+    event.preventDefault();
+    $('#main').template("collection-change-form", { type: 'sell' })
+              .autofocus();
+  })
   .on('submit', 'form#login', function (event) {
     event.preventDefault();
     var $f = $(event.target);
@@ -845,6 +1111,7 @@ $(function () {
     $.ajax({
       type: 'POST',
       url:  '/v/login',
+      contentType: 'application/json',
       data: JSON.stringify({
         username: $f.find('[name=username]').val(),
         password: $f.find('[name=password]').val()
@@ -866,14 +1133,205 @@ $(function () {
       }
     });
   })
-  .on('click', 'a[rel="mycol"]', function (event) {
+  .on('submit', 'form.import', function (event) {
     event.preventDefault();
-    loading();
+    var $form = $(event.target);
+    var $oops = $form.find('.oops');
+
+    if (!$form.validate('reset').validate('validate')) {
+      $oops.html('There were problems with this change to the collection...').show();
+      return;
+    }
+
     $.ajax({
-      type: 'GET',
-      url:  '/my/collection.vcb',
+      type: 'POST',
+      url:  '/v/buys/validate',
+      contentType: 'application/json',
+      data: JSON.stringify({ vif: $form.find('textarea.vif').val() }),
       success: function (data) {
-        $('#main').template('edit-collection', { data: data });
+        var Clarifier = function () {
+          this.e        = undefined;
+          this.problems = [];
+        };
+
+        Clarifier.prototype.add = function (data) {
+          data.solutions = {};
+          console.dir(data);
+          this.problems.push(data);
+        };
+
+        Clarifier.prototype.increment = function (prob, vif) {
+          prob = parseInt(prob);
+          if (!this.problems[prob]) {
+            return;
+          }
+          if (!(vif in this.problems[prob].solutions)) {
+            this.problems[prob].solutions[vif] = 1;
+          } else {
+            this.problems[prob].solutions[vif] += 1;
+          }
+
+          var $top = this.e.find('[data-problem="'+prob.toString()+'"] [data-vif="'+vif+'"]');
+          $top.attr('data-n', this.problems[prob].solutions[vif]);
+          $top.find('.band > span').html(this.problems[prob].solutions[vif]);
+          this.redraw(prob);
+        };
+
+        Clarifier.prototype.decrement = function (prob, vif) {
+          prob = parseInt(prob);
+          if (vif in this.problems[prob].solutions) {
+            var $top = this.e.find('[data-problem="'+prob.toString()+'"] [data-vif="'+vif+'"]');
+
+            this.problems[prob].solutions[vif] -= 1;
+            if (this.problems[prob].solutions[vif] <= 0) {
+              delete this.problems[prob].solutions[vif];
+              $top.removeAttr('data-n');
+              $top.find('.band > span').html('0');
+            } else {
+              $top.attr('data-n', this.problems[prob].solutions[vif]);
+              $top.find('.band > span').html(this.problems[prob].solutions[vif]);
+            }
+          }
+          this.redraw(prob);
+        };
+
+        Clarifier.prototype.redraw = function (prob) {
+          /* assemble a list of changes, that can be sorted by name/set */
+          var changes = [];
+          for (var vif in this.problems[prob].solutions) {
+            changes.push({
+              key:  vif,
+              html: '<li><ins>'+this.problems[prob].solutions[vif]+'x '+vif+'</ins></li>'
+            });
+          }
+          changes.sort(function (a,b) {
+            return a.key > b.key ? 1 : -1;
+          });
+
+          var $changes = this.e.find('[data-problem='+prob+'] .changes').empty();
+          if (changes.length == 0) {
+            return;
+          }
+          $changes.append('<li><del>'+this.problems[prob].wanted.line+'</del></li>');
+          for (var i = 0; i < changes.length; i++) {
+            $changes.append(changes[i].html);
+          }
+        };
+
+        Clarifier.prototype.patch = function (s) {
+          var patch = [];
+          for (var i = 0; i < this.problems.length; i++) {
+                                    console.log(JSON.stringify(this.problems[i]));
+            var changes = [];
+            for (var vif in this.problems[i].solutions) {
+              changes.push({
+                key:  vif,
+                text: this.problems[i].solutions[vif]+'x '+vif
+              });
+            }
+            if (changes.length == 0) {
+              continue;
+            }
+
+            changes.sort(function (a,b) {
+             return a.key > b.key ? 1 : -1;
+            });
+            console.log(changes);
+
+            var p = {
+              line:    this.problems[i].wanted.lineno,
+              changes: [
+                "",
+                "##",
+                "## modified during import, from:",
+                "##",
+                "## from:",
+                "## "+this.problems[i].wanted.line,
+                "##",
+                "## to:",
+              ]
+            };
+            for (var j = 0; j < changes.length; j++) {
+              p.changes.push(changes[j].text);
+            }
+            p.changes.push("");
+            patch.push(p);
+          }
+
+          var lines = s.split(/\n/);
+          for (var i = 0; i < patch.length; i++) {
+            lines.splice(patch[i].line - 1, 1, patch[i].changes.join(("\n")));
+          }
+          return lines.join("\n");
+        };
+
+        Clarifier.prototype.mount = function (parent) {
+          this.e = $(parent).empty();
+
+          $(parent).template('clarify', { problems: this.problems });
+          if (!this.e.data('clarifier-ed')) {
+            this.e.data('clarifier-ed', 'yes');
+            this.e
+              .on('click', '.band a', function (event) {
+                event.preventDefault();
+                var vif  = $(event.target).closest('[data-vif]').attr('data-vif');
+                var rel  = $(event.target).closest('a[rel]').attr('rel');
+                var c    = $(event.target).closest('[data-has-clarifier]').data('clarifier');
+                var prob = parseInt($(event.target).closest('[data-problem]').attr('data-problem'));
+
+                switch (rel) {
+                case 'inc': c.increment(prob, vif); break;
+                case 'dec': c.decrement(prob, vif); break;
+                }
+              });
+
+            $(document.body)
+              .on('click', 'button[rel="re-validate"]', function (event) {
+                event.preventDefault();
+                var $t = $('textarea.vif');
+                var c  = $(event.target).closest('[data-has-clarifier]').data('clarifier');
+
+                $t.val(c.patch($t.val()));
+                $(event.target).closest('form').trigger('submit');
+              });
+          }
+          this.e.attr('data-has-clarifier', '1').data('clarifier', this);
+          return this;
+        };
+
+        $oops.hide();
+        if (data.problems && data.problems.length > 0) {
+          var clarifier = new Clarifier();
+          window.c = clarifier;
+          for (var i = 0; i < data.problems.length; i++) {
+            clarifier.add(data.problems[i]);
+          }
+          clarifier.mount($form.closest('div').find('.clarify'));
+
+          $oops.html('There were some problems with your import').fadeIn();
+          $form.find('button[type=submit]').hide();
+
+        } else if (data.error) {
+          $oops.html(data.error).fadeIn();
+
+        } else {
+          $('.clarify').empty().append('<div class="ok">Everything looks good!  Importing your collection...</div>');
+
+          var data = $form.serializeObject();
+          data.occurred_at = data.occurred_at
+                           ? data.occurred_at.replace(/-/g, '')
+                           : strftime("%Y%m%d", new Date());
+          $.ajax({
+            type: 'POST',
+            url:  '/my/changes',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function () {
+              console.log('changes posted; redirecting to the timeline...');
+              document.location.hash = '#!/timeline/'+now();
+            }
+          });
+        }
       }
     });
   })
@@ -884,6 +1342,7 @@ $(function () {
     $.ajax({
       type: 'PUT',
       url:  '/my/collection',
+      contentType: 'application/json',
       data: JSON.stringify({ vcb: $(event.target).find('textarea').val() }),
       success: function (data) {
         if (data.ok) {

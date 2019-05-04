@@ -144,6 +144,208 @@ get '/config.js' => sub {
 		{ content_type => 'application/javascript' };
 };
 
+get '/my/timeline' => sub {
+	my $user = authn or return {
+		"error" => "You are not logged in.",
+		"authn" => "required"
+	};
+	redirect sprintf("/v/%s/timeline", $user->id);
+};
+
+post '/v/buys/validate' => sub {
+	# input:
+	# {
+	#    "vcb" : "... (a VCB-formatted string) ..."
+	# }
+
+	# output:
+	# {
+	#   "ok" : "Looks good!",
+	# }
+	#
+	# or:
+	#
+	# {
+	#   "error" : "Validation failed",
+	#   "problems" : [
+	#     {
+	#       "wanted" : {
+	#         "line"     : "2x MIR Askari",
+	#         "lineno"   : 14,
+	#         "quantity" : 2
+	#       },
+	#       "description" : "More than one match found",
+	#       "candidates"  : [
+	#         "486547cd-d2e7-4c46-9f7b-81c4267d65cc",
+	#         "5cf66916-7f6b-412f-acd6-f96ad4539a46"
+	#       ]
+	#     }
+	#   ]
+	# }
+
+	local $@;
+	my $cards = eval { VCB::Format->parse(request->data->{vif}); };
+	if ($@) {
+		warn "unable to parse input: $@\n";
+		return { error => "Syntax error in VCB input data" };
+	}
+
+	my @problems;
+	for my $card (@$cards) {
+		my ($print, $candidates);
+
+		print STDERR "checking on $card->{name} [$card->{set}]...\n";
+
+		# check for exact match; if found, we're 100% ok
+		$print = M('Print')->search({
+			name   => $card->{name},
+			set_id => $card->{set}})->count
+				and next;
+
+		my $wanted = {
+			card     => $card->{name},
+			set      => $card->{set},
+			line     => $card->{_parser}{text},
+			lineno   => $card->{_parser}{line},
+			quantity => $card->{quantity},
+		};
+
+		# check if we are a basic land
+		if ($card->{name} =~ m/^(plains|island|swamp|mountain|forest)$/i) {
+			$candidates = M('Print')->search_rs({
+					name   => $card->{name},
+					set_id => 'M19',
+				}, {
+					group_by => [qw[ name set_id ]],
+				});
+			if ($candidates && $candidates->count > 0) {
+				push @problems, {
+					wanted      => $wanted,
+					description => "not found in set <em>$card->{set}</em>",
+					candidates  => [map { $_->id } $candidates->all],
+				};
+				next;
+			}
+		}
+
+		# check to see if the card exists by name in other sets
+		$candidates = M('Print')->search_rs({
+				name => $card->{name}
+			}, {
+				group_by => [ qw[name set_id ]],
+			});
+		if ($candidates && $candidates->count > 0) {
+			push @problems, {
+				wanted      => $wanted,
+				description => "not found in set <em>$card->{set}</em>, but was found in other sets",
+				candidates  => [map { $_->id } $candidates->all],
+			};
+			next;
+		}
+
+		# check a few looser, name-based searches, within the set and otherwise
+		# FIXME: implement Askari -> A.*i searches
+		$candidates = M('Print')->search_rs(
+			{ name     => { like => "%$card->{name}%" },
+			  set_id   => $card->{set} },
+			{ order_by => { -asc => 'name' },
+			  rows     => 16 });
+		if ($candidates && $candidates->count > 0) {
+			push @problems, {
+				wanted      => $wanted,
+				description => "not found, but a fuzzy search found these other cards",
+				candidates  => [map { $_->id } $candidates->all],
+			};
+			next;
+		}
+		$candidates = M('Print')->search_rs(
+			{ name     => { like => "%$card->{name}%" } },
+			{ order_by => { -asc => 'name' },
+			  rows     => 16 });
+		if ($candidates && $candidates->count > 0) {
+			push @problems, {
+				wanted      => $wanted,
+				description => "not found, but a fuzzy search found these other cards",
+				candidates  => [map { $_->id } $candidates->all],
+			};
+			next;
+		}
+
+		# finally, give up.
+		push @problems, {
+			wanted      => $wanted,
+			description => "not found in the Vault's database",
+			candidates  => [],
+		};
+	}
+
+	if (@problems) {
+		return {
+			error    => "validation failed",
+			problems => \@problems,
+		};
+	}
+
+	return {
+		ok => "validated!",
+	};
+};
+
+sub analyze_import {
+	my $what = {
+		raw    => $_[0] || '',
+		card   => 0,
+		unique => 0,
+		sets   => {},
+	};
+
+	my $cards = VCB::Format->parse($what->{raw});
+	for my $card (@$cards) {
+		$what->{card} += $card->{quantity};
+		$what->{unique}++;
+		$what->{sets}{$card->{set}} = 1;
+	}
+
+	return $what;
+}
+
+post '/my/changes' => sub {
+	my $user = authn or return {
+		"error" => "You are not logged in.",
+		"authn" => "required"
+	};
+
+	my $gain = analyze_import(request->{data}{raw_gain});
+	my $loss = analyze_import(request->{data}{raw_loss});
+	my %sets = (%{$gain->{sets}}, %{$loss->{sets}});
+
+	my $occurred = (request->{data}{type} eq "import")
+	             ? 0 : request->{data}{occurred_at};
+	$user->changes->create({
+		id          => uuidgen(),
+		occurred_at => $occurred,
+		type        => request->{data}{type},
+		summary     => request->{data}{summary},
+		notes       => request->{data}{notes}    || '',
+
+		raw_gain    => $gain->{raw},
+		card_gain   => $gain->{card},
+		unique_gain => $gain->{unique},
+
+		raw_loss    => $loss->{raw},
+		card_loss   => $loss->{card},
+		unique_loss => $loss->{unique},
+
+		sets        => join(':', sort keys %sets),
+		analyzed    => 1,
+	}) or die "failed to create change: $!\n";
+
+	recache($user, $user->primary_collection);
+	return {
+		ok => "Collection change recorded",
+	};
+};
+
 get '/my/:type' => sub {
 	my $user = authn or do {
 		return "# you are not logged in...\n" if param('type') =~ m/\.vcb$/i;
@@ -206,18 +408,20 @@ sub recache {
 	my ($user, $col) = @_;
 	my (%HAVE, %ALL);
 
+	$col->replay($user->changes);
+
 	mkdir datpath();
 	mkdir datpath($user->id);
 	mkdir datpath($user->id, 'col');
 
 	printf STDERR "caching collection '%s' [%s] for user '%s' [%s] in VCB format...\n",
-		$col->name, $col->id, $user->account, $user->id;
+		$col->name || "(unnamed)", $col->id, $user->account, $user->id;
 	open my $fh, ">", datpath($user->id, "col/.new.vcb") or do {
 		warn "unable to open $DATFILE: $!\n";
 		return undef;
 	};
 	for my $card ($col->cards) {
-		$HAVE{$card->print->set_id}{$card->print->name} = $card->quantity;
+		$HAVE{$card->print->set_id}{$card->print->name} += $card->quantity;
 		VCB::Format::Standard->print1($fh, {
 			name      => $card->print->name,
 			set       => $card->print->set_id,
@@ -296,6 +500,77 @@ get '/v/col/:user/:type' => sub {
 	}
 };
 
+get '/v/:user/timeline' => sub {
+	my $user = M('User')->find(param('user'))
+		or return {};
+
+	return [map {
+		{
+			id          => $_->id,
+			type        => $_->type,
+			occurred_at => $_->occurred_at,
+			summary     => $_->summary,
+			notes       => $_->notes,
+			analyzed    => $_->analyzed,
+			card_gain   => $_->card_gain,
+			unique_gain => $_->unique_gain,
+			card_loss   => $_->card_loss,
+			unique_loss => $_->unique_loss,
+			sets        => $_->sets,
+		}
+	} $user->changes ];
+};
+
+get '/v/col/:user' => sub {
+	my $user = M('User')->find(param('user'))
+		or return {}; # FIXME
+
+	return [map {
+		{
+			id    => $_->id,
+			name  => $_->name,
+			notes => $_->notes,
+			type  => $_->type,
+		}
+	} $user->collections];
+};
+
+post '/v/col/:user' => sub {
+	my $user = M('User')->find(param('user'))
+		or return {}; # FIXME
+
+	my $c = $user->collections->create({
+		id    => uuidgen(),
+		name  => params->{name},
+		notes => params->{notes},
+		type  => params->{type},
+	}) or return {}; # FIXME
+
+	local $@;
+	my $cards = eval { VCB::Format->parse(request->data->{vcb}); };
+	if ($@) {
+		warn "unable to parse input: $@\n";
+		return { error => "Invalid VCB request payload." };
+	}
+
+	eval { $c->replace($cards); };
+	if ($@) {
+		warn "unable to update collection: $@\n";
+		return { error => "Unable to update collection." };
+	}
+
+	# FIXME: re-calculate primary collection
+	return {
+		ok => "Buy details updated.",
+		buy => {
+			id    => $c->id,
+			name  => $c->name,
+			notes => $c->notes,
+			url   => sprintf("/v/col/%s/%s/collection.vif", $user->id, $c->id),
+		},
+	};
+};
+
 get '/v/col/:user/:uuid/:type' => sub {
 	# grab a collection, owned by a given user.
 	#
@@ -308,11 +583,49 @@ get '/v/col/:user/:uuid/:type' => sub {
 
 	if (-f $file) {
 		send_file $file, system_path => 1;
-	} elsif ($ext eq 'vcb') {
+	} elsif ($ext eq 'vcb' or $ext eq 'vif') {
 		send_as plain => "# you don't have any cards yet...\n";
 	} elsif ($ext eq 'json') {
 		return {};
 	}
+};
+
+put '/v/col/:user/:uuid' => sub { # FIXME - handle json and VCB imports?
+	my $user = M('User')->find(param('user'))
+		or return {}; # FIXME
+
+	my $c = $user->collections->find({
+		type => 'buy',
+		id   => param('uuid'),
+	}) or return {}; # FIXME
+
+	local $@;
+	my $cards = eval { VCB::Format->parse(request->data->{vcb}); };
+	if ($@) {
+		warn "unable to parse input: $@\n";
+		return { error => "Invalid VCB request payload." };
+	}
+
+	$c->update({
+		name  => request->data->{name} || $c->name,
+		notes => request->data->{notes} || $c->notes,
+	});
+	eval { $c->replace($cards); };
+	if ($@) {
+		warn "unable to update collection: $@\n";
+		return { error => "Unable to update collection." };
+	}
+
+	# FIXME: re-calculate primary collection
+	return {
+		ok => "Buy details updated.",
+		buy => {
+			id    => $c->id,
+			name  => $c->name,
+			notes => $c->notes,
+			url   => sprintf("/v/col/%s/%s/collection.vif", $user->id, $c->id),
+		},
+	};
 };
 
 #########################################################################
@@ -521,8 +834,8 @@ put '/v/admin/users/:uuid' => sub {
 #########################################################################
 ### collection admin-y things
 
-# set the users primary collecton.
-put '/v/admin/users/:uuid/collection' => sub {
+# update a change
+post '/v/admin/users/:uuid/changes' => sub {
 	admin_authn or return admin_authn_failed;
 
 	# input: (a VCB-formatted string)
@@ -538,23 +851,33 @@ put '/v/admin/users/:uuid/collection' => sub {
 		return { error => "No such user." };
 	}
 
-	local $@;
-	my $cards = eval { VCB::Format->parse(request->data->{vcb}); };
-	if ($@) {
-		warn "unable to parse input: $@\n";
-		return { error => "Invalid VCB request payload." };
-	}
+	my $gain = analyze_import(request->{data}{raw_gain});
+	my $loss = analyze_import(request->{data}{raw_loss});
+	my %sets = (%{$gain->{sets}}, %{$loss->{sets}});
 
-	eval { $user->primary_collection->replace($cards); };
-	if ($@) {
-		warn "unable to update collection: $@\n";
-		return { error => "Unable to update collection." };
-	}
+	my $occurred = (request->{data}{type} eq "import")
+	             ? 0 : request->{data}{occurred_at};
+	$user->changes->create({
+		id          => uuidgen(),
+		occurred_at => $occurred,
+		type        => request->{data}{type},
+		summary     => request->{data}{summary},
+		notes       => request->{data}{notes}    || '',
 
-	recache($user, $user->primary_collection)
-		or return { error => "Unable to update collection cache files." };
+		raw_gain    => $gain->{raw},
+		card_gain   => $gain->{card},
+		unique_gain => $gain->{unique},
 
-	return { ok => "Collection updated." };
+		raw_loss    => $loss->{raw},
+		card_loss   => $loss->{card},
+		unique_loss => $loss->{unique},
+
+		sets        => join(':', sort keys %sets),
+		analyzed    => 1,
+	}) or die "failed to create change: $!\n";
+
+
+	return { ok => "Collection change recorded." };
 };
 
 # partial update to the users primary collection.
