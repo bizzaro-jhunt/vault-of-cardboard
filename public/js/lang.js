@@ -156,10 +156,59 @@ function parse(tok) {
         }
         return fn;
       },
-      colormap  = function (v) {
-        var m = {}, l = v.toUpperCase();
-        for (var i = 0; i < l.length; i++) { m[l[i]] = true; }
-        return m;
+      colorish  = function (v) {
+        v = v.toUpperCase();
+
+        var ck = function (w,u,b,r,g) {
+          var fn = function (c) {
+            var map = {};
+            for (var i = 0; i < c.length; i++) { map[c[i]] = true; }
+            console.log(this.name, [!!map.W, !!w], [!!map.U, !!u], [!!map.B, !!b], [!!map.R, !!r], [!!map.G, !!g], "XXX", c);
+            return !!map.W == !!w &&
+                   !!map.U == !!u &&
+                   !!map.B == !!b &&
+                   !!map.R == !!r &&
+                   !!map.G == !!g;
+          };
+          fn.string = v;
+          return fn;
+        };
+
+        switch (v) {
+        case "NONE":     /* '' */  return ck(0, 0, 0, 0, 0);
+
+        case "AZORIUS":  /* WU */  return ck(1, 1, 0, 0, 0);
+        case "DIMIR":    /* UB */  return ck(0, 1, 1, 0, 0);
+        case "RAKDOS":   /* BR */  return ck(0, 0, 1, 1, 0);
+        case "GRUUL":    /* RG */  return ck(0, 0, 0, 1, 1);
+        case "SELESNYA": /* WG */  return ck(1, 0, 0, 0, 1);
+        case "ORZHOV":   /* WB */  return ck(1, 0, 1, 0, 0);
+        case "IZZET":    /* UR */  return ck(0, 1, 0, 1, 0);
+        case "GOLGARI":  /* BG */  return ck(0, 0, 1, 0, 1);
+        case "BOROS":    /* WR */  return ck(1, 0, 0, 1, 0);
+        case "SIMIC":    /* UG */  return ck(0, 1, 0, 0, 1);
+
+        case "BANT":     /* WUG */ return ck(1, 1, 0, 0, 1);
+        case "ESPER":    /* WUB */ return ck(1, 1, 1, 0, 0);
+        case "GRIXIS":   /* UBR */ return ck(0, 1, 1, 1, 0);
+        case "JUND":     /* BRG */ return ck(0, 0, 1, 1, 1);
+        case "NAYA":     /* WRG */ return ck(1, 0, 0, 1, 1);
+
+        case "ABZAN":    /* WBG */ return ck(1, 0, 1, 0, 1);
+        case "JESKAI":   /* WUR */ return ck(1, 1, 0, 1, 0);
+        case "SULTAI":   /* UBG */ return ck(0, 1, 1, 0, 1);
+        case "MARDU":    /* WBR */ return ck(1, 0, 1, 1, 0);
+        case "TEMUR":    /* URG */ return ck(0, 1, 0, 1, 1);
+        }
+
+        var fn = function (c) {
+          for (var i = 0; i < v.length; i++) {
+            if (c.indexOf(v[i]) < 0) { return false; }
+          }
+          return true;
+        };
+        fn.string = v;
+        return fn;
       },
       range     = function (v) {
         var n, op, fn = function () { return false; };
@@ -221,7 +270,7 @@ function parse(tok) {
       case 'LEGAL':   fn = legalese; break;
       case 'RESERVED':
       case 'REPRINT': fn = boolish;  break;
-      case 'COLOR':   fn = colormap; break;
+      case 'COLOR':   fn = colorish; break;
       case 'OWN':
       case 'USD':
       case 'P':
@@ -338,12 +387,8 @@ Query.prototype.toString = function () {
 
   case 'RESERVED':
   case 'REPRINT':
-    return '('+this.type+' '+this.a.string+')';
-
   case 'COLOR':
-    var l = [];
-    for (var k in this.a) { l.push(k); }
-    return '('+this.type+' '+l.sort().join('')+')';
+    return '('+this.type+' '+this.a.string+')';
 
   case 'OWN':
   case 'USD':
@@ -381,10 +426,7 @@ Query.prototype.match = function (card) {
   case 'RARITY':
     return this.a == card.rarity;
   case 'COLOR':
-    for (var color in this.a) {
-      if (card.color.indexOf(color) < 0) { return false; }
-    }
-    return true;
+    return this.a.call(card, card.color);
   case 'P':
       return card.power != "" && this.a.call(card, card.power);
   case 'T':
