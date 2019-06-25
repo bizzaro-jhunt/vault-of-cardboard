@@ -4,7 +4,7 @@ use warnings;
 use Text::CSV qw/csv/;
 use VCB::Format;
 use VCB::Format::Utils;
-BEGIN { VCB::Format::register(__PACKAGE__); }
+BEGIN { VCB::Format::register(10, __PACKAGE__); }
 
 sub detect {
 	my ($class, $s) = @_;

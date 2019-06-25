@@ -1,10 +1,10 @@
-package VCP::Format::Archidekt;
+package VCB::Format::Archidekt;
 use strict;
 use warnings;
 
 use VCB::Format;
 use VCB::Format::Utils;
-BEGIN { VCB::Format::register(__PACKAGE__); }
+BEGIN { VCB::Format::register(0, __PACKAGE__); }
 
 =cut
 
@@ -33,7 +33,7 @@ sub detect {
 	my ($class, $s) = @_;
 
 	for (lines($s)) {
-		return undef unless m/^\d+x?\s+(.*)\s+\([A-Za-z0-9]{3,}\)$/;
+		return undef unless m/^\d+x?\s+(.*)\s+\([A-Za-z0-9]{3,}\).*$/;
 	}
 	return 1;
 }
@@ -42,11 +42,18 @@ sub parse {
 	my ($class, $s) = @_;
 	my @cards;
 
-	for (lines($s)) {
+	my $parser = VCB::Format::LineParser->for($s);
+	while (my $line = $parser->next()) {
+		local $_ = $line->{text};
+		s/^\s+|\s+$//;
+		s/\s*#.*//;
+		next unless $_;
+
 		die "malformed line: '$_'\n"
-			unless m/^(\d+)x?\s+(.*)\s+\(([A-Za-z0-9]{3,})\)$/;
+			unless m/^(\d+)x?\s+(.*)\s+\(([A-Za-z0-9]{3,})\).*$/;
 
 		push @cards, {
+			_parser   => $line,
 			quantity  => $1+0,
 			set       => uc($3),
 			flags     => '',

@@ -5,7 +5,7 @@ use warnings;
 use VCB::Format;
 use VCB::Format::Utils;
 use VCB::Format::LineParser;
-BEGIN { VCB::Format::register(__PACKAGE__); }
+BEGIN { VCB::Format::register(10, __PACKAGE__); }
 
 =cut
 

@@ -1,3 +1,6 @@
+test:
+	prove -lv t/*
+
 build:
 	docker build . -t huntprod/vault-of-cardboard
 

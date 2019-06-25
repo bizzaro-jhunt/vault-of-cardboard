@@ -4,7 +4,9 @@ use warnings;
 
 my @FORMATS;
 sub register {
-	push @FORMATS, $_[0];
+	my ($priority, $package) = @_;
+	push @FORMATS, [] while @FORMATS < $priority + 1;
+	push @{ $FORMATS[$priority] }, $package;
 }
 
 use VCB::Format::Archidekt;
@@ -15,7 +17,9 @@ sub parse {
 	my ($class, $s) = @_;
 
 	for (@FORMATS) {
-		return $_->parse($s) if $_->detect($s);
+		for (@{$_}) {
+			return $_->parse($s) if $_->detect($s);
+		}
 	}
 
 	die "unrecognized card list format\n";
