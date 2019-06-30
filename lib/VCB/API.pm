@@ -189,7 +189,7 @@ post '/v/buys/validate' => sub {
 	my $cards = eval { VCB::Format->parse(request->data->{vif}); };
 	if ($@) {
 		warn "unable to parse input: $@\n";
-		return { error   => "Syntax error in VCB input data" };
+		return { error   => "Syntax error in import: $@" };
 	}
 
 	# convert everything to Standard format, for ease of clarification

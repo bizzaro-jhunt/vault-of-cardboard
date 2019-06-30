@@ -1445,7 +1445,10 @@ $(function () {
       success: function (data) {
         $save.removeClass('in-progress')
              .text($save.attr('data-original'));
-        $form.find('textarea.vif').val(data.vcb);
+
+        if (data.vcb) {
+          $form.find('textarea.vif').val(data.vcb);
+        }
 
         var Clarifier = function () {
           this.e        = undefined;
