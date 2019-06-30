@@ -160,12 +160,14 @@ post '/v/buys/validate' => sub {
 
 	# output:
 	# {
-	#   "ok" : "Looks good!",
+	#   "vcb" : "... (possible re-formatted import) ...",
+	#   "ok"  : "Looks good!"
 	# }
 	#
 	# or:
 	#
 	# {
+	#   "vcb"   : "... (possible re-formatted import) ...",
 	#   "error" : "Validation failed",
 	#   "problems" : [
 	#     {
@@ -187,8 +189,14 @@ post '/v/buys/validate' => sub {
 	my $cards = eval { VCB::Format->parse(request->data->{vif}); };
 	if ($@) {
 		warn "unable to parse input: $@\n";
-		return { error => "Syntax error in VCB input data" };
+		return { error   => "Syntax error in VCB input data" };
 	}
+
+	# convert everything to Standard format, for ease of clarification
+	# on the front end (having to handle too many import formats complicates
+	# the diffing algorithm beyond reason)
+	#
+	my $vif = VCB::Format::Standard->format($cards);
 
 	my @problems;
 	for my $card (@$cards) {
@@ -197,9 +205,9 @@ post '/v/buys/validate' => sub {
 		print STDERR "checking on $card->{name} [$card->{set}]...\n";
 
 		# check for exact match; if found, we're 100% ok
-		$print = M('Print')->search({
-			name   => $card->{name},
-			set_id => $card->{set}})->count
+		$print = M('Print')->search(
+			{ name   => $card->{name},
+			  set_id => $card->{set}})->count
 				and next;
 
 		my $wanted = {
@@ -212,12 +220,11 @@ post '/v/buys/validate' => sub {
 
 		# check if we are a basic land
 		if ($card->{name} =~ m/^(plains|island|swamp|mountain|forest)$/i) {
-			$candidates = M('Print')->search_rs({
-					name   => $card->{name},
-					set_id => 'M19',
-				}, {
-					group_by => [qw[ name set_id ]],
-				});
+			$candidates = M('Print')->search_rs(
+				{ name     => $card->{name},
+				  set_id   => 'M19' },
+				{ group_by => [qw[ name set_id] ],
+				  rows     => 16 });
 			if ($candidates && $candidates->count > 0) {
 				push @problems, {
 					wanted      => $wanted,
@@ -229,11 +236,10 @@ post '/v/buys/validate' => sub {
 		}
 
 		# check to see if the card exists by name in other sets
-		$candidates = M('Print')->search_rs({
-				name => $card->{name}
-			}, {
-				group_by => [ qw[name set_id ]],
-			});
+		$candidates = M('Print')->search_rs(
+			{ name     => $card->{name} },
+			{ group_by => [ qw[name set_id] ],
+			  rows     => 16 });
 		if ($candidates && $candidates->count > 0) {
 			push @problems, {
 				wanted      => $wanted,
@@ -281,13 +287,15 @@ post '/v/buys/validate' => sub {
 
 	if (@problems) {
 		return {
+			vcb      => $vif,
 			error    => "validation failed",
 			problems => \@problems,
 		};
 	}
 
 	return {
-		ok => "validated!",
+		vcb => $vif,
+		ok  => "validated!",
 	};
 };
 

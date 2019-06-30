@@ -135,7 +135,7 @@
     <h2>My Collection</h2><form>
     <div class="oops" style="display: none"></div>
     <textarea name="collection">[[= _.data ]]</textarea>
-    <button type="submit">Save</button></form>
+    <button data-in-progress="Saving..." type="submit">Save</button></form>
   </div>
 </script><!-- }}} -->
 <script type="text/html" id="template:sets"><!-- {{{ -->
@@ -707,7 +707,7 @@
 <script type="text/html" id="template:problem"><!-- {{{ -->
   <div class="problem" data-problem="[[= _.i ]]">
     <p>line <span class="lineno">[[= _.wanted.lineno ]]</span>:
-            <span class="line">[[= _.wanted.card ]] (in [[= _.wanted.set ]])</span>:
+            <span class="line">[[= _.wanted.card ]][[ if (_.wanted.set) { ]] (in [[= _.wanted.set ]])[[ } ]]</span>:
             <span class="problem">[[= _.description ]]</span></p>
     <div class="grid results">
     [[ $.each(_.candidates, function (j, candidate) {
@@ -723,7 +723,7 @@
     [[ }); ]]
     </div>
     <ul class="changes"></ul>
-    <button rel="re-validate">Apply Changes</button>
+    [[ if (_.candidates.length > 0) { ]]<button rel="re-validate">Apply Changes</button>[[ } ]]
   </div>
 </script><!-- }}} -->
 
@@ -747,7 +747,7 @@
       </div>
       <div class="clarify"></div>
       <div>
-        <button class="default safe" type="submit">Save</button></form>
+        <button class="default safe" data-in-progress="Saving..." type="submit">Save</button></form>
       </div>
     </form>
     [[ } else { ]]
@@ -885,10 +885,11 @@
 
 </textarea>
       </div>
+      <div class="oops" style="display: none"></div>
 
       <div class="clarify"></div>
       <div>
-        <button class="default safe" type="submit">Save</button>
+        <button class="default safe" data-in-progress="Saving..." type="submit">Save</button></form>
       </div>
     </form>
   </div>
@@ -1431,12 +1432,21 @@ $(function () {
       return;
     }
 
+    var $save = $form.find('button[data-in-progress]');
+    $save.attr('data-original', $save.text())
+         .text($save.attr('data-in-progress'))
+         .addClass('in-progress');
+
     $.ajax({
       type: 'POST',
       url:  '/v/buys/validate',
       contentType: 'application/json',
       data: JSON.stringify({ vif: $form.find('textarea.vif').val() }),
       success: function (data) {
+        $save.removeClass('in-progress')
+             .text($save.attr('data-original'));
+        $form.find('textarea.vif').val(data.vcb);
+
         var Clarifier = function () {
           this.e        = undefined;
           this.problems = [];
@@ -1591,13 +1601,19 @@ $(function () {
         if (data.problems && data.problems.length > 0) {
           var clarifier = new Clarifier();
           window.c = clarifier;
+          var candidates = 0;
           for (var i = 0; i < data.problems.length; i++) {
+            candidates += data.problems[i].candidates.length;
             clarifier.add(data.problems[i]);
           }
           clarifier.mount($form.closest('div').find('.clarify'));
 
           $oops.html('There were some problems with your import').fadeIn();
-          $form.find('button[type=submit]').hide();
+          if (candidates > 0) {
+            $form.find('button[type=submit]').hide();
+          } else {
+            $form.find('button[type=submit]').show();
+          }
 
         } else if (data.error) {
           $oops.html(data.error).fadeIn();
