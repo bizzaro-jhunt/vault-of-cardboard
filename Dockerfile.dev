@@ -1,0 +1,27 @@
+FROM perl:latest
+MAINTAINER James Hunt <james@vaultofcardboard.com>
+
+RUN apt-get update \
+ && apt-get install -y sqlite3 \
+ && rm -rf /var/lib/apt/lists/* \
+ && curl -L http://cpanmin.us | perl - App::cpanminus \
+ && cpanm Dancer2 \
+          Dancer2::Plugin::DBIC \
+          DBIx::Class::Schema::Loader \
+          Data::UUID \
+          Digest::Bcrypt \
+          Data::Entropy::Algorithms \
+          LWP::UserAgent \
+          LWP::Protocol::https \
+          Net::Amazon::S3 \
+          Text::CSV \
+          Data::Entropy::Algorithms \
+          JSON::PP
+
+RUN apt-get update \
+ && apt-get install -y vim \
+ && rm -rf /var/lib/apt/lists/* \
+ && cpanm JSON \
+          Devel::Cover
+
+CMD ["/bin/bash"]

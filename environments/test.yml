@@ -1,0 +1,14 @@
+---
+vcb:
+  imgroot: //vault-of-cardboard.s3.amazonaws.com
+  #imgroot: /img
+
+  #  s3:
+  #    aki: xxx
+  #    key: yyy
+
+plugins:
+  DBIC:
+    default:
+      dsn: dbi:SQLite:dbname=test.db
+      schema_class: VCB::DB

@@ -1,5 +1,6 @@
 /dat
 /cache
+/cover_db
 /public/img
 x.*
 *.db

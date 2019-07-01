@@ -8,47 +8,57 @@ use base 'Exporter';
 our @EXPORT = qw/
 	GET PUT POST PATCH DELETE
 	response
+
+	login
 /;
+
+my $SID;
+
+sub r {
+	my $req = HTTP::Request->new(@_);
+	$req->header(Cookie => "vcb_sesh=$SID") if $SID;
+	return $req;
+}
 
 sub GET {
 	my ($url, $headers) = @_;
-	return HTTP::Request->new(GET => $url, $headers || []);
+	return r(GET => $url, $headers || []);
 }
 
 sub PUT {
 	my ($url, $object) = @_;
-	return HTTP::Request->new(
-		PUT => $url,
-		[Content_Type => 'application/json',
-		 Accept       => 'application/json'],
-		to_json($object));
+	return r(PUT => $url,
+	         [Content_Type => 'application/json',
+	          Accept       => 'application/json'],
+	         to_json($object));
 }
 
 sub POST {
 	my ($url, $object) = @_;
-	return HTTP::Request->new(
-		POST => $url,
-		[Content_Type => 'application/json',
-		 Accept       => 'application/json'],
-		to_json($object));
+	return r(POST => $url,
+	         [Content_Type => 'application/json',
+	          Accept       => 'application/json'],
+	         to_json($object));
 }
 
 sub PATCH {
 	my ($url, $object) = @_;
-	return HTTP::Request->new(
-		PATCH => $url,
-		[Content_Type => 'application/json',
-		 Accept       => 'application/json'],
-		to_json($object));
+	return r(PATCH => $url,
+	         [Content_Type => 'application/json',
+	          Accept       => 'application/json'],
+	         to_json($object));
 }
 
 sub DELETE {
 	my ($url, $headers) = @_;
-	return HTTP::Request->new(DELETE => $url, $headers || []);
+	return r(DELETE => $url, $headers || []);
 }
 
 sub response {
 	my ($r) = @_;
+	my $h = $r->header('Set-Cookie');
+	# vcb_sesh=xAxbnVEFareNebXbeDnalUejYGRmNQgOylJZMqgYoMmYxeoXwqIdosBGzkDinRPHO; Path=/; Expires=Sun, 29-Sep-2019 11:33:58 GMT; SameSite=Strict; HttpOnly
+	$SID = $1 if $h =~ m/^vcb_sesh=(.*?);/;
 	return from_json($r->decoded_content);
 }
 

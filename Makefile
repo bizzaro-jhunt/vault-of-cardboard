@@ -1,5 +1,9 @@
 test:
-	prove -lv t/*
+	prove -lv t/*.t
+
+coverage:
+	rm -rf cover_db
+	cover -t
 
 build:
 	docker build . -t huntprod/vault-of-cardboard

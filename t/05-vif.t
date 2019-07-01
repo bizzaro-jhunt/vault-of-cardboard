@@ -1,7 +1,10 @@
 #!perl
 use strict;
 use warnings;
-use Test::More;
+
+use Test::More tests => 17;
+use Test::NoWarnings;
+
 use lib "lib";
 use VCB::Format;
 
@@ -33,6 +36,28 @@ sub has_card {
 }
 
 {
+	my $vif = get_vif_from("simple.archidekt");
+	ok(VCB::Format::Archidekt->detect($vif),
+		"archidekt format should detect a simple Archidekt import");
+
+	my $cards = VCB::Format::Archidekt->parse($vif);
+	ok($cards, "archidekt format should be able to parse a simple Archidekt import");
+
+	has_card $cards, { set => 'MBS', name => 'Darksteel Plate', quantity => 1 },
+		"[autodetected] simple.archidekt includes [MBS] Darksteel Plate";
+	has_card $cards, { set => 'C17', name => 'Skullclamp', quantity => 1 },
+		"archidekt format parses all the way to the end";
+
+	$cards = VCB::Format->parse($vif);
+	ok($cards, "[autodetected] archidekt format should be able to parse a simple Archidekt import");
+
+	has_card $cards, { set => 'MBS', name => 'Darksteel Plate', quantity => 1 },
+		"[autodetected] simple.archidekt includes [MBS] Darksteel Plate";
+	has_card $cards, { set => 'C17', name => 'Skullclamp', quantity => 1 },
+		"[autodetected] archidekt format parses all the way to the end";
+}
+
+{
 	my $vif = get_vif_from("goblin-horde.archidekt");
 	ok(VCB::Format::Archidekt->detect($vif),
 		"archidekt format should detect an export from Archidekt");
@@ -57,7 +82,3 @@ sub has_card {
 	has_card $cards, { set => 'KLD', name => "Smuggler's Copter", quantity => 1 },
 		"[autodetected] archidekt format parses all the way to the end";
 }
-
-done_testing;
-
-1;
