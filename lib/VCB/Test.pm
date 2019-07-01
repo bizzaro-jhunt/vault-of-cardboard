@@ -25,6 +25,9 @@ our @EXPORT = qw/
 
 	validate_fails
 	validate_ok
+
+	timeline
+	buy_ok
 /;
 
 use File::Temp qw/ tempdir /;
@@ -77,6 +80,14 @@ sub PATCH { return _rp(PATCH => @_); }
 sub DELETE {
 	my ($url, $headers) = @_;
 	return _r(DELETE => $url, $headers || []);
+}
+
+sub _follow {
+	my ($res) = @_;
+	while ($res->is_redirect) {
+		$res = _request(GET $res->header('Location'));
+	}
+	return $res;
 }
 
 sub _request {
@@ -415,6 +426,41 @@ sub validate_ok {
 		return undef;
 	}
 
+	return $T->ok(1, $note);
+}
+
+sub timeline {
+	$APP or do {
+		$T->diag("the VCB::API has not been spun up yet");
+		return undef;
+	};
+
+	my $res = _follow(_request(GET '/my/timeline'));
+	return from_json($res->decoded_content);
+}
+
+sub buy_ok {
+	my ($vif, $note) = @_;
+	$note ||= "should be able to add cards to the collection via a BUY";
+	$APP or do {
+		$T->ok(0, $note);
+		$T->diag("the VCB::API has not been spun up yet");
+		return undef;
+	};
+
+	my $res = _request(POST '/my/changes', {
+		raw_gain    => $vif,
+		occurred_at => time(),
+		type        => 'buy',
+		summary     => "A BUY operation",
+		notes       => "This BUY was created by a test",
+	});
+	if (!$res->is_success) {
+		$T->ok(0, $note);
+		$T->diag("/my/changes returned body payload:");
+		$T->diag($res->decoded_content);
+		return undef;
+	}
 	return $T->ok(1, $note);
 }
 

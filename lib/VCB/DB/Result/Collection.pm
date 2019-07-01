@@ -169,7 +169,7 @@ sub replay {
 			$print->count > 0
 				or die "card '$card->{name}' ($card->{set}) not found in print cards table.\n";
 			$print->count == 1
-				or warn "card '$card->{name}' ($card->{set}) found more than once in print cards table.\n";
+				or print STDERR "card '$card->{name}' ($card->{set}) found more than once in print cards table.\n";
 			$print = $print->first;
 
 			my $existing = $self->cards->find({
@@ -203,39 +203,6 @@ sub replay {
 			}
 		}
 	}
-	return $self;
-}
-
-sub replace {
-	my ($self, $cards) = @_;
-
-	# FIXME : transactions!
-	$self->cards->delete_all;
-
-	my $UUID = Data::UUID->new;
-
-	for my $card (@$cards) {
-		my $print = $self->result_source->schema->resultset('Print')->search({
-			name   => $card->{name},
-			set_id => $card->{set},
-		}) or die "card [$card->{set}] '$card->{name}' not found in print table.\n";
-
-		$print->count > 0
-			or die "card '$card->{name}' ($card->{set}) not found in print cards table.\n";
-		$print->count == 1
-			or warn "card '$card->{name}' ($card->{set}) found more than once in print cards table.\n";
-		$print = $print->first;
-
-		$self->cards->create({
-			id       => lc($UUID->to_string($UUID->create)),
-			print_id => $print->id,
-			proxied  => 0,
-			quality  => $card->{quality}  || 'U',
-			quantity => $card->{quantity} || 1,
-			flags    => $card->{flags}    || '',
-		}) or die "failed to put card '$card->{name}' ($card->{set}) into collection.\n";
-	}
-
 	return $self;
 }
 

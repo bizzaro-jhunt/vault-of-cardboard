@@ -3,7 +3,7 @@ test:
 
 coverage:
 	rm -rf cover_db
-	cover -t
+	cover -t -ignore_re '^t/.*' -ignore_re '/VCB/Test\.pm$$'
 
 build:
 	docker build . -t huntprod/vault-of-cardboard

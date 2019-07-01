@@ -355,7 +355,8 @@ sub analyze_import {
 	return $what;
 }
 
-post '/my/changes' => sub {
+post '/my/changes' => \&do_my_changes;
+sub do_my_changes {
 	my $user = authn or return {
 		"error" => "You are not logged in.",
 		"authn" => "required"
@@ -458,7 +459,8 @@ get '/v/col/:user/:type' => sub {
 	}
 };
 
-get '/v/:user/timeline' => sub {
+get '/v/:user/timeline' => \&do_v_user_timeline;
+sub do_v_user_timeline {
 	my $user = M('User')->find(param('user'))
 		or return {};
 
@@ -479,55 +481,19 @@ get '/v/:user/timeline' => sub {
 	} $user->changes ];
 };
 
-get '/v/col/:user' => sub {
-	my $user = M('User')->find(param('user'))
-		or return {}; # FIXME
-
-	return [map {
-		{
-			id    => $_->id,
-			name  => $_->name,
-			notes => $_->notes,
-			type  => $_->type,
-		}
-	} $user->collections];
-};
-
-post '/v/col/:user' => sub {
-	my $user = M('User')->find(param('user'))
-		or return {}; # FIXME
-
-	my $c = $user->collections->create({
-		id    => uuidgen(),
-		name  => params->{name},
-		notes => params->{notes},
-		type  => params->{type},
-	}) or return {}; # FIXME
-
-	local $@;
-	my $cards = eval { VCB::Format->parse(request->data->{vcb}); };
-	if ($@) {
-		logf "unable to parse input: $@\n";
-		return { error => "Invalid VCB request payload." };
-	}
-
-	eval { $c->replace($cards); };
-	if ($@) {
-		logf "unable to update collection: $@\n";
-		return { error => "Unable to update collection." };
-	}
-
-	# FIXME: re-calculate primary collection
-	return {
-		ok => "Buy details updated.",
-		buy => {
-			id    => $c->id,
-			name  => $c->name,
-			notes => $c->notes,
-			url   => sprintf("/v/col/%s/%s/collection.vif", $user->id, $c->id),
-		},
-	};
-};
+#get '/v/col/:user' => sub {
+#	my $user = M('User')->find(param('user'))
+#		or return {}; # FIXME
+#
+#	return [map {
+#		{
+#			id    => $_->id,
+#			name  => $_->name,
+#			notes => $_->notes,
+#			type  => $_->type,
+#		}
+#	} $user->collections];
+#};
 
 get '/v/col/:user/:uuid/:type' => sub {
 	# grab a collection, owned by a given user.
@@ -546,44 +512,6 @@ get '/v/col/:user/:uuid/:type' => sub {
 	} elsif ($ext eq 'json') {
 		return {};
 	}
-};
-
-put '/v/col/:user/:uuid' => sub { # FIXME - handle json and VCB imports?
-	my $user = M('User')->find(param('user'))
-		or return {}; # FIXME
-
-	my $c = $user->collections->find({
-		type => 'buy',
-		id   => param('uuid'),
-	}) or return {}; # FIXME
-
-	local $@;
-	my $cards = eval { VCB::Format->parse(request->data->{vcb}); };
-	if ($@) {
-		logf "unable to parse input: $@\n";
-		return { error => "Invalid VCB request payload." };
-	}
-
-	$c->update({
-		name  => request->data->{name} || $c->name,
-		notes => request->data->{notes} || $c->notes,
-	});
-	eval { $c->replace($cards); };
-	if ($@) {
-		logf "unable to update collection: $@\n";
-		return { error => "Unable to update collection." };
-	}
-
-	# FIXME: re-calculate primary collection
-	return {
-		ok => "Buy details updated.",
-		buy => {
-			id    => $c->id,
-			name  => $c->name,
-			notes => $c->notes,
-			url   => sprintf("/v/col/%s/%s/collection.vif", $user->id, $c->id),
-		},
-	};
 };
 
 #########################################################################
@@ -723,50 +651,6 @@ get '/v/admin/users' => sub {
 	}} M('User')->search];
 };
 
-# retrieve user details
-get '/v/admin/users/:uuid' => sub {
-	admin_authn or return admin_authn_failed;
-
-	# input: (none)
-
-	# output:
-	# {
-	#    "id"        : "ab9c5636-b05e-479f-a7c9-21b45f34ef66",
-	#    "account"   : "username",
-	#    "joined_at" : "2018-12-10 14:19:04",
-	#    "active"    : true
-	# }
-};
-
-# update user details
-put '/v/admin/users/:uuid' => sub {
-	admin_authn or return admin_authn_failed;
-
-	# input: (partial subset)
-	# {
-	#   "display" : "New Display Name",
-	#   "account" : "new-username",
-	#   "active"  : false
-	# }
-
-	# output:
-	# {
-	#   "ok"      : "Created user account",
-	#   "updated" : {
-	#     "id"        : "ab9c5636-b05e-479f-a7c9-21b45f34ef66",
-	#     "display"   : "New Display Name",
-	#     "account"   : "new-username",
-	#     "joined_at" : "2018-12-10 14:19:04",
-	#     "active"    : false
-	#   },
-	#   "fields": [
-	#     "account",
-	#     "active",
-	#     "display"
-	#   ]
-	# }
-};
-
 #########################################################################
 ### collection admin-y things
 
@@ -814,18 +698,6 @@ post '/v/admin/users/:uuid/changes' => sub {
 
 
 	return { ok => "Collection change recorded." };
-};
-
-# partial update to the users primary collection.
-patch '/v/admin/users/:uuid/collection' => sub {
-	admin_authn or return admin_authn_failed;
-
-	# input: (a VCB-formatted string)
-
-	# output:
-	# {
-	#   "ok": "Collection updated."
-	# }
 };
 
 #########################################################################
