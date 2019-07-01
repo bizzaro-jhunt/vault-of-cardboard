@@ -67,8 +67,41 @@ sub cachepath {
 }
 
 sub authn {
-	my $c = cookie 'vcb_sesh';
-	return $c ? $SESH{$c->value} : undef;
+	my $cookie = cookie 'vcb_sesh';
+	if ($cookie) {
+		return $SESH{$cookie->value};
+	}
+
+	# fall back to basic auth
+	my $authorize = request_header 'Authorization';
+	if (!$authorize) {
+		status 401;
+		response_header 'WWW-Authenticate' => 'Basic realm="Vault of Cardboard"';
+		return undef;
+	}
+
+	if ($authorize !~ m/^Basic\s+(.*)/i) {
+		status 401;
+		response_header 'WWW-Authenticate' => 'Basic realm="Vault of Cardboard"';
+		return undef;
+	}
+
+	my ($username, $password) = split ':', decode_base64($1), 2;
+	return M('User')->authenticate($username, $password);
+}
+
+sub admin_authn {
+	my $user = authn;
+	if (!$user || !$user->admin) {
+		status 403;
+		response_header 'WWW-Authenticate' => 'Basic realm="Vault of Cardboard"';
+		return undef;
+	}
+	return $user;
+}
+
+sub admin_authn_failed {
+	return { error => "Administrative authentication required." };
 }
 
 sub M {
@@ -603,39 +636,6 @@ sub do_v_logout {
 
 #########################################################################
 ### user admin-y things
-
-sub admin_authn {
-	my $user = authn;
-	if (!$user) {
-		# fall back to basic auth
-		my $authorize = request_header 'Authorization';
-		if (!$authorize) {
-			status 401;
-			response_header 'WWW-Authenticate' => 'Basic realm="Vault of Cardboard"';
-			return undef;
-		}
-
-		if ($authorize !~ m/^Basic\s+(.*)/i) {
-			status 401;
-			response_header 'WWW-Authenticate' => 'Basic realm="Vault of Cardboard"';
-			return undef;
-		}
-
-		my ($account, $password) = split ':', decode_base64($1), 2;
-		$user = M('User')->authenticate($account, $password);
-	}
-	if (!$user || !$user->admin) {
-		status 403;
-		response_header 'WWW-Authenticate' => 'Basic realm="Vault of Cardboard"';
-		return undef;
-	}
-
-	return $user;
-}
-
-sub admin_authn_failed {
-	return { error => "Administrative authentication required." };
-}
 
 # create a new user
 post '/v/admin/users' => sub {
