@@ -46,6 +46,10 @@ my %SESH;
 
 #########################################################################
 
+sub logf {
+	print STDERR "$@";
+}
+
 my $DATFILE;
 sub datpath {
 	return config->{vcb}{datroot} unless @_;
@@ -95,12 +99,12 @@ sub rarity {
 
 sub backfill_image {
 	my ($ua, $bucket, $ours, $theirs, $msg, $force) = @_;
-	warn "checking image state for $msg...\n";
+	logf "checking image state for $msg...\n";
 	if ($force || !$bucket->head_key($ours)) {
-		warn "backfilling image for $msg...\n";
+		logf "backfilling image for $msg...\n";
 		my $res = $ua->get($theirs);
 		if (!$res->is_success) {
-			warn "failed to retrieve card face $msg '$theirs': ".$res->status_line."\n";
+			logf "failed to retrieve card face $msg '$theirs': ".$res->status_line."\n";
 			return undef;
 		}
 		$bucket->add_key($ours, $res->decoded_content);
@@ -188,7 +192,7 @@ post '/v/buys/validate' => sub {
 	local $@;
 	my $cards = eval { VCB::Format->parse(request->data->{vif}); };
 	if ($@) {
-		warn "unable to parse input: $@\n";
+		logf "unable to parse input: $@\n";
 		return { error   => "Syntax error in import: $@" };
 	}
 
@@ -400,7 +404,7 @@ post '/v/my/collection/validate' => sub {
 	local $@;
 	my @errors = eval { validate_cards(VCB::Format->parse(request->data->{vcb})); };
 	if ($@) {
-		warn "unable to parse input: $@\n";
+		logf "unable to parse input: $@\n";
 		return { error => "Invalid VCB request payload." };
 	}
 	if (@errors) {
@@ -425,7 +429,7 @@ sub recache {
 	printf STDERR "caching collection '%s' [%s] for user '%s' [%s] in VCB format...\n",
 		$col->name || "(unnamed)", $col->id, $user->account, $user->id;
 	open my $fh, ">", datpath($user->id, "col/.new.vcb") or do {
-		warn "unable to open $DATFILE: $!\n";
+		logf "unable to open $DATFILE: $!\n";
 		return undef;
 	};
 	for my $card ($col->cards) {
@@ -443,7 +447,7 @@ sub recache {
 	       datpath($user->id, "col", $user->primary_collection->id.".vcb");
 
 	open $fh, ">", datpath($user->id, "col/.new.json") or do {
-		warn "unable to open $DATFILE: $!\n";
+		logf "unable to open $DATFILE: $!\n";
 		return undef;
 	};
 	print $fh encode_json(\%HAVE);
@@ -471,7 +475,7 @@ put '/my/collection' => sub {
 	local $@;
 	my $cards = eval { VCB::Format->parse(request->data->{vcb}); };
 	if ($@) {
-		warn "unable to parse input: $@\n";
+		logf "unable to parse input: $@\n";
 		return { error => "Invalid VCB request payload." };
 	}
 
@@ -485,7 +489,7 @@ put '/my/collection' => sub {
 
 	eval { $user->primary_collection->replace($cards); };
 	if ($@) {
-		warn "unable to update collection in database: $@\n";
+		logf "unable to update collection in database: $@\n";
 		return { error => "Unable to update collection." };
 	}
 
@@ -557,13 +561,13 @@ post '/v/col/:user' => sub {
 	local $@;
 	my $cards = eval { VCB::Format->parse(request->data->{vcb}); };
 	if ($@) {
-		warn "unable to parse input: $@\n";
+		logf "unable to parse input: $@\n";
 		return { error => "Invalid VCB request payload." };
 	}
 
 	eval { $c->replace($cards); };
 	if ($@) {
-		warn "unable to update collection: $@\n";
+		logf "unable to update collection: $@\n";
 		return { error => "Unable to update collection." };
 	}
 
@@ -610,7 +614,7 @@ put '/v/col/:user/:uuid' => sub { # FIXME - handle json and VCB imports?
 	local $@;
 	my $cards = eval { VCB::Format->parse(request->data->{vcb}); };
 	if ($@) {
-		warn "unable to parse input: $@\n";
+		logf "unable to parse input: $@\n";
 		return { error => "Invalid VCB request payload." };
 	}
 
@@ -620,7 +624,7 @@ put '/v/col/:user/:uuid' => sub { # FIXME - handle json and VCB imports?
 	});
 	eval { $c->replace($cards); };
 	if ($@) {
-		warn "unable to update collection: $@\n";
+		logf "unable to update collection: $@\n";
 		return { error => "Unable to update collection." };
 	}
 
@@ -688,21 +692,25 @@ sub do_v_logout {
 ### user admin-y things
 
 sub admin_authn {
-	my $authorize = request_header 'Authorization';
-	if (!$authorize) {
-		status 401;
-		response_header 'WWW-Authenticate' => 'Basic realm="Vault of Cardboard"';
-		return undef;
-	}
+	my $user = authn;
+	if (!$user) {
+		# fall back to basic auth
+		my $authorize = request_header 'Authorization';
+		if (!$authorize) {
+			status 401;
+			response_header 'WWW-Authenticate' => 'Basic realm="Vault of Cardboard"';
+			return undef;
+		}
 
-	if ($authorize !~ m/^Basic\s+(.*)/i) {
-		status 401;
-		response_header 'WWW-Authenticate' => 'Basic realm="Vault of Cardboard"';
-		return undef;
-	}
+		if ($authorize !~ m/^Basic\s+(.*)/i) {
+			status 401;
+			response_header 'WWW-Authenticate' => 'Basic realm="Vault of Cardboard"';
+			return undef;
+		}
 
-	my ($account, $password) = split ':', decode_base64($1), 2;
-	my $user = M('User')->authenticate($account, $password);
+		my ($account, $password) = split ':', decode_base64($1), 2;
+		$user = M('User')->authenticate($account, $password);
+	}
 	if (!$user || !$user->admin) {
 		status 403;
 		response_header 'WWW-Authenticate' => 'Basic realm="Vault of Cardboard"';
@@ -752,7 +760,7 @@ post '/v/admin/users' => sub {
 		  ->insert;
 	};
 	if ($@) {
-		warn "failed to create user account '".param('account')."': ".$@."\n";
+		logf "failed to create user account '".param('account')."': ".$@."\n";
 		return { error => "Unable to create account; check server logs for details." };
 	}
 
@@ -761,7 +769,7 @@ post '/v/admin/users' => sub {
 		main => 1,
 		type => 'collection',
 	}) or do {
-		warn "failed to create primary collection for user account".$u->account."\n";
+		logf "failed to create primary collection for user account".$u->account."\n";
 		return { error => "Unable to create primary collection; check server logs for details." };
 	};
 
@@ -862,7 +870,7 @@ post '/v/admin/users/:uuid/changes' => sub {
 
 	my $user = M('User')->find(param('uuid'));
 	if (!$user) {
-		warn "unable to find user '".param('uuid')."'\n";
+		logf "unable to find user '".param('uuid')."'\n";
 		return { error => "No such user." };
 	}
 
@@ -911,7 +919,8 @@ patch '/v/admin/users/:uuid/collection' => sub {
 ### card set admin-y things
 
 # ingest a set of cards, from upstream data
-post '/v/admin/sets/:code/ingest' => sub {
+post '/v/admin/sets/:code/ingest' => \&do_v_admin_sets_x_ingest;
+sub do_v_admin_sets_x_ingest {
 	admin_authn or return admin_authn_failed;
 
 	# input: (none)
@@ -926,35 +935,39 @@ post '/v/admin/sets/:code/ingest' => sub {
 	my $s;
 
 	for my $code (lc(param('code')), 't'.(lc(param('code')))) {
-		warn "ingesting set [$code]...\n";
+		logf "ingesting set [$code]...\n";
 		my $cache = cachepath("$code.set");
 		if (-f $cache) {
-			warn "checking if our cache file needs to be re-synced or not...\n";
+			logf "checking if our cache file needs to be re-synced or not...\n";
 			my $mtime = (stat($cache))[9];
 			if (time - $mtime > config->{vcb}{cachefor} * 86400) {
-				warn "cache file is ".((time - $mtime)/86400.0)." day(s) old (> ".config->{vcb}{cachefor}."); invalidating.\n";
+				logf "cache file is ".((time - $mtime)/86400.0)." day(s) old (> ".config->{vcb}{cachefor}."); invalidating.\n";
 				unlink $cache;
 			}
 		}
 		if (! -f $cache) {
-			mkdir cachepath();
+			if ($ENV{VCB_NO_SCRYFALL}) {
+				next unless $crit;
+				return { error => "Querying of Scryfall API prohibited by local configuration" };
+			}
+
 			print "cache path '$cache' not found; pulling [$code] from scryfall...\n";
 
 			my $scry = Scry->new;
 			my $set = $scry->get1("/sets/$code") or do {
 				next unless $crit;
-				warn "failed to query ScryFall API for set [$code] data\n";
+				logf "failed to query ScryFall API for set [$code] data\n";
 				return { "error" => "Failed to query Scryfall API." };
 			};
 
 			print "querying $set->{search_uri} ...\n";
 			$set->{cards} = $scry->get($set->{search_uri}) or do {
-				warn "failed to query ScryFall API for set [$code] card data\n";
+				logf "failed to query ScryFall API for set [$code] card data\n";
 				return { "error" => "Failed to query Scryfall API." };
 			};
 
 			open my $fh, ">", $cache or do {
-				warn "failed to open cache file '$cache': $!\n";
+				logf "failed to open cache file '$cache': $!\n";
 				return { error => "failed to open cache file '$cache': $!" };
 			};
 			print $fh encode_json($set);
@@ -986,7 +999,7 @@ post '/v/admin/sets/:code/ingest' => sub {
 	for my $card (@cards) {
 		$dates{$card->{released_at}}++;
 
-		print "updating $code $card->{name}...\n";
+		logf "updating $code $card->{name}...\n";
 		my $attrs = {
 			id        => $card->{id},
 			name      => $card->{name},
@@ -1034,18 +1047,18 @@ post '/v/admin/sets/:code/ingest' => sub {
 		my $aki = config->{vcb}{s3}{aki};
 		my $key = config->{vcb}{s3}{key};
 		if (!$aki or !$key) {
-			warn "card images refresh requested for set [$code]; but no S3 configuration found!\n";
+			logf "card images refresh requested for set [$code]; but no S3 configuration found!\n";
 			return { "error" => "Set refreshed from upstream data; but no S3 configuration was found for image refresh." };
 		}
 
 		my $pid = fork;
 		if ($pid < 0) {
-			warn "card image refresh requested for set [$code]; but background process fork failed!\n";
+			logf "card image refresh requested for set [$code]; but background process fork failed!\n";
 			return { "error" => "Set refreshed from upstream data; but the background process for image refresh failed to fork." };
 		}
 
 		if ($pid == 0) { # in child
-			warn "connecting to s3 as $aki\n";
+			logf "connecting to s3 as $aki\n";
 			my $s3 = Net::Amazon::S3->new({
 				aws_access_key_id     => $aki,
 				aws_secret_access_key => $key,
@@ -1053,7 +1066,7 @@ post '/v/admin/sets/:code/ingest' => sub {
 
 			my $bucket = $s3->bucket(config->{vcb}{s3}{bucket});
 			if (!$bucket || !$bucket->get_acl) {
-				warn "card images refresh requested for set [$code]; but bucket '".config->{vcb}{s3}{bucket}."' not found!\n";
+				logf "card images refresh requested for set [$code]; but bucket '".config->{vcb}{s3}{bucket}."' not found!\n";
 				exit(1);
 			};
 
@@ -1084,11 +1097,11 @@ post '/v/admin/sets/:code/ingest' => sub {
 						!!params->{force});
 
 				} else {
-					warn "unable to find card image url for [$code] $card->{name} (layout:$card->{layout}) in card metadata!\n";
+					logf "unable to find card image url for [$code] $card->{name} (layout:$card->{layout}) in card metadata!\n";
 				}
 			}
 
-			warn "finished ingesting [$code]\n";
+			logf "finished ingesting [$code]\n";
 			exit(0);
 		}
 	}
@@ -1103,7 +1116,8 @@ get '/cards.json' => sub {
 	send_file datpath("cards.json"), system_path => 1;
 };
 
-get '/sets.json' => sub {
+get '/sets.json' => \&do_sets_dot_json;
+sub do_sets_dot_json {
 	# for now, this is a live database query
 	return [
 		map {
@@ -1133,7 +1147,7 @@ post '/v/admin/recache' => sub {
 
 	my $pid = fork;
 	if ($pid < 0) {
-		warn "recache requested for all card data; but background process fork failed!\n";
+		logf "recache requested for all card data; but background process fork failed!\n";
 		return { "error" => "recache requested for all card data; but background process fork failed!" };
 	}
 
@@ -1180,7 +1194,7 @@ post '/v/admin/recache' => sub {
 		print "$n/$total cards recached.\n";
 
 		open my $fh, ">", datpath(".new.json") or do {
-			warn "unable to open $DATFILE: $!\n";
+			logf "unable to open $DATFILE: $!\n";
 			return undef;
 		};
 		print $fh encode_json(\%ALL);

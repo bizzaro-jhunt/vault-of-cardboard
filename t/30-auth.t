@@ -4,7 +4,7 @@ use Test::NoWarnings;
 
 use VCB::Test;
 
-spin_app_ok "the VCB::API application should spin up";
+spin_app_ok;
 iam_anonymous "we should be initially logged out";
 
 login_fails "urza", "mightstone";
