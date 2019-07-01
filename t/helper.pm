@@ -25,29 +25,20 @@ sub GET {
 	return r(GET => $url, $headers || []);
 }
 
-sub PUT {
-	my ($url, $object) = @_;
-	return r(PUT => $url,
-	         [Content_Type => 'application/json',
-	          Accept       => 'application/json'],
-	         to_json($object));
+sub rp {
+	my ($method, $url, $object) = @_;
+	return $object
+		? r($method => $url,
+		    [Content_Type => 'application/json',
+		     Accept       => 'application/json'],
+		    to_json($object))
+		: r($method => $url,
+		    [Accept       => 'application/json']);
 }
 
-sub POST {
-	my ($url, $object) = @_;
-	return r(POST => $url,
-	         [Content_Type => 'application/json',
-	          Accept       => 'application/json'],
-	         to_json($object));
-}
-
-sub PATCH {
-	my ($url, $object) = @_;
-	return r(PATCH => $url,
-	         [Content_Type => 'application/json',
-	          Accept       => 'application/json'],
-	         to_json($object));
-}
+sub PUT   { return rp(PUT   => @_); }
+sub POST  { return rp(POST  => @_); }
+sub PATCH { return rp(PATCH => @_); }
 
 sub DELETE {
 	my ($url, $headers) = @_;
