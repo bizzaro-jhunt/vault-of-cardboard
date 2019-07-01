@@ -63,7 +63,7 @@ sub cachepath {
 }
 
 sub authn {
-	my $c = cookies->{vcb_sesh};
+	my $c = cookie 'vcb_sesh';
 	return $c ? $SESH{$c->value} : undef;
 }
 
@@ -114,6 +114,7 @@ sub backfill_image {
 VCB::DB::Setup->migrate(config->{plugins}{DBIC}{default}{dsn});
 
 if (M('User')->count == 0 && $ENV{VCB_FAILSAFE_USERNAME} && $ENV{VCB_FAILSAFE_PASSWORD}) {
+	print STDERR "setting up failsafe user '$ENV{VCB_FAILSAFE_USERNAME}'\n";
 	my $admin = M('User')->create({
 		id        => uuidgen(),
 		account   => $ENV{VCB_FAILSAFE_USERNAME},
@@ -639,7 +640,8 @@ put '/v/col/:user/:uuid' => sub { # FIXME - handle json and VCB imports?
 #########################################################################
 ### authz
 
-get '/v/whoami' => sub {
+get '/v/whoami' => \&do_v_whoami;
+sub do_v_whoami {
 	my $user = authn;
 	if ($user) {
 		return {
@@ -647,17 +649,21 @@ get '/v/whoami' => sub {
 			account => $user->account,
 			display => $user->display,
 		};
-	} else {
-		return {};
 	}
-};
+	return {};
+}
 
-post '/v/login' => sub {
+post '/v/login' => \&do_v_login;
+sub do_v_login {
 	my $user = M('User')->authenticate(param('username'), param('password'));
 
 	if ($user) {
 		my $sid = randstr(64);
 		$SESH{$sid} = $user;
+		cookie vcb_sesh  => $sid,
+		       expires   => '90d',
+		       same_site => 'Strict',
+		       http_only => 1;
 		return {
 			ok => "Authenticated successfully.",
 			user => {
@@ -671,12 +677,13 @@ post '/v/login' => sub {
 
 	status 401;
 	return { error => "Invalid username or password." };
-};
+}
 
-post '/v/logout' => sub {
-	delete $SESH{cookies->{vcb_sesh}};
+post '/v/logout' => \&do_v_logout;
+sub do_v_logout {
+	delete $SESH{cookie 'vcb_sesh'};
 	return { ok => "Logged out." };
-};
+}
 
 #########################################################################
 ### user admin-y things
