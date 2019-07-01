@@ -1439,15 +1439,15 @@ $(function () {
 
     $.ajax({
       type: 'POST',
-      url:  '/v/buys/validate',
+      url:  '/v/import/validate',
       contentType: 'application/json',
       data: JSON.stringify({ vif: $form.find('textarea.vif').val() }),
       success: function (data) {
         $save.removeClass('in-progress')
              .text($save.attr('data-original'));
 
-        if (data.vcb) {
-          $form.find('textarea.vif').val(data.vcb);
+        if (data.vif) {
+          $form.find('textarea.vif').val(data.vif);
         }
 
         var Clarifier = function () {

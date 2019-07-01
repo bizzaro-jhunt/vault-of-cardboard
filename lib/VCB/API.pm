@@ -156,22 +156,23 @@ get '/my/timeline' => sub {
 	redirect sprintf("/v/%s/timeline", $user->id);
 };
 
-post '/v/buys/validate' => sub {
+post '/v/import/validate' => \&do_v_import_validate;
+sub do_v_import_validate {
 	# input:
 	# {
-	#    "vcb" : "... (a VCB-formatted string) ..."
+	#    "vif" : "... (a formatted import string) ..."
 	# }
 
 	# output:
 	# {
-	#   "vcb" : "... (possible re-formatted import) ...",
+	#   "vif" : "... (possible re-formatted import string) ...",
 	#   "ok"  : "Looks good!"
 	# }
 	#
 	# or:
 	#
 	# {
-	#   "vcb"   : "... (possible re-formatted import) ...",
+	#   "vif"   : "... (possible re-formatted import string) ...",
 	#   "error" : "Validation failed",
 	#   "problems" : [
 	#     {
@@ -291,14 +292,14 @@ post '/v/buys/validate' => sub {
 
 	if (@problems) {
 		return {
-			vcb      => $vif,
+			vif      => $vif,
 			error    => "validation failed",
 			problems => \@problems,
 		};
 	}
 
 	return {
-		vcb => $vif,
+		vif => $vif,
 		ok  => "validated!",
 	};
 };

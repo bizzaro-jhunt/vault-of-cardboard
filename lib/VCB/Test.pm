@@ -22,6 +22,9 @@ our @EXPORT = qw/
 
 	have_set
 	dont_have_set
+
+	validate_fails
+	validate_ok
 /;
 
 use File::Temp qw/ tempdir /;
@@ -357,6 +360,58 @@ sub dont_have_set {
 		$T->ok(0, $note);
 		$T->diag("found set [$code]:");
 		$T->diag($T->explain($_));
+		return undef;
+	}
+
+	return $T->ok(1, $note);
+}
+
+sub validate {
+	my ($vif) = @_;
+
+	$APP or do {
+		$T->diag("the VCB::API has not been spun up yet");
+		return undef;
+	};
+
+	my $res = _request(POST '/v/import/validate', { vif => $vif });
+	return from_json($res->decoded_content);
+}
+
+sub validate_fails {
+	my ($vif, $note) = @_;
+	$note ||= "should fail to validate import vif";
+	$APP or do {
+		$T->ok(0, $note);
+		$T->diag("the VCB::API has not been spun up yet");
+		return undef;
+	};
+
+	my $r = validate($vif);
+	if ($r->{ok}) {
+		$T->ok(0, $note);
+		$T->diag("/v/import/validate returned body payload:");
+		$T->diag($T->explain($r));
+		return undef;
+	}
+
+	return $T->ok(1, $note);
+}
+
+sub validate_ok {
+	my ($vif, $note) = @_;
+	$note ||= "should validate import vif ok";
+	$APP or do {
+		$T->ok(0, $note);
+		$T->diag("the VCB::API has not been spun up yet");
+		return undef;
+	};
+
+	my $r = validate($vif);
+	if ($r->{error}) {
+		$T->ok(0, $note);
+		$T->diag("/v/import/validate returned body payload:");
+		$T->diag($T->explain($r));
 		return undef;
 	}
 

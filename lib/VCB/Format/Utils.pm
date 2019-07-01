@@ -7,7 +7,7 @@ our @EXPORT = qw/lines/;
 
 sub lines {
 	my ($s) = @_;
-	return grep { $_ && !m/^#/ } map { s/(^\s+|\s+$)//; $_ } split(/\n/, $s);
+	return grep { $_ && !m/^#/ } map { s/(^\s+|\s+$)//; $_ } split(/\n/, $s || '');
 }
 
 1;
