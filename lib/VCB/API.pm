@@ -33,8 +33,8 @@ config->{vcb}{s3}{region} ||= $ENV{S3_REGION} || 'us-east-1';
 
 delete $ENV{S3_KEY}; # potentially sensitive
 
-for my $var (sort keys %ENV) {
-	print STDERR "ENV> $var = '$ENV{$var}'\n";
+if (!$ENV{TEST_ACTIVE}) {
+	print STDERR "ENV> $_ = '$ENV{$_}'\n" for sort keys %ENV;
 }
 
 if (POSIX::getpid() == 1) {
@@ -114,7 +114,6 @@ sub backfill_image {
 VCB::DB::Setup->migrate(config->{plugins}{DBIC}{default}{dsn});
 
 if (M('User')->count == 0 && $ENV{VCB_FAILSAFE_USERNAME} && $ENV{VCB_FAILSAFE_PASSWORD}) {
-	print STDERR "setting up failsafe user '$ENV{VCB_FAILSAFE_USERNAME}'\n";
 	my $admin = M('User')->create({
 		id        => uuidgen(),
 		account   => $ENV{VCB_FAILSAFE_USERNAME},
