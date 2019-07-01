@@ -130,14 +130,6 @@
   [[ } ]]
 </div>
 </script><!-- }}} -->
-<script type="text/html" id="template:edit-collection"><!-- {{{ -->
-  <div class="edit-collection">
-    <h2>My Collection</h2><form>
-    <div class="oops" style="display: none"></div>
-    <textarea name="collection">[[= _.data ]]</textarea>
-    <button data-in-progress="Saving..." type="submit">Save</button></form>
-  </div>
-</script><!-- }}} -->
 <script type="text/html" id="template:sets"><!-- {{{ -->
   <div class="sets prose">
     <h1>Currently Known Magic: the Gathering Sets</h1>
@@ -1254,19 +1246,6 @@ $(function () {
       return;
     }
 
-    if (sub == "collection") {
-      loading();
-      $.ajax({
-        type: 'GET',
-        url:  '/my/collection.vcb',
-        success: function (data) {
-          $('.edit-collection textarea').val(data);
-          switchTo('edit');
-        }
-      });
-      return;
-    }
-
     if (sub.match(/^timeline(\/.*)?$/)) {
       loading();
       $.ajax({
@@ -1639,45 +1618,6 @@ $(function () {
             }
           });
         }
-      }
-    });
-  })
-  .on('submit', '.edit-collection form', function (event) {
-    event.preventDefault();
-    $('.oops').hide();
-
-    $.ajax({
-      type: 'PUT',
-      url:  '/my/collection',
-      contentType: 'application/json',
-      data: JSON.stringify({ vcb: $(event.target).find('textarea').val() }),
-      success: function (data) {
-        if (data.ok) {
-          refreshCollection(function () { search("owned") });
-        } else if (data.error) {
-          var $oops = $('.edit-collection .oops');
-          if (data.errors) {
-            var ul = $('<ul>');
-            if (data.errors.length > 10) {
-              for (var i = 0; i < 5; i++) {
-                ul.append($('<li>'+data.errors[i]+'</li>'));
-              }
-              ul.append($('<li><a href="#more">see remaining '+(data.errors.length - 5).toString()+' issues...</a></li>'));
-              for (var i = 5; i < data.errors.length; i++) {
-                ul.append($('<li class="suppress">'+data.errors[i]+'</li>'));
-              }
-            } else {
-              for (var i = 0; i < data.errors.length; i++) {
-                ul.append($('<li>'+data.errors[i]+'</li>'));
-              }
-            }
-            $oops.empty().append(data.error);
-            $oops.append(ul).fadeIn();
-          } else {
-            $oops.html(data.error).fadeIn();
-          }
-        } else {
-          $('.edit-collection .oops').html("Uh-oh, something broke pretty bad.  Tap "+colorize("4BR")+" to cast James Legendary Bug Fix").fadeIn(); }
       }
     });
   })

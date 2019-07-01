@@ -439,35 +439,6 @@ body > .colors {
 .modal-fg .price .w3 { color: inherit; }
 
 
-.edit-collection {
-  padding: 5vh 10vw;
-}
-.edit-collection h2 {
-  font-size: 24pt;
-  font-weight: bold;
-  font-family: sans-serif;
-  text-align: center;
-}
-.edit-collection textarea {
-  display: block;
-  margin:  1em auto;
-  width:   80%;
-  height:  60vh;
-}
-.edit-collection button {
-  display: block;
-  margin: 8px auto;
-
-  background-color: blue;
-  color: #fff;
-  font-size: 18pt;
-  font-weight: bold;
-  cursor: pointer;
-  border: none;
-  border-radius: 8px;
-  padding: 4pt 12pt;
-}
-
 #main .loading h1 {
   font-size: 24pt;
   font-style: italic;

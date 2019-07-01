@@ -369,54 +369,6 @@ get '/my/:type' => sub {
 		$user->id, $user->primary_collection->id, param('type'));
 };
 
-sub validate_cards {
-	my ($cards) = @_;
-
-	my @errors;
-	for my $card (@$cards) {
-		my $print = M('Print')->search({
-				name   => $card->{name},
-				set_id => $card->{set}}
-		) or do {
-			push @errors, "card '$card->{name}' ($card->{set}) not found in printed cards table.";
-			next;
-		};
-
-		$print->count > 0 or do {
-			push @errors, "card '$card->{name}' ($card->{set}) not found in printed cards table.";
-			next;
-		};
-	}
-
-	return @errors;
-}
-
-post '/v/my/collection/validate' => sub {
-	# input:
-	# {
-	#   "vcb" : "... (a VCB-formatted string) ..."
-	# }
-
-	# output:
-	# {
-	#   "ok" : "Collection validated."
-	# }
-
-	local $@;
-	my @errors = eval { validate_cards(VCB::Format->parse(request->data->{vcb})); };
-	if ($@) {
-		logf "unable to parse input: $@\n";
-		return { error => "Invalid VCB request payload." };
-	}
-	if (@errors) {
-		return {
-			error  => "Collection validation failed.",
-			errors => \@errors,
-		};
-	}
-	return { ok => "Collection validated." };
-};
-
 sub recache {
 	my ($user, $col) = @_;
 	my (%HAVE, %ALL);
@@ -459,46 +411,6 @@ sub recache {
 
 	return 1;
 }
-
-put '/my/collection' => sub {
-	my $user = authn or return {
-		"error" => "You are not logged in.",
-		"authn" => "required"
-	};
-
-	# input: (a VCB-formatted string)
-
-	# output:
-	# {
-	#   "ok" : "Collection updated."
-	# }
-
-	local $@;
-	my $cards = eval { VCB::Format->parse(request->data->{vcb}); };
-	if ($@) {
-		logf "unable to parse input: $@\n";
-		return { error => "Invalid VCB request payload." };
-	}
-
-	my @errors = validate_cards($cards);
-	if (@errors) {
-		return {
-			error  => "Collection validation failed.",
-			errors => \@errors,
-		};
-	}
-
-	eval { $user->primary_collection->replace($cards); };
-	if ($@) {
-		logf "unable to update collection in database: $@\n";
-		return { error => "Unable to update collection." };
-	}
-
-	recache($user, $user->primary_collection)
-		or return { error => "Unable to update collection cache files." };
-
-	return { ok => "Collection updated." };
-};
 
 get '/v/col/:user/:type' => sub {
 	(my $ext = param('type')) =~ s/^.*?\.//;
