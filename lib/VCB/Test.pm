@@ -153,7 +153,7 @@ sub use_cache_ok {
 		return undef;
 	};
 
-	system("cp -a $local $ROOT/cache >/dev/null");
+	system("cp -R $local $ROOT/cache >/dev/null");
 	return $T->ok($? == 0, $note);
 }
 
