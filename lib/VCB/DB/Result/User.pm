@@ -61,6 +61,13 @@ __PACKAGE__->table("users");
   default_value: 1
   is_nullable: 0
 
+=head2 cohort
+
+  data_type: 'varchar'
+  default_value: 'public'
+  is_nullable: 0
+  size: 50
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -78,6 +85,13 @@ __PACKAGE__->add_columns(
   { data_type => "boolean", default_value => 0, is_nullable => 0 },
   "active",
   { data_type => "boolean", default_value => 1, is_nullable => 0 },
+  "cohort",
+  {
+    data_type => "varchar",
+    default_value => "public",
+    is_nullable => 0,
+    size => 50,
+  },
 );
 
 =head1 PRIMARY KEY
@@ -138,9 +152,24 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 decks
 
-# Created by DBIx::Class::Schema::Loader v0.07049 @ 2019-03-03 14:28:26
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Uv2wOxvBTl6CktUCtWL8HQ
+Type: has_many
+
+Related object: L<VCB::DB::Result::Deck>
+
+=cut
+
+__PACKAGE__->has_many(
+  "decks",
+  "VCB::DB::Result::Deck",
+  { "foreign.user_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07049 @ 2019-07-02 14:02:29
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:/j1cozK6et3HUwcY0GP/tQ
 
 use Data::Entropy::Algorithms qw/rand_bits/;
 use Digest                    qw//;

@@ -110,6 +110,39 @@ CREATE TABLE changes (
 EOF
 		$set_v->execute(++$version);
 	}
+
+	if ($version == 4) {
+		print __PACKAGE__.": migrating v4 -> v5 (deck management)\n";
+		$db->do(<<EOF);
+CREATE TABLE decks (
+  id           UUID         NOT NULL PRIMARY KEY,
+  user_id      UUID         NOT NULL,
+  created_at   INTEGER      NOT NULL,
+  updated_at   INTEGER      NOT NULL,
+
+  code         VARCHAR(50)  NOT NULL,
+  name         TEXT         NOT NULL,
+  notes        TEXT         NOT NULL DEFAULT '',
+
+  cover        UUID         DEFAULT NULL,
+  cardlist     TEXT,
+  format       VARCHAR(30)  NOT NULL DEFAULT 'custom',
+
+  colors       TEXT         NOT NULL DEFAULT '',
+  analyzed     BOOLEAN      NOT NULL DEFAULT 0,
+
+  FOREIGN KEY (user_id) REFERENCES users(id)
+)
+EOF
+		$set_v->execute(++$version);
+	}
+
+	if ($version == 5) {
+		print __PACKAGE__.": migrating v5 -> v6 (user cohort and feature preview)\n";
+		$db->do("ALTER TABLE users ADD COLUMN cohort VARCHAR(50) NOT NULL DEFAULT 'public'");
+		$db->do("UPDATE users SET cohort = 'preview' WHERE admin = 1");
+		$set_v->execute(++$version);
+	}
 }
 
 sub init {

@@ -210,6 +210,14 @@ function parse(tok) {
         fn.string = v;
         return fn;
       },
+      deckish   = function (v) {
+        v = v.toLowerCase();
+        var fn = function (decks) {
+          return decks && decks[v];
+        };
+        fn.string = v;
+        return fn;
+      },
       range     = function (v) {
         var n, op, fn = function () { return false; };
         var m = v.match('^([<>]?=?)?([0-9]+(\\.[0-9]+)?)$');
@@ -271,6 +279,7 @@ function parse(tok) {
       case 'RESERVED':
       case 'REPRINT': fn = boolish;  break;
       case 'COLOR':   fn = colorish; break;
+      case 'IN':      fn = deckish;  break;
       case 'OWN':
       case 'USD':
       case 'P':
@@ -383,6 +392,7 @@ Query.prototype.toString = function () {
   case 'LAYOUT':
   case 'LEGAL':
   case 'PT':
+  case 'IN':
     return '('+this.type+' '+this.a.toString()+')';
 
   case 'RESERVED':
@@ -433,6 +443,8 @@ Query.prototype.match = function (card) {
       return card.power != "" && this.a.call(card, card.toughness);
   case 'CPT':
       return card.power != "" && this.a.call(card, parseInt(card.power) + parseInt(card.toughness));
+  case 'IN':
+      return this.a.call(card, card.decks);
   case 'PTR':
       return card.power != "" && this.a.call(card, parseInt(card.power) * 1.0 / parseInt(card.toughness));
   case 'LAYOUT':

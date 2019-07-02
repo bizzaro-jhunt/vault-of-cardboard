@@ -838,6 +838,10 @@ form button.safe {
   background-color: dodgerblue;
   color: #fff;
 }
+button.danger {
+  background-color: firebrick;
+  color: #fff;
+}
 
 
 .timeline {
@@ -937,6 +941,39 @@ form button.safe {
 .timeline > div:hover a {
   visibility: visible;
 } */
+
+
+
+body[data-cohort!="preview"] .cohort-preview { display: none; }
+body[data-cohort="preview"] nav li.cohort-preview a::after {
+  font-size: 9pt;
+  content: "(new)";
+  position: relative;
+  top: -0.5em;
+  padding-left: 0.5ex;
+  color: lime;
+}
+
+.deck .title span {
+  font-size: 9pt;
+  font-family: monospace;
+  color: #fff;
+  background-color: purple;
+  padding: 0.5em;
+  border-radius: 0.4em;
+}
+.deck .title h1 {
+  display: block;
+  margin: 4pt 0 1em 0;
+}
+.deck .buttons {
+  display: flex;
+  flex-direction: row;
+}
+.deck .rawlist {
+  font-size: 11pt;
+  font-family: monospace;
+}
 
 /*
 

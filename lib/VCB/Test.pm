@@ -28,6 +28,14 @@ our @EXPORT = qw/
 
 	timeline
 	buy_ok
+
+	decks
+	deck
+	dont_have_deck
+	have_deck
+	import_deck
+	update_deck
+	delete_deck
 /;
 
 use File::Temp qw/ tempdir /;
@@ -292,8 +300,9 @@ sub ingest_ok {
 	my $res = _request(POST "/v/admin/sets/$code/ingest");
 	if (!$res->is_success) {
 		$T->ok(0, $note);
-		$T->diag("/v/admin/sets/$code/ingest failed:");
+		$T->diag("POST /v/admin/sets/$code/ingest failed:");
 		$T->diag($res->as_string);
+		return undef;
 	}
 
 	return $T->ok(1, $note);
@@ -461,6 +470,125 @@ sub buy_ok {
 		$T->diag($res->decoded_content);
 		return undef;
 	}
+	return $T->ok(1, $note);
+}
+
+sub decks {
+	$APP or do {
+		$T->diag("the VCB::API has not been spun up yet");
+		return undef;
+	};
+
+	my $res = _request(GET '/my/decks', [Accept => 'application/json']);
+	return from_json($res->decoded_content);
+}
+
+sub deck {
+	my ($code) = @_;
+	$APP or do {
+		$T->diag("the VCB::API has not been spun up yet");
+		return undef;
+	};
+
+	my $res = _request(GET "/my/decks/$code", [Accept => 'application/json']);
+	return from_json($res->decoded_content);
+}
+
+sub dont_have_deck {
+	my ($code, $note) = @_;
+	$note ||= "deck '$code' should not exist";
+	$APP or do {
+		$T->ok(0, $note);
+		$T->diag("the VCB::API has not been spun up yet");
+		return undef;
+	};
+
+	for (@{ decks() }) {
+		if ($_->{code} eq $code) {
+			$T->ok(0, $note);
+			$T->diag("found deck '$_->{code}' (name '$_->{name}')");
+			return undef;
+		}
+	}
+	return $T->ok(1, $note);
+}
+
+sub have_deck {
+	my ($code, $note) = @_;
+	$note ||= "deck '$code' should exist";
+	$APP or do {
+		$T->ok(0, $note);
+		$T->diag("the VCB::API has not been spun up yet");
+		return undef;
+	};
+
+	for (@{ decks() }) {
+		return $T->ok(1, $note)
+			if $_->{code} eq $code;
+	}
+	return $T->ok(0, $note);
+}
+
+sub import_deck {
+	my ($attrs, $cards, $note) = @_;
+	$note ||= "should be able to import a deck";
+	$APP or do {
+		$T->diag("the VCB::API has not been spun up yet");
+		return undef;
+	};
+
+	my $res = _request(POST "/my/decks", {
+		%$attrs,
+		cardlist => $cards
+	});
+	if (!$res->is_success) {
+		$T->ok(0, $note);
+		$T->diag("POST /my/decks failed:");
+		$T->diag($res->as_string);
+		return undef;
+	}
+
+	return $T->ok(1, $note);
+}
+
+sub update_deck {
+	my ($code, $attrs, $cards, $note) = @_;
+	$note ||= "should be able to update a deck";
+	$APP or do {
+		$T->diag("the VCB::API has not been spun up yet");
+		return undef;
+	};
+
+	my $res = _request(PUT "/my/decks/$code", {
+		%$attrs,
+		cardlist => $cards
+	});
+	if (!$res->is_success) {
+		$T->ok(0, $note);
+		$T->diag("PUT /my/decks/$code failed:");
+		$T->diag($res->as_string);
+		return undef;
+	}
+
+	return $T->ok(1, $note);
+}
+
+sub delete_deck {
+	my ($code, $note) = @_;
+	$note ||= "should be able to delete a deck";
+	$APP or do {
+		$T->diag("the VCB::API has not been spun up yet");
+		return undef;
+	};
+
+	my $res = _request(DELETE "/my/decks/$code");
+	if (!$res->is_success) {
+		$T->ok(0, $note);
+		$T->diag("DELETE /my/decks/$code failed:");
+		$T->diag($res->as_string);
+		return undef;
+	}
+
 	return $T->ok(1, $note);
 }
 

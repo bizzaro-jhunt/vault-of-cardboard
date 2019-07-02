@@ -159,6 +159,7 @@ if (M('User')->count == 0 && $ENV{VCB_FAILSAFE_USERNAME} && $ENV{VCB_FAILSAFE_PA
 		account   => $ENV{VCB_FAILSAFE_USERNAME},
 		pwhash    => $ENV{VCB_FAILSAFE_PASSWORD},
 		display   => $ENV{VCB_FAILSAFE_USERNAME},
+		cohort    => 'preview',
 		joined_at => POSIX::mktime(0, 0, 0, 5, 7, 93), # Limited Alpha release date...
 		admin     => 1,
 		active    => 1,
@@ -396,6 +397,192 @@ sub do_my_changes {
 	};
 };
 
+get '/my/decks' => \&do_GET_my_decks;
+sub do_GET_my_decks {
+	my $user = authn or return {
+		"error" => "You are not logged in.",
+		"authn" => "required"
+	};
+
+	return [map {
+		{
+			code     => $_->code,
+			name     => $_->name,
+			notes    => $_->notes,
+			cover    => $_->cover,
+			format   => $_->format,
+			cardlist => $_->cardlist,
+
+			created_at => $_->created_at,
+			updated_at => $_->updated_at,
+		}
+	} $user->decks];
+}
+
+post '/my/decks' => \&do_POST_my_decks;
+sub do_POST_my_decks {
+	my $user = authn or return {
+		"error" => "You are not logged in.",
+		"authn" => "required"
+	};
+
+	# input:
+	# {
+	#   "code"     : "a-code-name",
+	#   "name"     : "A Public Deck Name",
+	#   "notes"    : "Some notes about this deck\n\nPossible multi-line...",
+	#   "cover"    : "... a card UUID ...",
+	#   "format"   : "standard",
+	#   "cardlist" : "... a VCB-formatted string ..."
+	# }
+
+	# output:
+	# {
+	#   "ok" : "Deck created"
+	# }
+
+	my $format = lc(request->data->{format} || 'custom');
+	if ($format !~ m/^(standard|modern|vintage|legacy|edh|pauper|custom)$/) {
+		status 400;
+		return { error => sprintf("Unrecognized deck format '%s'", $format) };
+	}
+
+	my $code = lc(request->data->{code});
+	if ($code !~ m/^[a-z][a-z0-9_-]+/) {
+		status 400;
+		return { error => sprintf("Improperly formatted deck code '%s'", $code) };
+	}
+
+	my $deck = $user->decks->create({
+		id       => uuidgen(),
+		code     => $code,
+		name     => request->data->{name},
+		notes    => request->data->{notes} || '',
+		cover    => request->data->{cover} || '',
+		format   => $format,
+		cardlist => request->data->{cardlist},
+
+		created_at => time(),
+		updated_at => time(),
+	});
+
+	recache($user, $user->primary_collection);
+	return { ok => "Deck created" };
+}
+
+get '/my/decks/:code' => \&do_GET_my_decks_x;
+sub do_GET_my_decks_x {
+	my $user = authn or return {
+		"error" => "You are not logged in.",
+		"authn" => "required"
+	};
+
+	my $code = params->{code};
+	my @decks = $user->decks->search({ code => $code });
+	if (!@decks) {
+		status 404;
+		return { error => sprintf("Deck '%s' not found", $code) };
+	}
+	if (@decks > 1) {
+		status 500;
+		return { error => sprintf("More than one deck with code '%s' found", $code) };
+	}
+
+	my ($deck) = @decks;
+	return {
+		id       => $deck->id,
+		code     => $deck->code,
+		name     => $deck->name,
+		notes    => $deck->notes,
+		cover    => $deck->cover,
+		format   => $deck->format,
+		cardlist => $deck->cardlist,
+
+		created_at => $deck->created_at,
+		updated_at => $deck->updated_at,
+	};
+}
+
+put '/my/decks/:code' => \&do_PUT_my_decks_x;
+sub do_PUT_my_decks_x {
+	my $user = authn or return {
+		"error" => "You are not logged in.",
+		"authn" => "required"
+	};
+
+	# input:
+	# {
+	#   "name"     : "A Public Deck Name",
+	#   "notes"    : "Some notes about this deck\n\nPossible multi-line...",
+	#   "cover"    : "... a card UUID ...",
+	#   "format"   : "standard",
+	#   "cardlist" : "... a VCB-formatted string ..."
+	# }
+
+	# output:
+	# {
+	#   "ok" : "Deck updated"
+	# }
+
+	my $code = params->{code};
+	my @decks = $user->decks->search({ code => $code });
+	if (!@decks) {
+		status 404;
+		return { error => sprintf("Deck '%s' not found", $code) };
+	}
+	if (@decks > 1) {
+		status 500;
+		return { error => sprintf("More than one deck with code '%s' found", $code) };
+	}
+
+	my ($deck) = @decks;
+	$deck->update({
+		code     => request->data->{code}     || $deck->code,
+		name     => request->data->{name}     || $deck->name,
+		notes    => request->data->{notes},
+		cover    => request->data->{cover}    || $deck->cover,
+		format   => request->data->{format}   || $deck->format,
+		cardlist => request->data->{cardlist},
+
+		updated_at => time(),
+	});
+
+	recache($user, $user->primary_collection);
+	return { ok => "Deck updated" };
+}
+
+del '/my/decks/:code' => \&do_DEL_my_decks_x;
+sub do_DEL_my_decks_x {
+	my $user = authn or return {
+		"error" => "You are not logged in.",
+		"authn" => "required"
+	};
+
+	# input: (none)
+
+	# output:
+	# {
+	#   "ok" : "Deck deleted"
+	# }
+
+	my $code = params->{code};
+	my @decks = $user->decks->search({ code => $code });
+	if (!@decks) {
+		status 404;
+		return { error => sprintf("Deck '%s' not found", $code) };
+	}
+	if (@decks > 1) {
+		status 500;
+		return { error => sprintf("More than one deck with code '%s' found", $code) };
+	}
+
+	my ($deck) = @decks;
+	$deck->delete;
+
+	recache($user, $user->primary_collection);
+	return { ok => "Deck deleted" };
+};
+
 get '/my/:type' => sub {
 	my $user = authn or do {
 		return "# you are not logged in...\n" if param('type') =~ m/\.vcb$/i;
@@ -435,6 +622,13 @@ sub recache {
 	close $fh;
 	rename datpath($user->id, "col/.new.vcb"),
 	       datpath($user->id, "col", $user->primary_collection->id.".vcb");
+
+	for my $deck ($user->decks) {
+		my $cards = eval { VCB::Format->parse($deck->cardlist); };
+		for my $card (@$cards) {
+			$HAVE{_decked}{$card->{name}}{$deck->code} = 1;
+		}
+	}
 
 	open $fh, ">", datpath($user->id, "col/.new.json") or do {
 		logf "unable to open $DATFILE: $!\n";
@@ -528,6 +722,7 @@ sub do_v_whoami {
 			id      => $user->id,
 			account => $user->account,
 			display => $user->display,
+			cohort  => $user->cohort,
 		};
 	}
 	return {};
@@ -550,6 +745,7 @@ sub do_v_login {
 				id      => $user->id,
 				account => $user->account,
 				display => $user->display,
+				cohort  => $user->cohort,
 				session => $sid,
 			},
 		};
@@ -924,7 +1120,7 @@ sub do_sets_dot_json {
 			},
 		)
 	];
-};
+}
 
 # recache global /cards.json file
 post '/v/admin/recache' => sub {
