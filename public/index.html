@@ -473,6 +473,43 @@
 </script><!-- }}} -->
 <script type="text/html" id="template:changelog"><!-- {{{ -->
   <div class="docs changelog prose">
+    [[# commit 939c6a7 ]]
+    <h2 id="!/changelog/v20190703">
+    <img src="/h/v20190703.png">
+    Story Spotlights, Uniqueness, and Deck Imports
+    <a href="/#!/changelog/v20190703">(permalink)</a>
+    <span>July 3rd 2019</span></h2>
+
+    <p>We've made some adjustments to search.  For those of you who just can't get
+    enough of the deep lore of M:tG expansion sets, we have a new search predicate,
+    <kbd>spotlight</kbd> that finds <em>Story Spotlight</em> cards.</p>
+
+    <p>The biggest new feature for VQL, however, has got to be <em>uniqueness</em>
+    filtering.  There have been lots of cards printed over the years, and a sizable
+    chunk of those are reprints.  We've always had the <kbd>reprint</kbd> predicate,
+    but that doesn't work when you're trying to limit to recent sets.</p>
+
+    <p>Now, you can drop all those pesky duplicates by adding <kbd>and unique</kbd>
+    to the end of your search query.  Any additional prints of any given card will
+    be removed from the resultset, cleaning things up.  This is perfect for deck
+    brewing, where you care more about the oracle text than the print edition or
+    pricing.</p>
+
+    <p>If you love the art of Magic as much as we do, you'll also love the new
+    <em>art uniqueness</em> predicate too!  With <kbd>unique:art</kbd>, you'll get
+    rid of duplicate card art in your resultset.</p>
+
+    <p>This release also marks the introduction of <em>preview features</em>;
+    stuff we want to get into the hands of users, but that aren't ready for prime
+    time just yet.  The first of those is Deck Import.  You can export decks from
+    your favorite deck builder sites, and import them into the Vault.  Afterwards,
+    you can use the new <kbd>in:deck-name</kbd> predicate to filter based on
+    inclusion in a given deck.  Now you can find all those Ninja's that <em>aren't</em>
+    in your Yuriko deck.</p>
+
+    <p>Contact James if you want early access to preview features!</p>
+
+
     [[# commit c3326b6 ]]
     <h2 id="!/changelog/v20190503">
     <img src="/h/v20190503.png">
