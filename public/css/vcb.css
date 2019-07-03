@@ -304,13 +304,13 @@ body > .colors {
   width: 100%;
   transform-origin: 50% 50%;
 }
-.grid.results > span .card.face img.flipped {
+.card.face img.flipped {
   transform: rotate(180deg);
 }
-.grid.results .card a[rel=flip] {
+.card a[rel=flip] {
   display: block;
   position: absolute;
-  z-index: 5;
+  z-index: 6;
   background-image: url(/flip.png);
   background-size: cover;
   background-color: #ffffffb3;
@@ -320,8 +320,20 @@ body > .colors {
   right: 3%;
   bottom: 8%;
 }
-.grid.results .card:hover a[rel=flip] {
+.card:hover a[rel=flip] {
   background-color: #ffff00b3;
+}
+.cardable {
+  margin: 0; padding: 0;
+  position: relative;
+}
+.cardable > div {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+}
+.cardable > div .card {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
 }
 .modal-bg,
 .modal-fg {
@@ -348,7 +360,11 @@ body > .colors {
   transform: translate(100px, 100px) rotate(185deg);
   transform-origin: 50% 50%;
 }
-.modal-fg > div {
+.modal-fg div.cardable > div {
+  height: 100vmin;
+  width: 71.5vmin;
+}
+.modal-fg div.detail {
   background-color: #fff;
   display: block;
   position: fixed;
@@ -1040,13 +1056,13 @@ body[data-cohort="preview"] nav li.cohort-preview a::after {
     transform: rotate(-5deg);
   }
 
-  .modal-fg > img {
+  .modal-fg .cardable {
     display: none;
   }
-  .modal-fg > div {
+  .modal-fg div.detail {
     top:  5vh; height: 90vh;
     left: 5vw; width:  90vw;
-    padding: none;
     padding: 12px;
+    overflow: auto;
   }
 }

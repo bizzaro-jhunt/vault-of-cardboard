@@ -102,7 +102,7 @@
 <script type="text/html" id="template:cardface"><!-- {{{ -->
   [[ var alt = _.card.name + ' [' + _.card.set.code + ']'; ]]
   <span data-own="[[= _.owned ]]">
-    <span class="card back"><img src="/mtgback.jpg"></span>
+    [[ if (!_.noback) { ]]<span class="card back"><img src="/mtgback.jpg"></span>[[ } ]]
     <span class="card face [[= _.card.layout]]">
       [[ if (_.card.layout == 'transform') { ]]<a href="#" rel="flip"></a>[[ } ]]
       <img data-id="[[= _.card.id ]]" src="[[= $CONFIG.imgroot ]]/cards/[[= _.card.image ]]"
@@ -110,6 +110,50 @@
            alt="[[= alt ]]" title="[[= alt ]]">
     </span>
   </span>
+</script><!-- }}} -->
+<script type="text/html" id="template:card-detail"><!-- {{{ -->
+  [[ var alt = _.card.name + ' [' + _.card.set.code + ']'; ]]
+  <div class="cardable" data-own="[[= _.owned ]]"><div>
+    [[ if (!_.noback) { ]]<span class="card back"><img src="/mtgback.jpg"></span>[[ } ]]
+    <span class="card face [[= _.card.layout]]">
+      [[ if (_.card.layout == 'transform') { ]]<a href="#" rel="flip"></a>[[ } ]]
+      <img data-id="[[= _.card.id ]]" src="[[= $CONFIG.imgroot ]]/cards/[[= _.card.image ]]"
+           [[ if (_.card.layout == 'transform') { ]]data-flip-src="[[= $CONFIG.imgroot ]]/cards/[[= _.card.back ]]"[[ } ]]
+           alt="[[= alt ]]" title="[[= alt ]]">
+    </span>
+  </div></div>
+  [[# include('cardface', { card: _.card, noback: 1 }); ]]
+  <div class="detail">
+    <a class="close" href="#">X</a>
+    [[# <ul class="tags"><li>tag</li><li>control</li></ul> ]]
+    <ul class="info">
+      <li><strong>[[= _.card.name ]]</strong></li>
+      <li><em>[[= clean(_.card.type) ]]</em></li>
+      <li>[[= _.card.set.name ]] ([[= _.card.set.code ]])</li>
+      <li>#[[= _.card.number ]]/[[= _.card.set.total ]]</li>
+      <li>[[= colorize(_.card.color) ]]</li>
+      <li><strong>CMC:</strong> [[= _.card.cmc ]]</li>
+      <li>[[= _.card.rarity ]]</li>
+    </ul>
+    <textarea style="display: none">[[= quotify(_.card.name, _.card.set, _.card.flavor) ]]</textarea>
+    <ul class="owned">
+      <li><strong>Owned:</strong> [[= _.card.owned.toString() ]]</li>
+      [[# <li><strong>Proxied:</strong> 1</li> ]]
+    </ul>
+    [[# <ul class="where">
+          <li>1 in <a href="#">Niv-Mizzet →</a></li>
+          <li>1 in <a href="#">ctl60 →</a></li>
+          <li>1 in <a href="#">Collection →</a></li>
+        </ul> ]]
+    <ul>
+      <li class="oracle"><p>[[= symbolize(clean(_.card.oracle)).replace(/\n/g, '</p><p>') ]]</p></li>
+    </ul>
+    <p class="price">[[= price(_.card.price) ]]
+       [[= (_.card.price > 999 ? '<span class="w1">remember kids, M:tG is <strong>NOT</strong> an investment...</span>' :
+            _.card.price >  99 ? '<span class="w2">oof</span>' :
+            _.card.price >   9 ? '<span class="w3">that\'s a tad much, don\'t you think?</span>' : '') ]]
+    </p>
+  </div>
 </script><!-- }}} -->
 <script type="text/html" id="template:results"><!-- {{{ -->
   [[#
@@ -1842,7 +1886,7 @@ $(function () {
       document.location.hash = dest;
     }
   })
-  .on('click', '.results .face a[rel=flip]', function (event) {
+  .on('click', '.face a[rel=flip]', function (event) {
     event.preventDefault();
     var $card = $(event.target).closest('.face');
     var $img  = $(event.target).closest('.face').find('img');
@@ -1860,56 +1904,13 @@ $(function () {
     var id   = $(event.target).closest('[data-id]').attr('data-id'),
         card = $INDEX[id];
 
-    var quotify = function (name, set, s) {
-      s = s || '';
-      while (s.match('"')) {
-        s = s.replace('"', '&ldquo;').replace('"', '&rdquo;');
-      }
-      s = s.replace(/&/g, '&amp;').replace(/ *â/, '&lt;cite&gt;&amp;mdash;');
-      if (s.match(';cite')) {
-        s += '&lt;/cite&gt;';
-      }
-      return '/* '+name+' ('+set.code+') */'+"\n\n\"&lt;blockquote&gt;"+s+"&lt;/blockquote&gt;\"";
-    };
-
     window.$current = card;
     $('.modal-fg').empty().append(
-      '<img class="'+$(event.target).closest('img').attr('class')+'" src="'+$(event.target).closest('img').attr('src')+'">'+
-      '<div class="detail">'+
-        '<a class="close" href="#">X</a>'+
-            '<ul class="tags">'+
-              '<li>tag</li>'+
-              '<li>control</li>'+
-            '</ul>'+
-            '<ul class="info">'+
-              '<li><strong>'+card.name+'</strong></li>'+
-              '<li><em>'+clean(card.type)+'</em></li>'+
-              '<li>'+card.set.name+' ('+card.set.code+')</li>'+
-              '<li>#'+card.number+'/'+card.set.total+'</li>'+
-              '<li>'+colorize(card.color)+'</li>'+
-              '<li><strong>CMC:</strong> '+card.cmc+'</li>'+
-              '<li>'+card.rarity+'</li>'+
-            '</ul>'+
-            '<textarea style="display: none">'+quotify(card.name, card.set, card.flavor)+'</textarea>'+
-            '<ul class="owned">'+
-              '<li><strong>Owned:</strong> '+card.owned.toString()+'</li>'+
-              /*'<li><strong>Proxied:</strong> 1</li>'+*/
-            '</ul>'+
-            /*'<ul class="where">'+
-              '<li>1 in <a href="#">Niv-Mizzet →</a></li>'+
-              '<li>1 in <a href="#">ctl60 →</a></li>'+
-              '<li>1 in <a href="#">Collection →</a></li>'+
-            '</ul>'+*/
-            '<ul>'+
-              '<li class="oracle"><p>'+symbolize(clean(card.oracle)).replace(/\n/g, '</p><p>')+'</p></li>'+
-            '</ul>'+
-            '<p class="price">'+price(card.price)+
-               (card.price > 999 ? '<span class="w1">remember kids, M:tG is <strong>NOT</strong> an investment...</span>' :
-                card.price >  99 ? '<span class="w2">oof</span>' :
-                card.price >   9 ? '<span class="w3">that\'s a tad much, don\'t you think?</span>' : '')+
-            '</p>'+
-          '</div>'+
-      '</div>');
+      $.template('card-detail', {
+        src:  $(event.target).closest('img').attr('src'),
+        flip: $(event.target).closest('img').attr('data-flip-src'),
+        card: card
+      }));
     $('.modal-bg, .modal-fg').show();
   })
   .on('click', '.oops ul a[href="#more"]', function (event) {

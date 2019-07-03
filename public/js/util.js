@@ -15,6 +15,18 @@
                     .replace(/\xe2\x88\x92/g, '-');
   };
 
+  exported.quotify = function (name, set, s) {
+    s = s || '';
+    while (s.match('"')) {
+      s = s.replace('"', '&ldquo;').replace('"', '&rdquo;');
+    }
+    s = s.replace(/&/g, '&amp;').replace(/ *â/, '&lt;cite&gt;&amp;mdash;');
+    if (s.match(';cite')) {
+      s += '&lt;/cite&gt;';
+    }
+    return '/* '+name+' ('+set.code+') */'+"\n\n\"&lt;blockquote&gt;"+s+"&lt;/blockquote&gt;\"";
+  };
+
   exported.symbolize = function (s) {
     return s.replace(/{(.+?)}/g, function (m, found, offset, s) {
       found = found.toLowerCase().split('/');
