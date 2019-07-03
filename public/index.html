@@ -82,6 +82,7 @@
       <em>Vault of Cardboard</em> has got you covered.</p>
 
       <form id="login">
+        <div class="oops"></div>
         <div>
           <label>Username</label><!--a href="#">need an account?</a-->
           <input type="text" name="username" autocomplete="off">
@@ -1786,10 +1787,24 @@ $(function () {
           $(window).trigger('hashchange');
 
         } else if (data.error) {
-          $('.login .oops').html(data.error).fadeIn();
+          $('#login .oops').html(data.error).fadeIn();
 
         } else {
-          $('.login .oops').html("Uh-oh, something broke pretty bad.  Tap "+colorize("2UUU")+" and summon James, Fixer of Codes!").fadeIn();
+          $('#login .oops').html("Uh-oh, something broke pretty bad.  Tap "+colorize("2UUU")+" and summon James, Fixer of Codes!").fadeIn();
+        }
+      },
+      error: function (xhr) {
+        try {
+          console.log(xhr.responseText);
+          var data = JSON.parse(xhr.responseText);
+          if (data.error) {
+            $('#login .oops').html(data.error).fadeIn();
+          } else {
+            throw 'internal failure';
+          }
+        } catch (e) {
+          console.log(e);
+          $('#login .oops').html("Uh-oh, something broke pretty bad.  Tap "+colorize("4BR")+" to cast James Legendary Bug Fix").fadeIn();
         }
       }
     });
