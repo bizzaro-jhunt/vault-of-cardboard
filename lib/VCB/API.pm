@@ -68,7 +68,7 @@ sub cachepath {
 
 sub authn {
 	my $cookie = cookie 'vcb_sesh';
-	if ($cookie) {
+	if ($cookie && $cookie->value) {
 		return $SESH{$cookie->value};
 	}
 
@@ -91,12 +91,15 @@ sub authn {
 }
 
 sub admin_authn {
-	my $user = authn;
-	if (!$user || !$user->admin) {
+	my $user = authn
+		or return undef;
+
+	if (!$user->admin) {
 		status 403;
 		response_header 'WWW-Authenticate' => 'Basic realm="Vault of Cardboard"';
 		return undef;
 	}
+
 	return $user;
 }
 
