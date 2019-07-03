@@ -143,6 +143,14 @@ EOF
 		$db->do("UPDATE users SET cohort = 'preview' WHERE admin = 1");
 		$set_v->execute(++$version);
 	}
+
+	if ($version == 6) {
+		print __PACKAGE__.": migrating v6 -> v7 (additional card attributes)\n";
+		$db->do("ALTER TABLE prints ADD COLUMN spotlight BOOLEAN NOT NULL DEFAULT 0");
+		$db->do("ALTER TABLE prints ADD COLUMN oid UUID NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000'");
+		$db->do("ALTER TABLE prints ADD COLUMN art UUID NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000'");
+		$set_v->execute(++$version);
+	}
 }
 
 sub init {

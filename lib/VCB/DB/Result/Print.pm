@@ -133,6 +133,24 @@ __PACKAGE__->table("prints");
   default_value: '{}'
   is_nullable: 0
 
+=head2 spotlight
+
+  data_type: 'boolean'
+  default_value: 0
+  is_nullable: 0
+
+=head2 oid
+
+  data_type: 'uuid'
+  default_value: '00000000-0000-0000-0000-000000000000'
+  is_nullable: 0
+
+=head2 art
+
+  data_type: 'uuid'
+  default_value: '00000000-0000-0000-0000-000000000000'
+  is_nullable: 0
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -174,6 +192,20 @@ __PACKAGE__->add_columns(
   { data_type => "text", default_value => "normal", is_nullable => 0 },
   "legalese",
   { data_type => "text", default_value => "{}", is_nullable => 0 },
+  "spotlight",
+  { data_type => "boolean", default_value => 0, is_nullable => 0 },
+  "oid",
+  {
+    data_type     => "uuid",
+    default_value => "00000000-0000-0000-0000-000000000000",
+    is_nullable   => 0,
+  },
+  "art",
+  {
+    data_type     => "uuid",
+    default_value => "00000000-0000-0000-0000-000000000000",
+    is_nullable   => 0,
+  },
 );
 
 =head1 PRIMARY KEY
@@ -221,8 +253,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07049 @ 2019-03-02 23:24:13
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:KLDKIsCpwG2xNGgV7aF1+Q
+# Created by DBIx::Class::Schema::Loader v0.07049 @ 2019-07-03 08:25:16
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:kt2zrghZ6CtfUVSoT8JCSg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

@@ -271,6 +271,11 @@
           <td>set:XLN</td>
         </tr>
         <tr>
+          <td>spotlight</td>
+          <td>Matches cards that are <strong>Story Spotlight</strong> cards.</td>
+          <td>spotlight:y</td>
+        </tr>
+        <tr>
           <td>toughness</td>
           <td>Match (creature) cards based on their toughness / defense value.</td>
           <td>toughness:&lt;5</td>
@@ -279,6 +284,12 @@
           <td>type</td>
           <td>Match cards based on their card type.</td>
           <td>type:land</td>
+        </tr>
+        <tr>
+          <td>unique</td>
+          <td>Filter results based on card text or art uniqueness.
+              See below for more information and some caveats.</td>
+          <td>unique:card<br>unique:art</td>
         </tr>
         <tr>
           <td>usd</td>
@@ -338,7 +349,7 @@
     <kbd>name:"Need"</kbd>.  (Due to a technical limitation that should be fixed soon,
     you do have to quote the value, which means capitalization matters!)</p>
 
-    <p>Finally, for anything but the simplest queries, you're going to want to
+    <p>For anything but the simplest queries, you're going to want to
     combine these expressions into larger aggregate expressions.  For these, you
     need the <em>logical operators</em>: <kbd>and</kbd>, <kbd>or</kbd>, and <kbd>not</kbd>.</p>
 
@@ -372,6 +383,29 @@
     <p>... which finds all of the uncommons, rares, and mythic rares in your
     collection.</p>
 
+    <h2>Uniqueness</h2>
+    <p>By default, Vault of Cardboard will return all prints and editions of a <em>card</em>.
+    For example, if you search for <kbd>counterspell</kbd>, you'll get a bunch of them, mostly
+    reprints.  If you don't care about specific editions, and are just looking for the general
+    counterspell card, you can add <kbd>and unique</kbd> to the end of your search query.</p>
+
+    <p>There are two modes for the <kbd>unique</kbd> predicate: oracle text and art.</p>
+
+    <p>For <strong>oracle text</strong>, use <kbd>unique:card</kbd>, or the briefer shortcut
+    <kbd>unique</kbd>.  As it compiles the search results, Vault of Cardboard will omit duplicates
+    of reprinted cards.  Note that this may not always return the <em>original</em> printing.</p>
+
+    <p>Sometimes cards get a reprint with new art.  To find all unique illustrations, you can use
+    the <strong>card art</strong> mode: <kbd>unique:art</kbd>.</p>
+
+    <p>This type of filtering is different from all of the other query predicates, since it
+    has to take into account all of the cards seen so far.  As such, you will probably see some
+    strange behavior if you try to nest the uniqueness predicate inside of a subquery.</p>
+
+    <p>For 99% of use cases, you'll want to just tack on a <kbd>and unique</kbd> to the end of
+    your query.</p>
+
+    <h2>A Note About Precedence</h2>
     <p>Finally, we need to talk about precedence.  Whenever you chain multiple
     <kbd>and</kbd>'s and <kbd>or</kbd>'s together, you need to consider what you actually mean.
     For example:</p>

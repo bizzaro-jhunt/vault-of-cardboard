@@ -11,6 +11,9 @@ function tokenize(s) {
     NEED:  [['QUALIFIER','OWN'],
             ['IDENTIFIER', '0']],
 
+    UNIQUE: [['QUALIFIER', 'UNIQUE'],
+             ['IDENTIFIER', 'card']],
+
     REPRINT:   [['QUALIFIER', 'REPRINT'],
                 ['IDENTIFIER', 'y']],
     RESERVED:  [['QUALIFIER', 'RESERVED'],
@@ -32,7 +35,7 @@ function tokenize(s) {
 
   var kw = [];
   for (var k in keywords) { kw.push(k); }
-  var kre = new RegExp("^("+kw.join('|')+")\\b", 'i');
+  var kre = new RegExp("^("+kw.join('|')+")\\b(?!:)", 'i');
 
   var tok = [];
 parsing:
@@ -127,11 +130,17 @@ parsing:
   return collapsed;
 }
 
-function Query(t,a,b) {
+function Query(t,a,b,up) {
   this.type = t;
   this.a = a;
   this.b = b;
+  this.up = up;
+  this.unique = {};
 }
+
+Query.prototype.parent = function() {
+  return this.up ? this.up.parent() : this;
+};
 
 function parse(tok) {
   var strict_re = function (v) { return new RegExp('\\b'+v+'\\b'); },
@@ -248,6 +257,23 @@ function parse(tok) {
         fn.string = v;
         return fn;
       },
+      uniquify  = function (v) {
+        if (!('_uniques' in window)) { uniques = {card: {}, art: {}}; }
+        v = v.toLowerCase();
+        var fn = function (unique) {
+          var k;
+          switch (v) {
+          case 'card': k = this.oid; break;
+          case 'art':  k = this.art; break;
+          }
+          console.log('checking art %s (for [%s %s]) against ', this.art, this.set.code, this.name, unique);
+          rc = !(k in unique);
+          unique[k] = 1;
+          return rc;
+        };
+        fn.string = v;
+        return fn;
+      },
       data      = [],
       ops       = [],
       prec      = {
@@ -277,11 +303,13 @@ function parse(tok) {
         throw 'bad value for '+t[1]+' qualifier';
       }
       switch (t[1]) {
+      case 'UNIQUE':  fn = uniquify; break;
       case 'SET':     fn = setcode;  break;
       case 'LAYOUT':
       case 'PT':
       case 'RARITY':  fn = literal;  break;
       case 'LEGAL':   fn = legalese; break;
+      case 'SPOTLIGHT':
       case 'RESERVED':
       case 'REPRINT': fn = boolish;  break;
       case 'COLOR':   fn = colorish; break;
@@ -388,6 +416,7 @@ Query.parse = function (s) {
 
 Query.prototype.toString = function () {
   switch (this.type) {
+  case 'UNIQUE':
   case 'SET':
   case 'TYPE':
   case 'NAME':
@@ -401,6 +430,7 @@ Query.prototype.toString = function () {
   case 'IN':
     return '('+this.type+' '+this.a.toString()+')';
 
+  case 'SPOTLIGHT':
   case 'RESERVED':
   case 'REPRINT':
   case 'COLOR':
@@ -426,6 +456,8 @@ Query.prototype.toString = function () {
 
 Query.prototype.match = function (card) {
   switch (this.type) {
+  case 'UNIQUE':
+    return this.a.call(card, this.parent().unique);
   case 'SET':
     return this.a == card.set.code;
   case 'TYPE':
@@ -459,6 +491,8 @@ Query.prototype.match = function (card) {
       return card.legal[this.a.toLowerCase()] == 'legal';
   case 'PT':
       return this.a == card.pt;
+  case 'SPOTLIGHT':
+      return this.a.call(card, card.spotlight);
   case 'RESERVED':
       return this.a.call(card, card.reserved);
   case 'REPRINT':

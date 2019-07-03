@@ -1047,6 +1047,8 @@ sub do_v_admin_sets_x_ingest {
 		logf "updating $code $card->{name}...\n";
 		my $attrs = {
 			id        => $card->{id},
+			oid       => $card->{oracle_id}       || 'self:'.$card->{id},
+			art       => $card->{illustration_id} || 'self:'.$card->{id},
 			name      => $card->{name},
 			oracle    => ($card->{card_faces} ? join("\n---\n", map { $_->{oracle_text} } @{$card->{card_faces}}) : $card->{oracle_text}) || '',
 			type      => $card->{type_line},
@@ -1056,6 +1058,7 @@ sub do_v_admin_sets_x_ingest {
 			reprint   => !!$card->{reprint},
 			reserved  => !!$card->{reserved},
 			color     => join('', sort(@{$card->{color_identity}})),
+			spotlight => !!$card->{story_spotlight},
 			cmc       => $card->{cmc},
 			mana      => ($card->{card_faces} ? $card->{card_faces}[0]{mana_cost} : $card->{mana_cost}) || '',
 			artist    => $card->{artist},
@@ -1204,30 +1207,33 @@ post '/v/admin/recache' => sub {
 			print "$n/$total cards recached.\n" if $n % 100 == 0;
 			$n++;
 			push @{$ALL{$card->set_id}}, {
-				id       => $card->id,
-				set      => { code  => $card->set_id,
-				              name  => $card->set->name,
-				              total => $card->set->prints->count },
-				name     => $card->name,
-				type     => $card->type,
-				cmc      => $card->cmc,
-				cost     => $card->mana,
-				color    => $card->color,
-				oracle   => $card->oracle,
-				artist   => $card->artist,
-				flavor   => $card->flavor,
-				layout   => $card->layout,
-				image    => sprintf("%s/%s-%s.jpg", $card->set_id, $card->set_id, $card->id),
-				back     => ($card->layout eq 'transform' ||
-				             $card->layout eq 'double_faced_token')
-				               ? sprintf("%s/%s-%s.flip.jpg", $card->set_id, $card->set_id, $card->id)
-				               : undef,
-				number   => $card->colnum,
-				owned    => 0,
-				rarity   => rarity($card->rarity),
-				reprint  => !!$card->reprint,
-				reserved => !!$card->reserved,
-				price    => $card->price,
+				id        => $card->id,
+				oid       => $card->oid,
+				art       => $card->art,
+				set       => { code  => $card->set_id,
+				               name  => $card->set->name,
+				               total => $card->set->prints->count },
+				name      => $card->name,
+				type      => $card->type,
+				cmc       => $card->cmc,
+				cost      => $card->mana,
+				color     => $card->color,
+				oracle    => $card->oracle,
+				artist    => $card->artist,
+				flavor    => $card->flavor,
+				layout    => $card->layout,
+				image     => sprintf("%s/%s-%s.jpg", $card->set_id, $card->set_id, $card->id),
+				back      => ($card->layout eq 'transform' ||
+				              $card->layout eq 'double_faced_token')
+				                ? sprintf("%s/%s-%s.flip.jpg", $card->set_id, $card->set_id, $card->id)
+				                : undef,
+				number    => $card->colnum,
+				owned     => 0,
+				rarity    => rarity($card->rarity),
+				reprint   => !!$card->reprint,
+				reserved  => !!$card->reserved,
+				spotlight => !!$card->spotlight,
+				price     => $card->price,
 
 				power     => $card->power,
 				toughness => $card->toughness,
