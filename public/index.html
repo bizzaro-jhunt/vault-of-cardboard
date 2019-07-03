@@ -117,8 +117,8 @@
     [[ if (!_.noback) { ]]<span class="card back"><img src="/mtgback.jpg"></span>[[ } ]]
     <span class="card face [[= _.card.layout]]">
       [[ if (_.card.layout == 'transform') { ]]<a href="#" rel="flip"></a>[[ } ]]
-      <img data-id="[[= _.card.id ]]" src="[[= $CONFIG.imgroot ]]/cards/[[= _.card.image ]]"
-           [[ if (_.card.layout == 'transform') { ]]data-flip-src="[[= $CONFIG.imgroot ]]/cards/[[= _.card.back ]]"[[ } ]]
+      <img data-id="[[= _.card.id ]]" src="[[= _.src ]]"
+           [[ if (_.card.layout == 'transform') { ]]data-flip-src="[[= _.flip ]]"[[ } ]]
            alt="[[= alt ]]" title="[[= alt ]]">
     </span>
   </div></div>

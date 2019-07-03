@@ -353,8 +353,11 @@ body > .colors {
   transform: translate(100px, 100px) rotate(5deg);
   transform-origin: 50% 50%;
   border-radius: 4%; /* chop off some of the terrible backgrounds */
-  border: 4px solid #fff;
+  border: 4px solid rgba(255,255,255, 0);;
   z-index: 5;
+}
+.modal-fg .card.back img {
+  border-color: #fff;
 }
 .modal-fg img.flipped {
   transform: translate(100px, 100px) rotate(185deg);
