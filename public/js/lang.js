@@ -177,6 +177,12 @@ function parse(tok) {
         switch (v) {
         case "NONE":     /* '' */  return ck(0, 0, 0, 0, 0);
 
+        case "WHITE":    /* W */   return ck(1, 0, 0, 0, 0);
+        case "BLUE":     /* U */   return ck(0, 1, 0, 0, 0);
+        case "BLACK":    /* B */   return ck(0, 0, 1, 0, 0);
+        case "RED":      /* R */   return ck(0, 0, 0, 1, 0);
+        case "GREEN":    /* G */   return ck(0, 0, 0, 0, 1);
+
         case "AZORIUS":  /* WU */  return ck(1, 1, 0, 0, 0);
         case "DIMIR":    /* UB */  return ck(0, 1, 1, 0, 0);
         case "RAKDOS":   /* BR */  return ck(0, 0, 1, 1, 0);
