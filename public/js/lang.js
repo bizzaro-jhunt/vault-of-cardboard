@@ -295,6 +295,30 @@ function parse(tok) {
 
     case 'QUALIFIER':
       var v = tok.shift();
+
+      /* handle predictes that don't _need_ a value... */
+      switch (t[1]) {
+        case 'ACTIVATE':
+        case 'DISCARD':
+        case 'EXILE':
+        case 'SACRIFICE':
+        case 'TAP':
+        case 'UNTAP':
+          if (v) {
+            switch (v[0]) {
+            case 'IDENTIFIER':
+            case 'STRING': break;
+            default:
+              tok.unshift(v);
+              v = undefined;
+              break;
+            }
+          }
+          if (!v) {
+            v = ['IDENTIFIER', ''];
+          }
+      }
+
       var fn;
       switch (v[0]) {
       case 'IDENTIFIER': fn = loose_re;  break;
@@ -423,6 +447,12 @@ Query.prototype.toString = function () {
   case 'NAME':
   case 'ORACLE':
   case 'FLAVOR':
+  case 'ACTIVATE':
+  case 'DISCARD':
+  case 'EXILE':
+  case 'SACRIFICE':
+  case 'TAP':
+  case 'UNTAP':
   case 'ARTIST':
   case 'RARITY':
   case 'LAYOUT':
@@ -510,6 +540,60 @@ Query.prototype.match = function (card) {
     var m = card.oracle.match(/\bequip {(\d+)}/i);
     if (!m) { return false; }
     return this.a.call(card, parseInt(m[1]));
+
+  case 'ACTIVATE':
+    var l = card.oracle.split(/\n+/);
+    for (var i = 0; i < l.length; i++) {
+      l[i] = l[i].replace(/ *\(.*$/, '');
+      var m = l[i].match(/: (.*)/);
+      if (m && this.a.exec(m[1])) { return true; }
+    }
+    return false;
+
+  case 'DISCARD':
+    var l = card.oracle.split(/\n+/);
+    for (var i = 0; i < l.length; i++) {
+      l[i] = l[i].replace(/ *\(.*$/, '');
+      var m = l[i].match(/\bdiscard\b.*?: (.*)/i);
+      if (m && this.a.exec(m[1])) { return true; }
+    }
+    return false;
+
+  case 'EXILE':
+    var l = card.oracle.split(/\n+/);
+    for (var i = 0; i < l.length; i++) {
+      l[i] = l[i].replace(/ *\(.*$/, '');
+      var m = l[i].match(/\bexile\b.*?: (.*)/i);
+      if (m && this.a.exec(m[1])) { return true; }
+    }
+    return false;
+
+  case 'SACRIFICE':
+    var l = card.oracle.split(/\n+/);
+    for (var i = 0; i < l.length; i++) {
+      l[i] = l[i].replace(/ *\(.*$/, '');
+      var m = l[i].match(/\bsacrifice\b.*?: (.*)/i);
+      if (m && this.a.exec(m[1])) { return true; }
+    }
+    return false;
+
+  case 'TAP':
+    var l = card.oracle.split(/\n+/);
+    for (var i = 0; i < l.length; i++) {
+      l[i] = l[i].replace(/ *\(.*$/, '');
+      var m = l[i].match(/[^:]*{T}.*?: (.*)/);
+      if (m && this.a.exec(m[1])) { return true; }
+    }
+    return false;
+
+  case 'UNTAP':
+    var l = card.oracle.split(/\n+/);
+    for (var i = 0; i < l.length; i++) {
+      l[i] = l[i].replace(/ *\(.*$/, '');
+      var m = l[i].match(/[^:]*{Q}.*?: (.*)/);
+      if (m && this.a.exec(m[1])) { return true; }
+    }
+    return false;
 
   case 'NOT':
     return !this.a.match(card);

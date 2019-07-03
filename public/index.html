@@ -188,6 +188,11 @@
       </tr></thead>
       <tbody>
         <tr>
+          <td>activate</td>
+          <td>Match cards based on the text of their activated abilities.</td>
+          <td>activate:gains flying</td>
+        </tr>
+        <tr>
           <td>artist</td>
           <td>Match cards based on the name of the artist.  Art matters.</td>
           <td>artist:Poole</td>
@@ -208,9 +213,19 @@
           <td>cpt:&lt;4</td>
         </tr>
         <tr>
+          <td>discard</td>
+          <td>Match cards based on their activated abilities that you pay for by discarding cards.</td>
+          <td>discard:draw</td>
+        </tr>
+        <tr>
           <td>equip</td>
           <td>Match (equipment artifact) cards based on their cost to equip.</td>
           <td>equip:2+</td>
+        </tr>
+        <tr>
+          <td>exile</td>
+          <td>Match cards based on their activated abilities that you pay for by exiling cards or permanents.</td>
+          <td>exile:life</td>
         </tr>
         <tr>
           <td>flavor</td>
@@ -281,6 +296,11 @@
           <td>spotlight:y</td>
         </tr>
         <tr>
+          <td>tap</td>
+          <td>Match cards based on their activated abilities that require a tap.</td>
+          <td>tap:destroy</td>
+        </tr>
+        <tr>
           <td>toughness</td>
           <td>Match (creature) cards based on their toughness / defense value.</td>
           <td>toughness:&lt;5</td>
@@ -295,6 +315,11 @@
           <td>Filter results based on card text or art uniqueness.
               See below for more information and some caveats.</td>
           <td>unique:card<br>unique:art</td>
+        </tr>
+        <tr>
+          <td>untap</td>
+          <td>Match cards based on their activated abilities that require an untap.</td>
+          <td>untap:add</td>
         </tr>
         <tr>
           <td>usd</td>
