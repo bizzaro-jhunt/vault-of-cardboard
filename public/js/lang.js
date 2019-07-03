@@ -314,6 +314,7 @@ function parse(tok) {
       case 'REPRINT': fn = boolish;  break;
       case 'COLOR':   fn = colorish; break;
       case 'IN':      fn = deckish;  break;
+      case 'EQUIP':
       case 'OWN':
       case 'USD':
       case 'P':
@@ -436,6 +437,7 @@ Query.prototype.toString = function () {
   case 'COLOR':
     return '('+this.type+' '+this.a.string+')';
 
+  case 'EQUIP':
   case 'OWN':
   case 'USD':
   case 'CMC':
@@ -503,6 +505,11 @@ Query.prototype.match = function (card) {
     return this.a.call(card, card.price);
   case 'CMC':
     return this.a.call(card, card.cmc);
+
+  case 'EQUIP':
+    var m = card.oracle.match(/\bequip {(\d+)}/i);
+    if (!m) { return false; }
+    return this.a.call(card, parseInt(m[1]));
 
   case 'NOT':
     return !this.a.match(card);
