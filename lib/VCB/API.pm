@@ -771,7 +771,8 @@ post '/v/admin/users' => sub {
 	# input:
 	# {
 	#   "account" : "username",
-	#   "display" : "User Name"
+	#   "display" : "User Name",
+	#   "cohort"  : "public"
 	# }
 
 	# output:
@@ -780,6 +781,7 @@ post '/v/admin/users' => sub {
 	#   "created" : {
 	#     "id"        : "ab9c5636-b05e-479f-a7c9-21b45f34ef66",
 	#     "account"   : "username",
+	#     "cohort"    : "public",
 	#     "display"   : "User Name",
 	#     "joined_at" : "2018-12-10 14:19:04",
 	#     "active"    : true
@@ -793,6 +795,7 @@ post '/v/admin/users' => sub {
 		M('User')->new({
 			id        => uuidgen(),
 			account   => param('account'),
+			cohort    => param('cohort') || 'public',
 			display   => param('display'),
 			joined_at => time(),
 			active    => 1,
@@ -818,12 +821,69 @@ post '/v/admin/users' => sub {
 		created => {
 			id        => $u->id,
 			account   => $u->account,
+			cohort    => $u->cohort,
 			display   => $u->display,
 			joined_at => strftime("%Y-%m-%d %H:%M:%S %z", gmtime($u->joined_at)),
 			active    => $u->active,
 			password  => $pw,
 		},
 	}
+};
+
+# upate a user
+put '/v/admin/users/:account' => sub {
+	admin_authn or return admin_authn_failed;
+
+	# input:
+	# {
+	#   "account" : "username",
+	#   "display" : "User Name",
+	#   "cohort"  : "public"
+	# }
+
+	# output:
+	# {
+	#   "ok"      : "Updated user account",
+	#   "updated" : {
+	#     "id"        : "ab9c5636-b05e-479f-a7c9-21b45f34ef66",
+	#     "account"   : "username",
+	#     "cohort"    : "public",
+	#     "display"   : "User Name",
+	#     "joined_at" : "2018-12-10 14:19:04",
+	#     "active"    : true
+	#   }
+	# }
+
+	my $u = M('User')->find({ account => param('account') });
+	if (!$u) {
+		status 404;
+		return { error => "User '".param('account')."' not found" };
+	}
+
+	local $@;
+	eval {
+		$u->update({
+			account   => request->data->{account} || $u->account,
+			cohort    => request->data->{cohort}  || $u->cohort || 'public',
+			display   => request->data->{display} || $u->display,
+		});
+	};
+	if ($@) {
+		logf "failed to update user account '".param('account')."': ".$@."\n";
+		return { error => "Unable to update account; check server logs for details." };
+	}
+
+	return {
+		ok => "Updated user account",
+		updated => {
+			id        => $u->id,
+			account   => $u->account,
+			cohort    => $u->cohort,
+			display   => $u->display,
+			joined_at => strftime("%Y-%m-%d %H:%M:%S %z", gmtime($u->joined_at)),
+			active    => $u->active,
+		},
+	};
 };
 
 # retrieve user list
@@ -845,6 +905,7 @@ get '/v/admin/users' => sub {
 	[map {{
 		id        => $_->id,
 		account   => $_->account,
+		cohort    => $_->cohort,
 		joined_at => strftime("%Y-%m-%d %H:%M:%S %z", localtime($_->joined_at)),
 		active    => $_->active,
 	}} M('User')->search];
