@@ -172,7 +172,6 @@ function parse(tok) {
           var fn = function (c) {
             var map = {};
             for (var i = 0; i < c.length; i++) { map[c[i]] = true; }
-            console.log(this.name, [!!map.W, !!w], [!!map.U, !!u], [!!map.B, !!b], [!!map.R, !!r], [!!map.G, !!g], "XXX", c);
             return !!map.W == !!w &&
                    !!map.U == !!u &&
                    !!map.B == !!b &&
@@ -266,7 +265,6 @@ function parse(tok) {
           case 'card': k = this.oid; break;
           case 'art':  k = this.art; break;
           }
-          console.log('checking art %s (for [%s %s]) against ', this.art, this.set.code, this.name, unique);
           rc = !(k in unique);
           unique[k] = 1;
           return rc;
