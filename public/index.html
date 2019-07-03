@@ -114,12 +114,10 @@
 <script type="text/html" id="template:card-detail"><!-- {{{ -->
   [[ var alt = _.card.name + ' [' + _.card.set.code + ']'; ]]
   <div class="cardable" data-own="[[= _.owned ]]"><div>
-    [[ if (!_.noback) { ]]<span class="card back"><img src="/mtgback.jpg"></span>[[ } ]]
+    <span class="card back"><img src="/mtgback.jpg"></span>
     <span class="card face [[= _.card.layout]]">
       [[ if (_.card.layout == 'transform') { ]]<a href="#" rel="flip"></a>[[ } ]]
-      <img data-id="[[= _.card.id ]]" src="[[= _.src ]]"
-           [[ if (_.card.layout == 'transform') { ]]data-flip-src="[[= _.flip ]]"[[ } ]]
-           alt="[[= alt ]]" title="[[= alt ]]">
+      <img data-id="[[= _.card.id ]]" alt="[[= alt ]]" title="[[= alt ]]">
     </span>
   </div></div>
   [[# include('cardface', { card: _.card, noback: 1 }); ]]
@@ -1695,6 +1693,37 @@ $(function () {
   }).trigger('hashchange');
 
   $(document.body)
+  .on('keyup', function (event) {
+    if ($('.modal-fg').is(':visible')) {
+      switch (event.key) {
+      case 'ArrowDown':
+      case 'ArrowUp':
+        event.preventDefault();
+        break;
+
+      case 'ArrowLeft':
+      case 'ArrowRight':
+        $('.modal-bg, .modal-fg').hide();
+        var id = $('.modal-fg .card.face [data-id]').attr('data-id'),
+            who;
+
+        if (event.key == 'ArrowRight') {
+          var who = $('.results [data-id="'+id+'"]').closest('[data-own]').next();
+          if (!who.length) {
+            who = $('.results  [data-own]').first();
+          }
+        } else {
+          who = $('.results [data-id="'+id+'"]').closest('[data-own]').prev();
+          if (!who.length) {
+            who = $('.results [data-own]').last();
+          }
+        }
+        who[0].scrollIntoView();
+        who.find('.face img').trigger('click');
+        break;
+      }
+    }
+  })
   .on('click',  'header > h1', function (event) {
     event.preventDefault();
     document.location.hash = '#!/';
@@ -1910,15 +1939,13 @@ $(function () {
   })
   .on('click', '.results .face img', function (event) {
     var id   = $(event.target).closest('[data-id]').attr('data-id'),
-        card = $INDEX[id];
+        card = $INDEX[id],
+        img  = $(event.target).closest('img');
 
     window.$current = card;
-    $('.modal-fg').empty().append(
-      $.template('card-detail', {
-        src:  $(event.target).closest('img').attr('src'),
-        flip: $(event.target).closest('img').attr('data-flip-src'),
-        card: card
-      }));
+    $('.modal-fg').empty().append($.template('card-detail', { card: card }));
+    $('.modal-fg .face img').attr('src',           img.attr('src'))
+                            .attr('data-flip-src', img.attr('data-flip-src'));
     $('.modal-bg, .modal-fg').show();
   })
   .on('click', '.oops ul a[href="#more"]', function (event) {
